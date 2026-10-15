@@ -280,6 +280,28 @@ footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px s
 .tl b.n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.85rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 </style>
+<script>
+/* Plantilla de diseño elegida en el panel (se guarda para aplicarla sin parpadeo) */
+const C4_API="https://c4realty-api.c4realty0.workers.dev";
+function c4Tema(t){if(!t||!t.tokens)return;const k=t.tokens,r=document.documentElement,st=r.style;
+  if(t.id==="noche"){r.removeAttribute("data-tema");r.removeAttribute("data-claro");["--bg","--bg-2","--surface","--surface-2","--fg","--muted","--line","--accent","--accent-ink","--radius","--font-display","--font-body","--shadow","color-scheme"].forEach(v=>st.removeProperty(v));return;}
+  const lum=h=>{h=h.replace("#","");const n=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4));return .2126*n[0]+.7152*n[1]+.0722*n[2];};
+  r.setAttribute("data-tema",t.id);
+  const set={"--bg":k.fondo,"--bg-2":`color-mix(in srgb,${k.fondo} 94%,${k.texto} 6%)`,"--surface":k.superficie,"--surface-2":`color-mix(in srgb,${k.superficie} 90%,${k.texto} 10%)`,"--fg":k.texto,"--muted":k.texto_suave,"--line":k.linea,"--accent":k.acento,"--accent-ink":lum(k.acento)<.35?"#ffffff":"#1a1200","--radius":(k.radio||16)+"px","--font-display":`"${k.titulos}",system-ui,sans-serif`,"--font-body":`"${k.cuerpo}",system-ui,sans-serif`};
+  r.toggleAttribute("data-claro",lum(k.fondo)>.5);if(lum(k.fondo)>.5){set["--shadow"]="0 10px 30px rgba(20,23,28,.10)";st.setProperty("color-scheme","light");}
+  for(const v in set)st.setProperty(v,set[v]);
+  const id="c4-fuentes";if(!document.getElementById(id)){const l=document.createElement("link");l.id=id;l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family="+[k.titulos,k.cuerpo].map(f=>encodeURIComponent(f).replace(/%20/g,"+")+":wght@400;600;700;800").join("&family=")+"&display=swap";document.head.appendChild(l);}}
+try{c4Tema(JSON.parse(localStorage.getItem("c4_tema")||"null"));}catch(e){}
+</script>
+<style>
+html[data-tema] header.top{background:color-mix(in srgb,var(--bg) 90%,transparent)}
+html[data-tema] .hero::after{background:linear-gradient(90deg,var(--bg) 25%,color-mix(in srgb,var(--bg) 80%,transparent) 60%,color-mix(in srgb,var(--bg) 55%,transparent))}
+html[data-tema] .qgrid div{background:color-mix(in srgb,var(--surface) 75%,transparent)}
+html[data-tema] footer{background:var(--surface-2);color:var(--muted)}
+html[data-tema] .close{color:var(--fg)}
+html[data-tema] .doc input{accent-color:var(--accent)}
+html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="logo.png"]{filter:brightness(0)}
+</style>
 </head>
 <body>
 
@@ -467,6 +489,7 @@ footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px s
         <div class="field"><label for="l-nombre">Nombre</label><input id="l-nombre" required></div>
         <div class="two"><div class="field"><label for="l-tel">Teléfono o WhatsApp</label><input id="l-tel" required></div><div class="field"><label for="l-sal">Salario mensual aprox.</label><input id="l-sal" type="number" min="0" step="50"></div></div>
         <div class="field"><label for="l-prop">¿Qué te interesa?</label><select id="l-prop"><option value="">Elige una opción</option></select></div>
+        <input id="l-web" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <button class="btn btn-accent" type="submit">Enviar</button>
         <div class="okmsg" id="lead-note"></div>
       </form>
@@ -689,7 +712,7 @@ function countDocs(){const n=DOCS[tipo].d.filter((_,i)=>have.has(tipo+i)).length
 $$("#c-tipo button").forEach(b=>b.addEventListener("click",()=>{tipo=b.dataset.t;$$("#c-tipo button").forEach(x=>x.classList.toggle("on",x===b));renderDocs();}));
 const QP=P.filter(p=>p.cat==="Casa");
 $("#c-prop").innerHTML=`<option value="">Aún no sé, ayúdame a elegir</option>`+QP.map(p=>`<option value="${p.id}">${p.n}${p.z?" · "+p.z:""}${p.precio?" · "+(p.desde?"desde ":"")+fmt(p.precio):""}</option>`).join("");
-$("#l-prop").innerHTML+=P.map(p=>`<option>${p.n} (${p.z||p.cat})</option>`).join("");
+$("#l-prop").innerHTML+=P.map(p=>`<option value="${p.id}">${p.n} (${p.z||p.cat})</option>`).join("");
 function setQ(id){$("#c-prop").value=QP.find(p=>p.id===id)?id:"";pub();}
 function pub(){const p=QP.find(x=>x.id===$("#c-prop").value);const box=$("#c-pub");
   if(!p){box.innerHTML=`<p class="muted" style="font-size:.9rem">Sin problema: con tu ingreso te decimos qué proyectos están dentro de tu capacidad.</p>`;buildWA();return;}
@@ -714,8 +737,9 @@ $("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel
 /* contacto */
 $$("[data-copy]").forEach(b=>b.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast("Copiado");}catch(e){toast(b.dataset.copy);}}));
 $("#lead-form").addEventListener("submit",async e=>{e.preventDefault();const [firstname,...rest]=$("#l-nombre").value.trim().split(" ");
-  const ok=await hubspot("contacto",{firstname,lastname:rest.join(" "),phone:$("#l-tel").value,salario:$("#l-sal").value,proyecto_interes:$("#l-prop").value});
-  $("#lead-note").textContent=ok?"Recibido. Te escribimos por WhatsApp (demo: no se envía nada).":"No se pudo enviar. Escríbenos al 6253-1751.";});
+  const ok=await hubspot("contacto",{firstname,lastname:rest.join(" "),phone:$("#l-tel").value,salario:$("#l-sal").value,proyecto_interes:$("#l-prop").selectedOptions[0]?.value?$("#l-prop").selectedOptions[0].text:""});
+  const ok2=await c4Contacto({nombre:$("#l-nombre").value.trim(),telefono:$("#l-tel").value,ingreso_mensual:$("#l-sal").value,propiedad:$("#l-prop").value,interes:$("#l-prop").value?$("#l-prop").selectedOptions[0].text:"",origen:"web_contacto",sitio_web:$("#l-web")?$("#l-web").value:""});
+  $("#lead-note").textContent=ok2?"Recibido. Te escribimos pronto por WhatsApp.":"No se pudo enviar. Escríbenos al 6253-1751.";if(ok2)e.target.reset();});
 $$(".privlink").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();$("#priv").classList.add("open");}));
 $("#priv-ok").addEventListener("click",()=>$("#priv").classList.remove("open"));
 $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
@@ -729,5 +753,10 @@ document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');i
 show(PAGES.includes(location.hash.slice(1))?location.hash.slice(1):"inicio",true);
 </script>
 
+<script>
+/* Conexión con la base de datos: plantilla activa y formulario de contacto */
+async function c4Contacto(d){if(C4_API.startsWith("__"))return false;try{const r=await fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});return r.ok;}catch(e){return false;}}
+(async()=>{if(C4_API.startsWith("__"))return;try{const r=await fetch(C4_API+"/public/sitio");if(!r.ok)return;const j=await r.json();if(j.plantilla){c4Tema(j.plantilla);try{localStorage.setItem("c4_tema",JSON.stringify(j.plantilla));}catch(e){}}}catch(e){}})();
+</script>
 </body>
 </html>
