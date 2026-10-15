@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="img/logo.png">
+<title>C4 Realty</title>
+<meta name="description" content="C4 Realty: casas, terrenos, fincas y alquileres en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Aguacatal y Volcán. Cotiza tu vivienda.">
+<meta property="og:title" content="C4 Realty · Casas en Chiriquí">
+<meta property="og:description" content="Cotizar es tu primer paso para obtener tu vivienda.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: azul oscuro de C4 Realty. Hero con buscador → catálogo real (fichas) → cotizador con Bono Pa' Ti → guía del bono → videos de Instagram → entregas → contacto */
+:root{
+  --bg:#0b1526;--bg-2:#0e1b30;--surface:#132342;--surface-2:#1a2f55;
+  --fg:#eaf0fa;--muted:#9fb0c8;--line:#25395f;
+  --accent:#f2b84b;--accent-ink:#1a1200;--sky:#6cb6ff;--ok:#5ad39a;--danger:#ff7b7b;--green:#4cc96e;
+  --shadow:0 14px 40px rgba(0,0,0,.35);
+  --font-display:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:16px;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;margin:0}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.12;margin:0;text-wrap:balance;font-weight:700}
+h1{font-size:clamp(2.1rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.55rem,3vw,2.2rem);letter-spacing:-.01em}
+h3{font-size:1.1rem}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%;display:block}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}
+.sec{padding-block:68px}
+.sec.alt{background:var(--bg-2)}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.sec-head p{max-width:58ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:12px;padding:12px 20px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .15s,border-color .15s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--fg)}
+.btn-ghost:hover{border-color:var(--sky)}
+.btn-wa{background:#25d366;color:#05230f}
+.btn-sm{padding:9px 14px;font-size:.88rem}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(11,21,38,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:70px}
+.nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;font-weight:600;font-size:.92rem}
+.nav ul a{text-decoration:none;color:var(--muted)}
+.nav ul a:hover{color:var(--fg)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.welcome{display:none;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.welcome b{color:var(--fg)}
+.welcome button{border:0;background:transparent;color:var(--accent);font-weight:700;cursor:pointer;padding:0}
+body.registered .welcome{display:flex}
+.nav ul a.on{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent);padding-bottom:4px}
+@media (max-width:980px){.welcome{display:none!important}.nav{height:auto;flex-wrap:wrap;padding-block:10px;row-gap:8px}.nav ul{order:3;width:100%;overflow-x:auto;gap:18px;padding-bottom:6px;white-space:nowrap}}
+[data-page][hidden]{display:none!important}
+.pubbox{display:grid;gap:10px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.pubhead{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
+.pubhead img{width:72px;height:72px;object-fit:cover;border-radius:10px}
+.pubhead div{display:grid;gap:2px;min-width:0}
+.pubprice{font-family:var(--font-display);font-weight:800;font-size:1.15rem}
+.pubprice s{font-family:var(--font-body);font-size:.85rem;color:var(--muted);font-weight:500}
+
+.hero{position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(.9);opacity:.28}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 25%,rgba(11,21,38,.75) 60%,rgba(11,21,38,.55));pointer-events:none}
+.hero .wrap{position:relative;z-index:1;padding-block:64px 76px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}}
+.hero p.lead{max-width:50ch;font-size:1.1rem;color:var(--muted);margin-top:16px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-trust{display:flex;gap:28px;flex-wrap:wrap;margin-top:30px;font-size:.88rem;color:var(--muted)}
+.hero-trust b{display:block;font-family:var(--font-display);font-size:1.6rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.quick{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px;display:grid;gap:14px}
+.field{display:grid;gap:6px;min-width:0}
+.field label,.flabel{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field select,.field input{border:1px solid var(--line);background:var(--bg-2);border-radius:10px;padding:11px 12px;width:100%}
+.types{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:480px){.types{grid-template-columns:repeat(3,1fr)}}
+.types button{border:1px solid var(--line);background:var(--bg-2);border-radius:12px;padding:11px 4px;cursor:pointer;font-weight:700;font-size:.84rem;display:grid;gap:3px;justify-items:center;color:var(--muted)}
+.types button span{font-size:1.2rem}
+.types button.on{border-color:var(--accent);color:var(--fg);background:rgba(242,184,75,.1)}
+.ranges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.ranges button{border:1px solid var(--line);background:var(--bg-2);border-radius:10px;padding:10px 6px;cursor:pointer;font-weight:600;font-size:.84rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ranges button.on{border-color:var(--sky);color:var(--fg);background:rgba(108,182,255,.12)}
+
+.note-bar{background:rgba(242,184,75,.1);border:1px solid rgba(242,184,75,.35);color:var(--fg);border-radius:12px;padding:10px 14px;font-size:.88rem;margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--muted)}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chips .count{margin-left:auto;font-size:.86rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media (max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:620px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:grid;grid-template-rows:auto 1fr;transition:transform .2s,border-color .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--sky)}
+.photo{position:relative;aspect-ratio:4/3;max-width:100%;background:var(--bg-2);overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.photo .tags{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{background:rgba(11,21,38,.88);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:5px 8px;border-radius:6px}
+.tag.hot{background:var(--accent);color:var(--accent-ink)}
+.tag.rent{background:var(--green);color:#05230f}
+.body{padding:16px 18px 18px;display:grid;gap:9px;align-content:start}
+.where{font-size:.85rem;color:var(--muted)}
+.price{font-family:var(--font-display);font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--font-body);font-size:.8rem;color:var(--muted);font-weight:600}
+.price s{font-family:var(--font-body);font-size:.85rem;color:var(--muted);font-weight:500;margin-left:6px}
+.specs{display:flex;gap:12px;flex-wrap:wrap;font-size:.83rem;color:var(--muted);padding-top:9px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.specs b{color:var(--fg)}
+.posted{font-size:.76rem;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted);background:var(--surface);border-radius:var(--radius);border:1px dashed var(--line)}
+
+.modal{position:fixed;inset:0;z-index:60;background:rgba(5,10,20,.78);display:none;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.modal.open{display:flex}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);width:min(960px,100%);max-height:100%;overflow:auto;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+@media (max-width:800px){.sheet{grid-template-columns:1fr}}
+.sheet-media{background:var(--bg-2);position:relative;min-height:260px}
+.sheet-media img{width:100%;height:100%;object-fit:contain;max-height:80vh}
+.thumbs{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:6px;flex-wrap:wrap}
+.thumbs button{width:52px;height:52px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:var(--bg)}
+.thumbs button.on{border-color:var(--accent)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.sheet-info{padding:22px;display:grid;gap:14px;align-content:start;position:relative}
+.close{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:var(--bg-2);color:#fff;cursor:pointer;font-size:1.05rem;z-index:2}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:transparent;padding:10px 12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--fg);border-bottom-color:var(--accent)}
+.pane{display:none;gap:12px}
+.pane.on{display:grid}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kv div{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kv small{display:block;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.kv b{font-variant-numeric:tabular-nums}
+details.post{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+details.post summary{cursor:pointer;font-weight:700;font-size:.88rem;color:var(--muted)}
+details.post p{white-space:pre-line;font-size:.9rem;margin-top:8px;line-height:1.5}
+ul.ticks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.ticks li{display:flex;gap:10px;align-items:flex-start}
+ul.ticks li::before{content:"✓";color:var(--accent);font-weight:800}
+.src{font-size:.78rem;color:var(--muted)}
+.src a{color:var(--sky)}
+
+.gate{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:16px;background:rgba(5,10,20,.78)}
+.gate.open{display:grid}
+.gate form{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:26px;max-width:460px;width:100%;display:grid;gap:10px}
+.gate p{font-size:.92rem;color:var(--muted)}
+.gate input,.gate select{border:1px solid var(--line);background:var(--bg-2);border-radius:10px;padding:11px 12px;width:100%}
+.fine{font-size:.76rem;color:var(--muted)}
+.err{color:var(--danger);font-size:.85rem;min-height:1.2em}
+
+.quote{display:grid;grid-template-columns:1fr 1.1fr;gap:26px;align-items:start}
+.quote>*{min-width:0}
+.quote select{max-width:100%;text-overflow:ellipsis}
+@media (max-width:900px){.quote{grid-template-columns:1fr}}
+.qform{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:grid;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.check input{margin-top:4px}
+.qres{background:linear-gradient(160deg,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:20px;padding:24px;display:grid;gap:16px}
+.big{font-family:var(--font-display);font-size:clamp(2rem,4vw,2.8rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.big small{font-family:var(--font-body);font-size:.9rem;color:var(--muted);font-weight:500}
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qgrid b{overflow-wrap:anywhere}
+.qres,.need{min-width:0}
+@media (max-width:480px){.qres,.qform,.need{padding:16px}}
+.qgrid div{background:rgba(11,21,38,.5);border-radius:12px;padding:12px}
+.qgrid small{display:block;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.qgrid b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.okmsg{font-size:.88rem;color:var(--ok);font-weight:600;min-height:1.2em}
+
+.bono{display:grid;grid-template-columns:.8fr 1.2fr;gap:28px;align-items:start}
+@media (max-width:860px){.bono{grid-template-columns:1fr}}
+.bono img{border-radius:16px;border:1px solid var(--line)}
+.banks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:700px){.banks{grid-template-columns:1fr}}
+.bank{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:8px;align-content:start;font-size:.9rem}
+.bank h3{font-size:1rem}
+.warn{background:rgba(255,123,123,.08);border:1px solid rgba(255,123,123,.35);border-radius:12px;padding:12px 14px;font-size:.88rem}
+
+.videos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:900px){.videos{grid-template-columns:repeat(2,1fr)}}
+.vcard{display:grid;gap:8px;align-content:start}
+.vcard video{width:100%;aspect-ratio:9/16;max-width:100%;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:#000;display:block}
+.vcard .vt{font-weight:700;font-size:.92rem;line-height:1.3}
+.vcard .vt small{display:block;color:var(--accent);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+.vcard a{font-size:.8rem;color:var(--sky)}
+.mvideo{width:100%;max-height:60vh;aspect-ratio:9/16;object-fit:contain;background:#000;border-radius:12px;border:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:.92rem}
+.step b.n{width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.vid{position:relative;aspect-ratio:9/14;max-width:100%;border-radius:14px;overflow:hidden;display:block;text-decoration:none;border:1px solid var(--line);background:var(--bg-2)}
+.vid img{width:100%;height:100%;object-fit:cover}
+.vid::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(11,21,38,.9))}
+.vid .play{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);color:#0b1526;display:grid;place-items:center;font-size:.95rem;z-index:1}
+.vid span.t{position:absolute;left:12px;right:12px;bottom:12px;z-index:1;color:#fff;font-weight:700;font-size:.9rem;line-height:1.3}
+.vid span.t small{display:block;color:var(--accent);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}
+
+.deliv{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:800px){.deliv{grid-template-columns:repeat(2,1fr)}}
+.deliv a{display:block;border-radius:14px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/5;max-width:100%}
+.deliv img{width:100%;height:100%;object-fit:cover}
+
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+@media (max-width:860px){.contact{grid-template-columns:1fr}}
+.phone{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;flex-wrap:wrap}
+.phone b{font-family:var(--font-display);font-size:1.3rem;font-variant-numeric:tabular-nums}
+footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px solid var(--line);font-size:.88rem}
+.fbottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.wa{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:40;width:56px;height:56px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35);text-decoration:none}
+.toast{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--accent);padding:10px 16px;border-radius:12px;z-index:95;font-weight:700;display:none}
+/* Ficha clara estilo portafolio */
+.drawer{position:fixed;inset:0;z-index:60;display:none}
+.drawer.open{display:block}
+.drawer .scrim{position:absolute;inset:0;background:rgba(5,10,20,.6)}
+.panel{--paper:#ffffff;--ink:#14171c;--ink2:#6b7280;--rule:#e6e8ec;--soft:#f4f5f7;position:absolute;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);color:var(--ink);overflow:auto;box-shadow:-20px 0 60px rgba(0,0,0,.35);color-scheme:light;padding-bottom:env(safe-area-inset-bottom,0px)}
+.panel .pbar{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:space-between;padding:12px 18px;padding-top:max(12px,env(safe-area-inset-top,0px));border-bottom:1px solid var(--rule);font-size:.95rem}
+.panel .pbar button{border:0;background:transparent;cursor:pointer;color:var(--ink);font-weight:600;padding:6px 10px;border-radius:8px;font-size:.95rem}
+.panel .pbar button:hover{background:var(--soft)}
+.panel .pnav{display:flex;gap:2px}
+.panel .hero-img{background:#0b1526}
+.panel .hero-img img{width:100%;max-height:440px;object-fit:contain;display:block;margin:0 auto}
+.panel .strip{display:flex;gap:6px;padding:10px 20px 0;overflow-x:auto}
+.panel .strip button{flex:none;width:58px;height:58px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:var(--soft)}
+.panel .strip button.on{border-color:var(--ink)}
+.panel .strip img{width:100%;height:100%;object-fit:cover}
+.panel .pbody{padding:18px 20px 28px;display:grid;gap:20px}
+.panel h2{font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.panel .ploc{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-top:6px}
+.panel .pills{display:flex;gap:8px;flex-wrap:wrap}
+.panel .pill{display:inline-flex;align-items:center;gap:7px;background:var(--soft);border-radius:999px;padding:5px 12px;font-size:.85rem;font-weight:600}
+.panel .pill i{width:8px;height:8px;border-radius:50%}
+.panel .pprice{font-family:var(--font-display);font-size:2.1rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;line-height:1.1}
+.panel .pprice small{font-family:var(--font-body);font-size:.9rem;color:var(--ink2);font-weight:500;letter-spacing:0}
+.panel .pprice s{font-family:var(--font-body);font-size:1rem;color:var(--ink2);font-weight:500}
+.panel .psec{display:grid;gap:8px}
+.panel .psec>h4{font-family:var(--font-body);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:700;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.panel .rows{display:grid}
+.panel .rows div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:6px 0;font-size:.95rem}
+.panel .rows div span:first-child{color:var(--ink2)}
+.panel .rows div span:last-child{font-weight:600;font-variant-numeric:tabular-nums}
+.panel ul.plist{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:.95rem}
+.panel ul.plist li{display:flex;gap:10px}
+.panel ul.plist li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--ink);margin-top:.55em}
+.panel video{width:100%;max-height:520px;aspect-ratio:9/16;object-fit:contain;background:#000;border-radius:10px;display:block}
+.panel details{border:1px solid var(--rule);border-radius:10px;padding:10px 14px;background:var(--soft)}
+.panel details summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.panel details p{white-space:pre-line;font-size:.92rem;margin-top:8px;line-height:1.55;color:#2b2f36}
+.panel .pact{display:flex;gap:8px;flex-wrap:wrap}
+.panel .pbtn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:11px 16px;font-weight:700;text-decoration:none;cursor:pointer;border:1px solid var(--rule);background:#fff;color:var(--ink);font-size:.92rem}
+.panel .pbtn.dark{background:#0b1526;color:#fff;border-color:#0b1526}
+.panel .pbtn.pwa{background:#25d366;color:#05230f;border-color:#25d366}
+.panel .psrc{font-size:.8rem;color:var(--ink2)}
+.panel .psrc a{color:#1f5fbf}
+.panel :focus-visible{outline:2px solid #1f5fbf}
+@media (max-width:520px){.panel .rows div{grid-template-columns:120px 1fr}}
+/* Cotizador: requisitos y pasos */
+.need{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;gap:14px}
+.need-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:700;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:700px){.docs{grid-template-columns:1fr}}
+.doc{display:flex;gap:10px;align-items:flex-start;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;font-size:.92rem}
+.doc input{margin-top:2px;accent-color:#f2b84b;width:18px;height:18px;flex:none}
+.free{display:flex;gap:8px;flex-wrap:wrap}
+.free span{background:rgba(90,211,154,.12);border:1px solid rgba(90,211,154,.35);color:var(--fg);border-radius:999px;padding:6px 12px;font-size:.84rem;font-weight:600}
+.timeline{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:22px}
+@media (max-width:1000px){.timeline{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.timeline{grid-template-columns:1fr}}
+.tl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start;font-size:.88rem}
+.tl b.n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap nav">
+    <a href="#inicio" aria-label="C4 Realty, inicio"><img src="img/logo.png" alt="C4 Realty" style="height:26px;width:auto"></a>
+    <ul>
+      <li><a href="#inicio">Inicio</a></li>
+      <li><a href="#catalogo">Catálogo</a></li>
+      <li><a href="#cotizar">Cotizar</a></li>
+      <li><a href="#bono">Bono Pa' Ti</a></li>
+      <li><a href="#videos">Videos</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="welcome"><span>Hola, <b id="welcome-name"></b></span><button type="button" id="logout">Salir</button></div>
+      <a class="btn btn-accent btn-sm" href="#cotizar">Cotizar</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="inicio" data-page="inicio">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Casas · Terrenos · Fincas · Alquileres en Chiriquí</div>
+      <h1 style="margin-top:10px">Cotizar es tu primer paso para obtener tu vivienda</h1>
+      <p class="lead">Somos especialistas en casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Aguacatal, Volcán y más: compara proyectos, precios y planes de pago en un solo lugar.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-accent" href="#catalogo">Ver catálogo</a>
+        <a class="btn btn-wa" href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a>
+      </div>
+      <div class="hero-trust">
+        <div><b id="t-venta"></b>propiedades en venta</div>
+        <div><b id="t-alq"></b>alquileres</div>
+        <div><b>$55k</b>casas desde</div>
+      </div>
+    </div>
+    <form class="quick" id="quick">
+      <div><h3>¿Qué estás buscando?</h3><div class="muted" style="font-size:.88rem">Filtra el catálogo en un paso.</div></div>
+      <div class="types" role="group" aria-label="Tipo">
+        <button type="button" class="on" data-type=""><span>◫</span>Todo</button>
+        <button type="button" data-type="Casa"><span>⌂</span>Casas</button>
+        <button type="button" data-type="Terreno"><span>▱</span>Terrenos</button>
+        <button type="button" data-type="Finca"><span>❧</span>Fincas</button>
+        <button type="button" data-type="Alquiler"><span>⚿</span>Alquiler</button>
+      </div>
+      <div class="field"><label for="q-zona">Zona</label><select id="q-zona"><option value="">Todas las zonas</option></select></div>
+      <div class="field"><span class="flabel">Rango de precio (venta)</span>
+        <div class="ranges" role="group" aria-label="Rango de precio">
+          <button type="button" class="on" data-min="0" data-max="0">Cualquiera</button>
+          <button type="button" data-min="0" data-max="80000">Hasta $80,000</button>
+          <button type="button" data-min="80000" data-max="120000">$80,000 – $120,000</button>
+          <button type="button" data-min="120001" data-max="0">Más de $120,000</button>
+        </div>
+      </div>
+      <button class="btn btn-accent" type="submit">Ver resultados</button>
+    </form>
+  </div>
+</section>
+
+<section class="sec" id="catalogo" data-page="catalogo">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Catálogo</div><h2 id="cat-title">Todo el catálogo</h2></div>
+      <p class="muted">Cada ficha tiene resumen, precios y pagos, video, ubicación y el texto completo de la publicación.</p>
+    </div>
+    <div class="note-bar">Demo armada con las publicaciones de <b>@c4realty1</b> entre julio y octubre de 2026. Precios y disponibilidad según cada publicación; confirmar antes de publicar.</div>
+    <div class="chips" role="group" aria-label="Tipo">
+      <button class="chip on" data-chip="">Todo</button>
+      <button class="chip" data-chip="Casa">Casas</button>
+      <button class="chip" data-chip="Terreno">Terrenos</button>
+      <button class="chip" data-chip="Finca">Fincas</button>
+      <button class="chip" data-chip="Alquiler">Alquileres</button>
+      <span class="count" id="cat-count"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<section class="sec alt" id="cotizar" data-page="cotizar">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Cotizar</div><h2>Cotiza tu casa por WhatsApp</h2></div>
+      <p class="muted">Elige la casa, dinos tu ingreso y marca los documentos que ya tienes. Te respondemos por WhatsApp con tu cotización bancaria. No te cobramos por cotizar ni por el recorrido.</p>
+    </div>
+    <div class="free" style="margin-bottom:22px"><span>✓ Cotización gratis</span><span>✓ Recorrido gratis</span><span>✓ Asesoría gratuita</span><span>✓ 10 años recorriendo el mercado de Chiriquí</span></div>
+    <div class="quote">
+      <form class="qform" id="qform" novalidate>
+        <div class="eyebrow">1 · Tus datos</div>
+        <div class="field"><label for="c-nombre">Nombre</label><input id="c-nombre" autocomplete="name" placeholder="Tu nombre"></div>
+        <div class="field"><span class="flabel">Tipo de ingreso</span><div class="seg" role="group" aria-label="Tipo de ingreso" id="c-tipo"><button type="button" class="on" data-t="asal">Asalariado</button><button type="button" data-t="indep">Independiente</button></div></div>
+        <div class="field"><label for="c-sal">Ingreso mensual aprox. (USD)</label><input id="c-sal" type="number" min="0" step="50" placeholder="Ej. 900"></div>
+        <div class="eyebrow" style="margin-top:6px">2 · La casa que te interesa</div>
+        <div class="field"><label for="c-prop">Propiedad</label><select id="c-prop"></select></div>
+        <div class="pubbox" id="c-pub"></div>
+      </form>
+      <div class="need">
+        <div class="need-head"><div><div class="eyebrow">3 · Lo que necesitas</div><h3 style="margin-top:4px" id="need-title">Documentos para asalariados</h3></div><span class="muted" id="need-count" style="font-size:.88rem"></span></div>
+        <div class="docs" id="docs"></div>
+        <div class="fine" id="need-note"></div>
+        <a class="btn btn-wa" id="c-wa" href="#" target="_blank" rel="noopener" style="justify-content:center;padding:15px 20px;font-size:1.02rem;white-space:normal;text-align:center">Enviar por WhatsApp · te respondemos ahí mismo</a>
+        <div class="fine">Se abre WhatsApp con tus datos, la casa y tu lista de documentos ya escritos. Solo tocas enviar al 6253-1751.</div>
+      </div>
+    </div>
+    <h3 style="margin-top:44px">Pasos para comprar tu casa</h3>
+    <div class="timeline">
+      <div class="tl"><b class="n">1</b><b>Cotización bancaria</b><span class="muted">Conoce tu capacidad.</span></div>
+      <div class="tl"><b class="n">2</b><b>Recorrido</b><span class="muted">Visita los proyectos que están dentro de tu capacidad.</span></div>
+      <div class="tl"><b class="n">3</b><b>Aparta</b><span class="muted">Tu lote favorito con el modelo de tu preferencia.</span></div>
+      <div class="tl"><b class="n">4</b><b>Documentación</b><span class="muted">Llena la documentación del banco.</span></div>
+      <div class="tl"><b class="n">5</b><b>Aprobación</b><span class="muted">Aprobación bancaria lista.</span></div>
+      <div class="tl"><b class="n">6</b><b>Contrato</b><span class="muted">Firma del contrato con la constructora.</span></div>
+      <div class="tl"><b class="n">7</b><b>Abonos y llaves</b><span class="muted">Abonos del % indicado hasta la entrega de tus llaves.</span></div>
+    </div>
+    <p class="muted" style="margin-top:12px">En cada uno de estos pasos te guiamos hasta la entrega de tus llaves.</p>
+  </div>
+</section>
+
+<section class="sec" id="bono" data-page="bono">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Guía</div><h2>Bono Pa' Ti: $3,000 para tu casa nueva</h2></div>
+      <p class="muted">Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.</p>
+    </div>
+    <div class="bono">
+      <div style="display:grid;gap:14px"><img src="img/DePaYRLkS7Q_1.jpg" alt="Banco Nacional confirma su participación en Abono Pa' Ti" loading="lazy"><div class="vcard"><video controls playsinline preload="none" poster="videos/DeAvoR1RuE9.jpg" src="videos/DeAvoR1RuE9.mp4"></video><div class="vt"><small>Video</small>Caja de Ahorros confirma su participación</div></div></div>
+      <div style="display:grid;gap:16px">
+        <ul class="ticks">
+          <li>Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de $3,000 para el abono inicial de una casa nueva.</li>
+          <li>Solo para tu primera vivienda con interés preferencial.</li>
+          <li>Aplica para viviendas con valor no mayor de $80,000.</li>
+        </ul>
+        <div class="banks">
+          <div class="bank"><h3>Banco Nacional</h3><ul class="ticks"><li>Abono mínimo 2 %</li><li>Casas con permiso de ocupación</li><li>El bono se aplica al precio de venta</li><li>Se tramita en Panamá Conecta</li></ul></div>
+          <div class="bank"><h3>Caja de Ahorros</h3><ul class="ticks"><li>Sigues abonando el 3 % inicial</li><li>Los $3,000 reducen el precio base</li><li>Se solicita cuando la casa está para entrega inmediata</li></ul></div>
+          <div class="bank"><h3>Banco General</h3><ul class="ticks"><li>Se suma al beneficio</li><li>La solicitud se hace con avance de obra</li></ul></div>
+        </div>
+        <div class="warn"><b>Actualización 14 de octubre:</b> algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec alt" id="videos" data-page="videos">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Videos</div><h2>Recorre los proyectos en video</h2></div>
+      <p class="muted">Dale play y recorre cada proyecto sin salir de la página.</p>
+    </div>
+    <div class="videos" id="vids"></div>
+  </div>
+</section>
+
+<section class="sec alt" id="recientes" data-page="inicio">
+  <div class="wrap">
+    <div class="sec-head"><div><div class="eyebrow">Lo más reciente</div><h2>Publicado en las últimas semanas</h2></div><a class="btn btn-ghost" href="#catalogo">Ver todo el catálogo ›</a></div>
+    <div class="grid" id="grid-rec"></div>
+  </div>
+</section>
+
+<section class="sec" id="entregas" data-page="inicio">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Entregas</div><h2>Familias que ya recibieron su casa</h2></div>
+      <p class="muted">No vendemos una casa, vendemos hogares.</p>
+    </div>
+    <div class="deliv" id="deliv"></div>
+  </div>
+</section>
+
+<section class="sec alt" id="contacto" data-page="contacto">
+  <div class="wrap">
+    <div class="sec-head"><div><div class="eyebrow">Contacto</div><h2>Te ayudamos desde cero</h2></div></div>
+    <div class="contact">
+      <div style="display:grid;gap:12px">
+        <p class="muted" style="max-width:48ch">Envíanos tus documentos y en 5 minutos iniciamos tu precalificación con el banco. Así sabrás qué proyectos sí puedes comprar.</p>
+        <div class="phone"><div><span class="flabel">WhatsApp</span><br><b>6253-1751</b></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" data-copy="6253-1751">Copiar</button><a class="btn btn-wa btn-sm" href="https://wa.me/50762531751" target="_blank" rel="noopener">Escribir</a></div></div>
+        <div class="phone"><div><span class="flabel">Correo</span><br><b style="font-size:1.05rem">c4realty1@gmail.com</b></div><button class="btn btn-ghost btn-sm" data-copy="c4realty1@gmail.com">Copiar</button></div>
+        <div class="phone"><div><span class="flabel">Instagram</span><br><b>@c4realty1</b></div><a class="btn btn-ghost btn-sm" href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">Ver perfil</a></div>
+      </div>
+      <form class="qform" id="lead-form">
+        <h3>Déjanos tus datos</h3>
+        <div class="field"><label for="l-nombre">Nombre</label><input id="l-nombre" required></div>
+        <div class="two"><div class="field"><label for="l-tel">Teléfono o WhatsApp</label><input id="l-tel" required></div><div class="field"><label for="l-sal">Salario mensual aprox.</label><input id="l-sal" type="number" min="0" step="50"></div></div>
+        <div class="field"><label for="l-prop">¿Qué te interesa?</label><select id="l-prop"><option value="">Elige una opción</option></select></div>
+        <button class="btn btn-accent" type="submit">Enviar</button>
+        <div class="okmsg" id="lead-note"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap fbottom">
+    <img src="img/logo.png" alt="C4 Realty" style="height:24px;width:auto">
+    <span>WhatsApp 6253-1751 · c4realty1@gmail.com · @c4realty1 · <a href="#" class="privlink">Aviso de privacidad</a></span>
+  </div>
+</footer>
+
+<div class="drawer" id="modal" role="dialog" aria-modal="true" aria-label="Ficha de la propiedad">
+  <div class="scrim" id="m-scrim"></div>
+  <div class="panel" id="panel">
+    <div class="pbar"><button type="button" id="m-close">‹ Volver al catálogo</button><div class="pnav"><button type="button" id="m-prev" aria-label="Propiedad anterior">‹</button><button type="button" id="m-next" aria-label="Propiedad siguiente">›</button></div></div>
+    <div class="hero-img"><img id="m-img" alt=""></div>
+    <div class="strip" id="m-thumbs"></div>
+    <div class="pbody">
+      <div><h2 id="m-title"></h2><div class="ploc" id="m-loc"></div></div>
+      <div class="pills" id="m-pills"></div>
+      <div class="pprice" id="m-price"></div>
+      <div class="psec"><h4>Características</h4><div class="rows" id="m-kv"></div></div>
+      <div class="psec" id="m-pts-sec"><h4>Lo que incluye</h4><ul class="plist" id="m-pts"></ul></div>
+      <div class="psec"><h4>Precio y financiamiento</h4><ul class="plist" id="m-pagos"></ul><div class="pact" style="margin-top:6px" id="m-quote-wrap"><button class="pbtn dark" type="button" id="m-quote">Cotizar esta casa</button></div></div>
+      <div class="psec" id="m-vid-sec"><h4>Video</h4><div id="m-vid"></div></div>
+      <div class="psec"><h4>Ubicación</h4><div class="rows"><div><span>Zona</span><span id="m-zona"></span></div></div><div class="pact" id="m-map-wrap"><a class="pbtn" id="m-map" href="#" target="_blank" rel="noopener">Ver zona en Google Maps</a></div></div>
+      <div class="psec"><h4>Publicación en Instagram</h4><div id="m-txt" style="display:grid;gap:8px"></div><div class="pact" id="m-ig"></div></div>
+      <div class="pact"><a class="pbtn pwa" id="m-wa" href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a></div>
+      <div class="psrc" id="m-src"></div>
+    </div>
+  </div>
+</div>
+
+<div class="gate" id="gate">
+  <form id="reg-form" novalidate>
+    <h3>Recibe tu cotización</h3>
+    <p>Déjanos tus datos y te enviamos la cotización por WhatsApp.</p>
+    <input id="r-nombre" placeholder="Nombre y apellido" autocomplete="name">
+    <input id="r-email" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input id="r-tel" placeholder="Teléfono o WhatsApp" autocomplete="tel">
+    <select id="r-interes"><option value="">¿Qué te interesa?</option><option>Casa</option><option>Terreno</option><option>Finca</option><option>Alquiler</option></select>
+    <button class="btn btn-accent" type="submit">Enviar mis datos</button>
+    <button class="btn btn-ghost" type="button" id="reg-cancel">Ahora no</button>
+    <div class="err" id="reg-err"></div>
+    <div class="fine">Al registrarte aceptas que un asesor te contacte y el <a href="#" class="privlink" style="color:var(--sky)">aviso de privacidad</a>.</div>
+  </form>
+</div>
+
+<a class="wa" href="https://wa.me/50762531751" target="_blank" rel="noopener" aria-label="WhatsApp 6253-1751"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2 .6 2.8.5a2.4 2.4 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1c0-.1-.2-.2-.5-.3z"/></svg></a>
+<div class="gate" id="priv"><div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:560px;width:100%;display:grid;gap:10px;font-size:.92rem">
+  <h3>Aviso de privacidad</h3>
+  <p>Los datos que nos envías (nombre, teléfono, correo y lo que te interesa) se usan solo para atender tu solicitud, enviarte cotizaciones e información de propiedades, y gestionar tu precalificación con el banco que elijas.</p>
+  <p>No vendemos ni compartimos tus datos con terceros fuera de ese fin. Puedes pedir que los corrijamos o eliminemos escribiendo a c4realty1@gmail.com.</p>
+  <p class="fine">Texto base de la demo; revisarlo con C4 Realty antes de publicar (Ley 81 de 2019 de protección de datos personales).</p>
+  <button class="btn btn-accent" type="button" id="priv-ok" style="justify-self:start">Entendido</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const IMG={"Db4WgESkZso_1": "img/Db4WgESkZso_1.jpg", "Db4WgESkZso_2": "img/Db4WgESkZso_2.jpg", "Db4WgESkZso_3": "img/Db4WgESkZso_3.jpg", "Db4WgESkZso_4": "img/Db4WgESkZso_4.jpg", "DbKGygdRUF9_1": "img/DbKGygdRUF9_1.jpg", "DbRTDJohIYX_1": "img/DbRTDJohIYX_1.jpg", "DbW7cZMxp-G_1": "img/DbW7cZMxp-G_1.jpg", "DbWa2yugWbU_1": "img/DbWa2yugWbU_1.jpg", "DbWa2yugWbU_2": "img/DbWa2yugWbU_2.jpg", "DbWa2yugWbU_3": "img/DbWa2yugWbU_3.jpg", "DbWa2yugWbU_4": "img/DbWa2yugWbU_4.jpg", "DbcFFwMxg40_1": "img/DbcFFwMxg40_1.jpg", "Dbmd0tSxMWl_1": "img/Dbmd0tSxMWl_1.jpg", "Dbo5wH1xkZL_1": "img/Dbo5wH1xkZL_1.jpg", "DcAMnqsRVbA_1": "img/DcAMnqsRVbA_1.jpg", "DcJsS7xRPBo_1": "img/DcJsS7xRPBo_1.jpg", "DcPh7MpxQds_1": "img/DcPh7MpxQds_1.jpg", "DcbQ1KBRjs7_1": "img/DcbQ1KBRjs7_1.jpg", "DccX6ioRPIp_1": "img/DccX6ioRPIp_1.jpg", "DcdwO0SxPHn_1": "img/DcdwO0SxPHn_1.jpg", "DcfFsrDxuDh_1": "img/DcfFsrDxuDh_1.jpg", "DchkGexRP0e_1": "img/DchkGexRP0e_1.jpg", "DcufbgIxIZG_1": "img/DcufbgIxIZG_1.jpg", "Dd-U0i-RUv4_1": "img/Dd-U0i-RUv4_1.jpg", "Dd5JIqqx-uo_1": "img/Dd5JIqqx-uo_1.jpg", "DdAezX_xxKH_1": "img/DdAezX_xxKH_1.jpg", "DdDHjB5xsYs_1": "img/DdDHjB5xsYs_1.jpg", "DdIN_4ZxRqz_1": "img/DdIN_4ZxRqz_1.jpg", "DdSgwtbxhbD_1": "img/DdSgwtbxhbD_1.jpg", "DdVKVX2xxG6_1": "img/DdVKVX2xxG6_1.jpg", "DdXvidHOVLs_1": "img/DdXvidHOVLs_1.jpg", "DdaTUj7xgP1_1": "img/DdaTUj7xgP1_1.jpg", "DdiBjkjxY-i_1": "img/DdiBjkjxY-i_1.jpg", "Ddke02gxHxd_1": "img/Ddke02gxHxd_1.jpg", "DdxExCRERj3_1": "img/DdxExCRERj3_1.jpg", "DdxExCRERj3_2": "img/DdxExCRERj3_2.jpg", "DdxXy82R5o4_1": "img/DdxXy82R5o4_1.jpg", "DeDX-FBRPLY_1": "img/DeDX-FBRPLY_1.jpg", "DePaYRLkS7Q_1": "img/DePaYRLkS7Q_1.jpg"};
+/* Catálogo: datos tomados de las publicaciones de @c4realty1 (texto y volante de cada post) */
+const P=[
+ {id:"coral",cat:"Casa",n:"Modelo Coral",z:"San Pablo Viejo",precio:70000,antes:73644,tag:"Rebaja por tiempo limitado",f:"2026-10-01",
+  kv:[["Recámaras","2"],["Baños","1"],["Lavandería","Abierta"],["Lotes","600 a 700 m²"]],
+  pts:["Rebaja de $73,644 a $70,000 por tiempo limitado","Modelo sin estacionamiento techado","Lotes de 600 a 700 m² con precio especial","Gastos legales gratis con Banco General y Global Bank","Grama frontal"],
+  pagos:["Aplica con salarios desde $850–$900 aprox.","Letra mensual aproximada de $285"],ig:["Dd-U0i-RUv4","DcufbgIxIZG","Dbd2WZjRkBZ"],img:["Dd-U0i-RUv4_1","DcufbgIxIZG_1","DbW7cZMxp-G_1"]},
+ {id:"sp3",cat:"Casa",n:"Casa de 3 recámaras",z:"San Pablo Viejo",precio:null,tag:"Entrega inmediata",f:"2026-09-15",
+  kv:[["Recámaras","3"],["Baños","2"],["Lavandería","Cerrada"],["Lote","612 m²"]],pts:["Recíbela y pasa la Navidad 2026 en tu casa nueva"],pagos:["Precio: consultar por WhatsApp"],ig:["DdVKVX2xxG6"],img:["DdVKVX2xxG6_1"]},
+ {id:"bariloche",cat:"Casa",n:"Bariloche · Modelo Santiago A",z:"Los Algarrobos",precio:80000,tag:"Última casa",f:"2026-08-10",
+  kv:[["Recámaras","2"],["Baños","1"],["Lote","461 m²"],["Ubicación","Esquina, entrada principal"]],pts:["Entrega inmediata","Lote 129, a un lado de Nuevo Horizonte"],pagos:["Tasa especial del 0.75 %"],ig:["Db4WgESkZso"],img:["Db4WgESkZso_3"]},
+ {id:"marias",cat:"Casa",n:"Las Marías",z:"Los Algarrobos",precio:80540,f:"2026-08-10",
+  kv:[["Recámaras","2"],["Baños","2"],["Estacionamiento","Techado"],["Lote","450 m²"]],pts:["Múdate este mismo año"],pagos:["Tasa especial del 0.75 %"],ig:["Db4WgESkZso"],img:["Db4WgESkZso_2","Db4WgESkZso_1"]},
+ {id:"algarrobos",cat:"Casa",n:"Nuevo residencial en Algarrobos",z:"Los Algarrobos",precio:114750,desde:true,tag:"Nuevo",f:"2026-08-24",
+  kv:[["Lotes","600 m²"],["Incluye","Closet y estacionamiento"]],pts:["Cerca perimetrada","Portones eléctricos","Gimnasio","Canchas deportivas","Agua 24/7 de buena calidad"],pagos:["Modelos desde $114,750"],ig:["DccX6ioRPIp","DcPh7MpxQds"],img:["DccX6ioRPIp_1","DcPh7MpxQds_1"]},
+ {id:"puntaroca",cat:"Casa",n:"Residencial Punta Roca",z:"Aguacatal",zl:"David, vía Aguacatal",precio:null,tag:"Entrega inmediata",f:"2026-08-10",
+  kv:[["Recámaras","2"],["Baños","1"],["Lote","500 m²"]],pts:["Promoción en Aguacatal (julio): hasta 50 m² de terreno gratis","Gastos legales gratis, grama y verjas","m² adicionales a $15"],pagos:["Tasa especial del 0.75 %","Precio: consultar por WhatsApp"],ig:["Db4WgESkZso","DbcFFwMxg40"],img:["Db4WgESkZso_4","DbcFFwMxg40_1"]},
+ {id:"aguacatal",cat:"Casa",n:"Casas económicas en Aguacatal",z:"Aguacatal",precio:55000,desde:true,tag:"Promoción",f:"2026-09-21",
+  kv:[["Recámaras","2 a 3"],["Baños","1 a 2"],["Lote","205 m²"]],pts:["Calles de concreto","Agua privada"],pagos:["Precio inicial en promoción desde $55,000","Aplica con salario desde $750"],ig:["Ddke02gxHxd"],img:["Ddke02gxHxd_1"],tel2:true},
+ {id:"hortencias",cat:"Casa",n:"Las Hortencias · 2da etapa",z:"Boquete",zl:"El Francés, Boquete",precio:70000,f:"2026-09-16",
+  kv:[["Recámaras","2"],["Baños","1"],["Lavandería","Abierta"],["Lote","450 m²"]],pts:["Segunda etapa de Residencial Las Hortencias"],pagos:["Aplica con salarios desde $900","Letra quincenal de $133","Letra mensual aproximada de $266"],ig:["DdSgwtbxhbD","DdXvidHOVLs"],img:["DdSgwtbxhbD_1","DdXvidHOVLs_1"]},
+ {id:"francés",cat:"Casa",n:"Modelos en El Francés",z:"Boquete",zl:"El Francés, Boquete",precio:80000,desde:true,f:"2026-08-25",
+  kv:[["Recámaras","2 a 3"],["Baños","1 a 2"],["Lote","450 m²"]],pts:["Casas de $80,000 y $100,000 con casa modelo","Modelo de 2 recámaras, 1 baño y lavandería cerrada","Modelo Natasha: 3 recámaras, 2 baños, lavandería cerrada y estacionamiento techado (últimos lotes)"],
+  pagos:["Letra quincenal desde $155 con tasa de feria de 1.25 %","A 35 años, letra quincenal de $137","Letra mensual desde $300; aplica con salarios desde $900","Modelo Natasha: aplica desde $1,350 aprox."],ig:["DcAMnqsRVbA","Dbo5wH1xkZL","DcfFsrDxuDh"],img:["DcAMnqsRVbA_1","Dbo5wH1xkZL_1","DcfFsrDxuDh_1"]},
+ {id:"caldera",cat:"Casa",n:"Boquete Vía Caldera",z:"Boquete",zl:"Vía Caldera, Boquete",precio:110000,desde:true,tag:"En construcción",f:"2026-09-17",
+  kv:[["Modelos","Star Plus, Onix, Platino"],["Lotes","451.64 a 540 m²"]],pts:["Star Plus: 3 recámaras, 2 baños, lavandería cerrada, terraza y estacionamiento para 2 autos; lote de 451.64 m²; $110,000; única casa disponible en la etapa 1, entrega este año","Onix: 2 recámaras, 2 baños, lote de 540 m², desde $128,750","Platino: $145,000","Terraza con vista a las montañas, cerca del área del parque"],pagos:["Star Plus $110,000 · Onix desde $128,750 · Platino $145,000"],ig:["DdaTUj7xgP1","DdIN_4ZxRqz","DdDHjB5xsYs"],img:["DdaTUj7xgP1_1","DdIN_4ZxRqz_1","DdDHjB5xsYs_1"]},
+ {id:"fontana",cat:"Casa",n:"Residencial La Fontana",z:"",precio:95000,desde:true,f:"2026-09-29",kv:[["Distribuciones","Varias"]],pts:["Ubicación pensada para plusvalía e inversión"],pagos:["Casas desde $95,000"],ig:["Dd5JIqqx-uo"],img:["Dd5JIqqx-uo_1"]},
+ {id:"jazmin",cat:"Casa",n:"Modelo Jazmín",z:"Montilla",precio:73185,desde:true,f:"2026-08-26",
+  kv:[["Recámaras","2"],["Baños","2"],["Lavandería","Cerrada"],["Lote","450 m²"]],pts:["Acceso a transporte","Cerca de hospitales, universidad y área comercial"],pagos:["Aplica con salarios desde $900","Financiamiento hasta 35 años"],ig:["DchkGexRP0e"],img:["DchkGexRP0e_1"]},
+ {id:"grande80",cat:"Casa",n:"La casa más grande hasta $80,000",z:"",precio:80000,antes:86500,tag:"Rebaja",f:"2026-09-07",
+  kv:[["Recámaras","2"],["Baños","1"],["Construcción","91.55 m²"],["Estacionamiento","Techado"]],pts:["Lavandería cerrada","Techo de teja y buenos acabados","Valor real $86,500, rebaja por tiempo limitado"],pagos:["Primer tramo de interés preferencial con tasas desde 0.75 %"],ig:["DdAezX_xxKH"],img:["DdAezX_xxKH_1"]},
+ {id:"trancas904",cat:"Casa",n:"Casa de lujo en Las Trancas",z:"Boquete",zl:"Las Trancas, Boquete",precio:275000,tag:"Entrega inmediata",f:"2026-10-03",
+  kv:[["Recámaras","3"],["Baños","2 y medio"],["Estacionamiento","Doble"],["Lote","904 m²"]],pts:["Terraza con mini bar y salida desde la recámara principal","Acabados de lujo: lavavajillas, muebles de cocina, extractor, lámparas, ventiladores y caños","Grama incluida"],pagos:["Valor $275,000"],ig:["DeDX-FBRPLY"],img:["DeDX-FBRPLY_1"]},
+ {id:"trancas210",cat:"Casa",n:"Casa en Las Trancas",z:"Boquete",zl:"Las Trancas, Boquete",precio:210000,f:"2026-07-23",
+  kv:[["Recámaras","3"],["Baños","2 y medio"],["Construcción","196 m²"],["Lote","614 m²"]],pts:["Terraza y estacionamiento doble","Muebles de cocina superiores e inferiores y closet en todas las recámaras","Cerca de piedra y grama en todo el terreno"],pagos:["Valor $210,000"],ig:["DbKGygdRUF9"],img:["DbKGygdRUF9_1"]},
+ {id:"volcan",cat:"Casa",n:"Casa en Altura Paso Ancho",z:"Volcán",precio:125000,tag:"Entrega inmediata",f:"2026-09-26",
+  kv:[["Recámaras","2"],["Baños","2"],["Estacionamiento","Techado"],["Lote","582.12 m²"]],pts:["Lote único, faltan retoques finales"],pagos:["Salario aproximado para aplicar: $1,500","Bancos: Banistmo, Banco Aliado, Caja de Ahorros y Danvivienda"],ig:["DdxXy82R5o4"],img:["DdxXy82R5o4_1"]},
+ {id:"finca",cat:"Finca",n:"Finca de 4 hectáreas",z:"Volcán",zl:"Vía Volcán – Paso Ancho",precio:1000000,ptxt:"$25 por m²",f:"2026-08-03",kv:[["Superficie","4 hectáreas"]],pts:["Frente a la calle principal","Vista a las montañas","Clima garantizado"],pagos:["$25 por m²"],ig:["Dbmd0tSxMWl"],img:["Dbmd0tSxMWl_1"]},
+ {id:"lotecc",cat:"Terreno",n:"Lote detrás del Country Club",z:"Boquete",precio:135000,f:"2026-08-24",kv:[["Superficie","1,770.50 m²"]],pts:["Ideal para vivienda o apartamentos","Zona de alta plusvalía y buen clima"],pagos:["Valor $135,000"],ig:["DcbQ1KBRjs7"],img:["DcbQ1KBRjs7_1"]},
+ {id:"lotecom",cat:"Terreno",n:"Lote comercial en El Francés",z:"Boquete",zl:"El Francés, Boquete",precio:243844,ptxt:"$60 por m²",f:"2026-08-25",kv:[["Superficie","4,064.07 m²"]],pts:["Sobre la vía principal, frente a la entrada de Los Molinos","Se vende completo","Excelente para inversiones"],pagos:["$60 por m²"],ig:["DcdwO0SxPHn"],img:["DcdwO0SxPHn_1"]},
+ {id:"alq750",cat:"Alquiler",n:"Casa amoblada en Las Trancas",z:"Boquete",zl:"Las Trancas, Boquete",renta:750,f:"2026-07-28",kv:[["Recámaras","2"],["Baños","2"],["Lavandería","Cerrada"],["Estacionamiento","Techado"]],pts:["Amoblada","Zona tranquila y de clima agradable"],pagos:["$750 mensuales"],ig:["DbWa2yugWbU"],img:["DbWa2yugWbU_1"]},
+ {id:"alq850",cat:"Alquiler",n:"Casa amoblada en Las Trancas",z:"Boquete",zl:"Las Trancas, Boquete",renta:850,f:"2026-07-28",kv:[["Recámaras","2"],["Baños","2"],["Lavandería","Cerrada"]],pts:["Amoblada"],pagos:["$850 mensuales"],ig:["DbWa2yugWbU"],img:["DbWa2yugWbU_2"]},
+ {id:"alq475",cat:"Alquiler",n:"Casa amoblada en San Pablo Viejo",z:"San Pablo Viejo",renta:475,f:"2026-07-28",kv:[["Recámaras","3"],["Baños","1"],["Lote","600 m²"]],pts:["Amoblada"],pagos:["$475 mensuales"],ig:["DbWa2yugWbU"],img:["DbWa2yugWbU_3"]},
+ {id:"alq260",cat:"Alquiler",n:"Casa en El Flor",z:"Dolega",zl:"El Flor, Dolega",renta:260,f:"2026-07-28",kv:[["Habitaciones","2 con A/A"],["Baños","1"],["Estacionamiento","Techado"]],pts:["Lavandería techada","Puertas y verjas de seguridad","Agua 24/7"],pagos:["$260 mensuales"],ig:["DbWa2yugWbU"],img:["DbWa2yugWbU_4"]}
+];
+const TEXTOS={"Dd-U0i-RUv4": "Modelo Coral rebaja solo en San Pablo Viejo y por tiempo limitado\n\nAdicional lotes de mas de 600m2 con precios especiales \n\nAplica desde 850 aproximadamente \n\nEscríbenos al 6253-1751", "DcufbgIxIZG": "Promoción que no te puedes perder si te gustan los lotes grandes.\n\n✅️Casa Modelo Coral rebajada de $73,644 a $70,000 ( modelo sin estacionamiento techado) \n\n✅️Lotes de casi 700m2 rebajados en precio especial \n\n✅️gastos legales gratis ( Banco general y Global )\n\n✅️Grama Frontal \n\n✨️Aplica con salarios desde 900 y lerra mensual de 285 aproximadamente \n\nEscríbenos para cotizar y visitar el proyecto WhatsApp 6253-1751", "Dbd2WZjRkBZ": "Anuncio  de último momento\n\nRebaja en casas en San pablo viejo  Chiriquí \n\n🏡Casas de $73,644 en $70,000\n\nDistribución \n2rec 1 baño \nLavanderia abierta \nSin estacionamiento techado \n\n➡️Lotes especiales desde 600m2 hasta 700m2 con precios especiales\n\n✅️Gastos legales gratis ( banco generla y con Global bank) \n✅️Grama frontal \n\nEscríbenos al WhatsApp 6253-1751", "DdVKVX2xxG6": "Estas a tiempo de recibir tu casa este año \n\nCasa de entrega inmediata \nEn San Pablo viejo \n\nDistribución \n✅️3rec\n✅️2baños\n✅️lavanderia cerrada \n✅️lote de 612 \n\n👉🏻Pasa la navidad 2026 en tu casa nueva ✨️ Escríbenos al 6253-1751", "Db4WgESkZso": "Estas a tiempo de mudarte este mismo año, pasa las fiestas de fin de año en tu casa nueva.\n\n🏡Casa en Algarrobos Bariloche última casa de 2rec 1 baño Lote de 460m2\nEsquina valor $80,000 \n\n🏡Casa en Algarrobos Las Marías 2rec 2 baños y estacionamiento techado valor $80,540, lote de 450m2\n\n🏡Casa en Aguacatal Punta Roca con 2 rec 1 baño Lote de 500m2 \n\n💥💥💥Todas estas opciones tiene una tasa especial del 0.75% 💥💥💥💥\n\n✅️Si te interesa saber con que banco y que ofertas tenemos para ti escríbenos al 6253-1751 WhatsApp.\n\nTenemos promociones especiales", "DccX6ioRPIp": "Si buscas realizar una inversión rentable y la seguridad es prioridad para ti. Tienes que conocer este proyecto.\n\n✅️Cerca perimetrada \n✅️Portones eléctricos \n✅️Gimnasio\n✅️Canchas deportivas \n✅️ Agua 💧 24/7 de buena calidad \n\nTodos los modelos incluyen closet y estacionamiento.\n\nCon modelos desde los $114,750 y lotes de 600m2 información al 6253-1751 WhatsApp \n\n#interéspreferencial #casasnuevas #primeravivienda", "DcPh7MpxQds": "Ahora también tenemos para ti esta nueva propuesta en Algarrobos, donde la seguridad, armonía y tranquilidad son prioridad. \n\nCasas desde los $ 114,750 en lotes de 600m2.\n\nAgenda tu visita al 6253-1751 WhatsApp", "DbcFFwMxg40": "Así como lo vez recibe hasta 50 m2 gratis por la compra de tu casa en Aguacatal.\n\nAdemas recibe:\n\n✅️Gastos legales gratis \n✅️Grama\n✅️verjas \n✅️m2 adicionales a solo $15 \n\nEscríbenos al WhatsApp 6253-1751 \n\n#casasnuevas #promoción #viviendas #hipoteca", "Ddke02gxHxd": "Cuando me preguntan ¿tienes proyecto económico?\n👉🏻Apatir de hoy no diré que Sí💥\n\nVisitamos esta Opción en Aguacatal y nos gusto la casa y el precio de la misma.\n\nAsí que te la presento \n\n🏡Casas desde 2rec 1 baño hasta 3rec 2 baños \nPrecio inicial en promoción desde $55,000\n\n✅️Lote 205 m2 \n✅️Calles de concreto \n✅️Agua privada \n\nInformación 6253-1751 y 6475-5101 WhatsApp \n\n#casasnuevas #interéspreferencial ##patrimoniofamiliar", "DdSgwtbxhbD": "🏡Boquete el Francés 2da etapa de Residencial las Hortencias \n\nCaracterísticas \n\n✅️Casas con 2rec 1 baño\n✅️Lavanderia abierta \n✅️Lote de 450m2 \n\nAplica con salarios desde 900 mensuales \nLetra quincenal 133.\n\nEscríbenos al 6253-1751 WhatsApp", "DdXvidHOVLs": "Nos llego una nueva propuesta para Boquete el Francés.\n\nSi buscas algo económico con letra aproximada de 266 mensual esta casa puede ser la que estabas esperando.\n\n🏡Distribución de 2 rec 1 baño, lavanderia abierta y lote de 450m2 \n\nValor $70,000\n\nCotiza al 6253-1751 WhatsApp \n\n#casasnuevas #Boquete #interéspreferencial", "DcAMnqsRVbA": "💥💥Muchos nos ha  escrito por Boquete el Francés con este modelo, por eso queremos atenderlos en la casa modelo este  15 de agosto.💥💥💥\n\nDesde las 9:00am hasta las 3:00 pm\n\nCasa de $80,000 y $100,000\n\nLetra mensual desde $300 aplica con salarios desde $900.\n\n✅️Confirmar asistencia para enviar la dirección al 6475 5101 ✨️", "Dbo5wH1xkZL": "Vive en Boquete el Francés \nLetra quincenal desde $155 con tasa rebaja por feria en $1.25%\n\nTambién puedes escojer plazo de 35 años\nLetra quincenal  en $137.\n\nAplica con salarios desde $900 \n\nLotes de 450m2\n\n🏡características \n\n✅️2rec 1 baño\n✅️Lavanderia cerrada \n\nEscríbenos al WhatsApp 6253-1751 para ayudarte desde cero. \n\nUna casa es un sueño, es una inversión, es una meta convertida en patrimonio. \n\n#casasenboquete #interéspreferencial ##patrimoniofamiliar", "DcfFsrDxuDh": "Últimos lotes disponibles \n\n🏡Casas en el Francés Boquete con distribución:\n\n3rec 2 baños \nLavanderia cerrada \nEstacionamiento techado ( modelo Natasha)\n\nAplica desde $1350 aproximadamente \n\nEscríbenos al 6253-1751 WhatsApp \n\n#casasenDavid #Boquete #interéspreferencial", "DdaTUj7xgP1": "🏡 en Boquete Vía Caldera \nEntrega este año\n✨️Mantenemos una casa solo una disponible en la etapa 1 y ya esta en construcción ✨️\n\nDistribución \n\n3Recamaras\n2baños \nEstacionamiento 2 autos \nTerraza\n\nCon la terraza con vista a las montañas y cerca del área del parque. \n\nEscribenos 6253-1751 WhatsApp", "DdIN_4ZxRqz": "Alerta nos queda una casa en construcción en Boquete Vía Caldera \n\n🏡Modelo Star Plus \n\n✨️Distribución: \n✅️3rec 2 baños \n✅️Estacionamiento techado para 2 autos \n✅️Lavanderia cerrada\n✅️Terraza \n\n✨️Valor $110,000 \nEscribenos al 6253-1751 WhatsApp \n\n#interéspreferencial #casasnuevas #primeravivienda #casasenboquete", "DdDHjB5xsYs": "Modelo Onix Boquete Vía Caldera \nVistas expectaculares \n\nDistribución de 2 rec 2 baños en lote 540m2 con precios desde $128,750 \n\nTambién tenemos el modelo Platino en $145,000 \n\nTe gustaría conocerlo escríbenos al 6253-1751", "Dd5JIqqx-uo": "¿Cuanto vale la ubicación de tu casa ?\n\nTu casa nueva puede ser hoy tu hogar pero mañana puede ser una fuente de ingresos, por eso elegir bien en tu presente puede ser Dinero, mayor plusvalía y una gran inversión en el futuro.\n\nCasas desde los $95,000\nCon diferentes distribución \n\nTe gustaria recibir toda la información del Residencial la Fontana.\n\nEscríbenos al 6253-1751 WhatsApp", "DchkGexRP0e": "Con acceso a Trasporte, cerca de hospitales, universidad y área comercial \n\nEl modelo Jazmín ha sido el favoritos de muchas familias.\n\n🏡Distribución \n\n✔️2rec \n✔️2 baños \n✔️Lavanderia cerrada \n✔️lote de 450m2 \n\nAplica con salarios desde $900 y financiamiento hasta 35 años. \n\nInformación, cotizaciones y visitas al WhatsApp 6253-1751", "DdAezX_xxKH": "La casa más grande en el mercado hasta precios de $80,000 \n\nEl primer tramo de interés preferencial llega hasta 80mil con tasas desde 0.75% \n\nEsta casa es la más grande en el mercado de hasta $80,000 pero es por una rebaja especial. Valor real $86,500 ❌️ por tiempo limitado \n\nMantienen 2 rec 1 baño, lavanderia cerrada y estacionamiento techado todo en teja gala y buenos acabados. \n\n91.55m2 de construcción \n\nTe gustaría conocer la casa modelo escríbenos al 6253-1751 y te cotizamos.\n\n#casaanuevas #interéspreferencial ##patrimoniofamiliar", "DeDX-FBRPLY": "Casas soñadas en Boquete \n\nIniciando con un lote amplio de 904m2 \n\n🏡Distribución \n\n✅️3rec 2 baños \n✅️Estacionamiento doble \n✅️Terraza \n✅️Mini bar \n✅️Medio baño\n✅️Terraza salida en recamara principal \n\n✨️Acabados de lujo \n✔️Incluye lavavajillas \n✔️Muebles de cocina superiores e inferiores\n✔️ extractor\n✔️Lamparas\n✔️ventiladores \n✔️Caños \n\nValor $275,000\n\nAgenda tu visita al 6253-1751 WhatsApp", "DbKGygdRUF9": "Casa en Las Trancas \n\nLote de 614m2 \nM2 de construcción 196m2 \n\n🏡Distribución\n✅3rec 2 baños \n✅️Terraza \n✅️Medio baño \n✅️Estacionamiento doble.\n\n✨️Incluye muebles superiores e inferiores de cocina y closet en todas las habitaciones \n\n➡️Cerca de piedra y grama en todo el terreno\n\nValor $210,000\n\nMayor información al WhatsApp 6253-1751", "DdxXy82R5o4": "Casa de entrega inmediata ( falta retoques finales) \n\nLote único en Volcán \nAltura paso Ancho \n\nLote de 582.12 m2\n\nDistribución 2rec 2 baños y estacionamiento techado \n\nValor $125mil \n\nSalario aproximado para aplicar  1500\n\nBancos Banistmo \nBanco Aliados\nCaja de Ahorros \nDanvivienda \n\nWhatsApp 6948-2167", "Dbmd0tSxMWl": "Se vende finca de 4 Hectáreas a 25 el m2 \nEn la vía Volcán Paso Ancho frente a la calle principal. \n\nVistas a las montañas ⛰️ clima garantizado inversión inteligente.\n\nMayor información 6253-1751", "DcbQ1KBRjs7": "Se vende lote en Boquete Altura Coutry Club Boquete. \nSuperficie de 1,770.50 m2 ideal para vivienda con amplio lote o estructuras como apartamentos. Zona de alta Plusvalía y buen clima.\n\nInformación al 6253-1751", "DcdwO0SxPHn": "Lote comercial sobre la vía Boquete \nUbicación: El Francés frente entrada los Molinos \n\nSuperficie de 4,064.07 m2 valor 60 x m2 se vende completo. \n\nInteresados escribir para información y agendar visita al 6253-1751", "DbWa2yugWbU": "Si buscas alquiler desliza para que veas las opciones que tenemos disponibles \n\nMayor información y visitas al 6253-1751"};
+const VSET=new Set(["DbKGygdRUF9","DbcFFwMxg40","Dbd2WZjRkBZ","Dbo5wH1xkZL","DcPh7MpxQds","DccX6ioRPIp","DcfFsrDxuDh","DchkGexRP0e","DdAezX_xxKH","DdDHjB5xsYs","DdIN_4ZxRqz","DdVKVX2xxG6","DdXvidHOVLs","Ddke02gxHxd","DdxXy82R5o4","Dd5JIqqx-uo","Dd-U0i-RUv4","DeAvoR1RuE9","DeDX-FBRPLY"]);
+const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]];
+const DELIV=[["DdxExCRERj3","DdxExCRERj3_1"],["DdiBjkjxY-i","DdiBjkjxY-i_1"],["DcJsS7xRPBo","DcJsS7xRPBo_1"],["DbRTDJohIYX","DbRTDJohIYX_1"]];
+
+/* HubSpot: rellenar cuando exista la cuenta. Vacío = modo demo */
+const HUBSPOT_PORTAL_ID="";const HUBSPOT_FORMS={registro:"",cotizacion:"",contacto:""};
+async function hubspot(k,fields){const id=HUBSPOT_FORMS[k];if(!HUBSPOT_PORTAL_ID||!id)return true;try{const r=await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${HUBSPOT_PORTAL_ID}/${id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:Object.entries(fields).map(([name,value])=>({name,value:String(value??"")})),context:{pageUri:location.href,pageName:document.title}})});return r.ok;}catch(e){return false;}}
+
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fdate=s=>{const [y,m,d]=s.split("-");return `${+d} ${MES[+m-1]} ${y}`;};
+const ig=c=>`https://www.instagram.com/p/${c}/`;
+const zonaTxt=p=>(p.zl||p.z||"Ubicación por confirmar")+(p.z||p.zl?", Chiriquí":"");
+const priceHTML=p=>p.cat==="Alquiler"?`${fmt(p.renta)} <small>/ mes</small>`:p.ptxt?p.ptxt:p.precio==null?`Consultar`:`${p.desde?'<small>Desde </small>':''}${fmt(p.precio)}${p.antes?`<s>${fmt(p.antes)}</s>`:''}`;
+function toast(t){const el=$("#toast");el.textContent=t;el.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>el.style.display="none",2400);}
+
+$("#hero-bg").style.backgroundImage=`url(${IMG["DdxExCRERj3_2"]})`;
+$("#t-venta").textContent=P.filter(p=>p.cat!=="Alquiler").length;$("#t-alq").textContent=P.filter(p=>p.cat==="Alquiler").length;
+const ZONAS=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();
+$("#q-zona").innerHTML+=ZONAS.map(z=>`<option>${z}</option>`).join("");
+
+const st={type:"",zona:"",min:0,max:0};
+function list(){return P.filter(p=>(!st.type||p.cat===st.type)&&(!st.zona||p.z===st.zona)&&(!(st.min||st.max)||(p.cat!=="Alquiler"&&p.precio!=null&&p.precio>=st.min&&(!st.max||p.precio<=st.max))));}
+const cardHTML=p=>`
+  <article class="card">
+    <div class="photo"><img src="${IMG[p.img[0]]}" alt="${p.n}" loading="lazy"><div class="tags"><span class="tag ${p.cat==="Alquiler"?"rent":""}">${p.cat==="Alquiler"?"Alquiler":p.cat}</span>${p.tag?`<span class="tag hot">${p.tag}</span>`:""}</div></div>
+    <div class="body">
+      <div class="where">⌖ ${zonaTxt(p)}</div>
+      <h3>${p.n}</h3>
+      <div class="price">${priceHTML(p)}</div>
+      <div class="specs">${p.kv.slice(0,3).map(([k,v])=>`<span>${k}: <b>${v}</b></span>`).join("")}</div>
+      <div class="posted">Publicado el ${fdate(p.f)}</div>
+      <div class="actions"><button class="btn btn-accent btn-sm" data-open="${p.id}">Ver ficha</button>${p.cat!=="Alquiler"&&p.precio&&p.cat==="Casa"?`<button class="btn btn-ghost btn-sm" data-quote="${p.id}">Cotizar</button>`:""}</div>
+    </div>
+  </article>`;
+function render(){
+  const l=list().sort((a,b)=>b.f.localeCompare(a.f));
+  $("#cat-title").textContent=({"":"Todo el catálogo",Casa:"Casas",Terreno:"Terrenos",Finca:"Fincas",Alquiler:"Alquileres"})[st.type]+(st.zona?" en "+st.zona:"");
+  $("#cat-count").textContent=l.length+" resultado"+(l.length===1?"":"s");
+  ORDER=l.map(p=>p.id);
+  $("#grid").innerHTML=l.length?l.map(cardHTML).join(""):`<div class="empty">No hay propiedades con esos filtros. Prueba otro rango de precio u otra zona.</div>`;
+}
+function syncType(){$$(".chip").forEach(x=>x.classList.toggle("on",x.dataset.chip===st.type));$$(".types button").forEach(x=>x.classList.toggle("on",x.dataset.type===st.type));}
+$$(".types button").forEach(b=>b.addEventListener("click",()=>{st.type=b.dataset.type;syncType();render();}));
+$$(".chip").forEach(b=>b.addEventListener("click",()=>{st.type=b.dataset.chip;syncType();render();}));
+$$(".ranges button").forEach(b=>b.addEventListener("click",()=>{$$(".ranges button").forEach(x=>x.classList.toggle("on",x===b));st.min=+b.dataset.min;st.max=+b.dataset.max;render();}));
+$("#q-zona").addEventListener("change",e=>{st.zona=e.target.value;render();});
+$("#quick").addEventListener("submit",e=>{e.preventDefault();render();show("catalogo");});
+
+/* registro */
+const RK="c4_registro";
+const leer=()=>{try{return JSON.parse(localStorage.getItem(RK)||"null");}catch(e){return null;}};
+const guardar=r=>{try{localStorage.setItem(RK,JSON.stringify(r));}catch(e){}};
+function aplicar(r){document.body.classList.toggle("registered",!!r);if(r)$("#welcome-name").textContent=r.nombre.split(" ")[0];}
+aplicar(leer());
+let pend=null;
+function pedir(id){pend=id;$("#gate").classList.add("open");$("#r-nombre").focus();}
+$("#reg-cancel").addEventListener("click",()=>{$("#gate").classList.remove("open");pend=null;});
+$("#reg-form").addEventListener("submit",async e=>{e.preventDefault();
+  const r={nombre:$("#r-nombre").value.trim(),email:$("#r-email").value.trim(),tel:$("#r-tel").value.trim(),interes:$("#r-interes").value};const err=$("#reg-err");
+  if(!r.nombre||!r.email||!r.tel){err.textContent="Completa nombre, correo y teléfono.";return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(r.email)){err.textContent="Revisa el correo electrónico.";return;}
+  err.textContent="";const [firstname,...rest]=r.nombre.split(" ");
+  const ok=await hubspot("registro",{firstname,lastname:rest.join(" "),email:r.email,phone:r.tel,interes:r.interes,proyecto_interes:pend||""});
+  if(!ok){err.textContent="No pudimos registrar tus datos. Intenta de nuevo o escríbenos por WhatsApp.";return;}
+  guardar(r);aplicar(r);$("#gate").classList.remove("open");pend=null;toast("Gracias, "+r.nombre.split(" ")[0]+". Ya puedes pedir tu cotización.");});
+$("#logout").addEventListener("click",()=>{try{localStorage.removeItem(RK);}catch(e){}aplicar(null);});
+
+/* ficha */
+let cur=null,ORDER=[];
+const CATC={Casa:"#2f6fd6",Terreno:"#b7791f",Finca:"#2f855a",Alquiler:"#1fa855"};
+function setImg(i){$("#m-img").src=IMG[cur.img[i]];$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
+function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;
+  $$("#modal video").forEach(v=>v.pause());
+  $("#m-thumbs").innerHTML=p.img.length>1?p.img.map((f,i)=>`<button type="button" data-i="${i}" aria-label="Foto ${i+1}"><img src="${IMG[f]}" alt=""></button>`).join(""):"";
+  $("#m-thumbs").style.display=p.img.length>1?"":"none";
+  $$("#m-thumbs button").forEach(b=>b.addEventListener("click",()=>setImg(+b.dataset.i)));setImg(0);
+  $("#m-title").textContent=p.n;$("#m-loc").textContent=zonaTxt(p);
+  $("#m-pills").innerHTML=`<span class="pill"><i style="background:${CATC[p.cat]}"></i>${p.cat==="Alquiler"?"Alquiler":p.cat}</span>`+(p.tag?`<span class="pill">${p.tag}</span>`:"")+`<span class="pill">Publicado ${fdate(p.f)}</span>`;
+  $("#m-price").innerHTML=p.cat==="Alquiler"?`${fmt(p.renta)}<small>mensual</small>`:p.ptxt?`${p.ptxt}`:p.precio==null?`Consultar<small>precio por WhatsApp</small>`:`${fmt(p.precio)}${p.antes?`<s>${fmt(p.antes)}</s>`:""}<small>${p.desde?"precio desde":"precio de venta"}</small>`;
+  $("#m-kv").innerHTML=p.kv.map(([k,v])=>`<div><span>${k}</span><span>${v}</span></div>`).join("");
+  $("#m-pts").innerHTML=p.pts.map(x=>`<li>${x}</li>`).join("");$("#m-pts-sec").style.display=p.pts.length?"":"none";
+  $("#m-pagos").innerHTML=p.pagos.map(x=>`<li>${x}</li>`).join("");
+  $("#m-quote-wrap").style.display=p.cat==="Casa"&&p.precio?"":"none";
+  const vc=p.ig.find(c=>VSET.has(c));$("#m-vid-sec").style.display=vc?"":"none";
+  $("#m-vid").innerHTML=vc?`<video controls playsinline preload="metadata" poster="videos/${vc}.jpg" src="videos/${vc}.mp4"></video>`:"";
+  $("#m-zona").textContent=zonaTxt(p);$("#m-map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent((p.zl||p.z||"Chiriquí")+", Chiriquí, Panamá");$("#m-map-wrap").style.display=p.z?"":"none";
+  const box=$("#m-txt");box.innerHTML="";const U=[...new Set(p.ig)];
+  U.filter(c=>TEXTOS[c]).forEach((c,i,a)=>{const d=document.createElement("details");if(i===0)d.open=true;const sm=document.createElement("summary");sm.textContent=a.length>1?`Texto de la publicación ${i+1}`:"Texto de la publicación";const pp=document.createElement("p");pp.textContent=TEXTOS[c];d.append(sm,pp);box.append(d);});
+  $("#m-ig").innerHTML=U.map((c,i)=>`<a class="pbtn" href="${ig(c)}" target="_blank" rel="noopener">Ver ${U.length>1?"publicación "+(i+1):"publicación"} en Instagram</a>`).join("");
+  $("#m-wa").href=`https://wa.me/50762531751?text=${encodeURIComponent("Hola C4 Realty, me interesa: "+p.n+" ("+zonaTxt(p)+").")}`;
+  $("#m-src").innerHTML=`Datos tomados de la publicación del ${fdate(p.f)}. Confirma precio y disponibilidad por WhatsApp.`;
+  const k=ORDER.indexOf(p.id);$("#m-prev").disabled=k<=0;$("#m-next").disabled=k<0||k>=ORDER.length-1;
+  $("#modal").classList.add("open");document.body.style.overflow="hidden";$("#panel").scrollTop=0;}
+function closeSheet(){$$("#modal video").forEach(v=>v.pause());$("#modal").classList.remove("open");document.body.style.overflow="";}
+$("#m-close").addEventListener("click",closeSheet);$("#m-scrim").addEventListener("click",closeSheet);
+$("#m-prev").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>0)openSheet(ORDER[k-1]);});
+$("#m-next").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>=0&&k<ORDER.length-1)openSheet(ORDER[k+1]);});
+document.addEventListener("keydown",e=>{if(!$("#modal").classList.contains("open"))return;if(e.key==="Escape")closeSheet();if(e.key==="ArrowRight")$("#m-next").click();if(e.key==="ArrowLeft")$("#m-prev").click();});
+document.addEventListener("click",e=>{if(!e.target.closest(".grid"))return;const o=e.target.closest("[data-open]");if(o){openSheet(o.dataset.open);return;}const q=e.target.closest("[data-quote]");if(q){setQ(q.dataset.quote);show("cotizar");}});
+$("#m-quote").addEventListener("click",()=>{closeSheet();setQ(cur.id);show("cotizar");});
+
+/* cotizador (sin calculadora: muestra lo publicado y arma el WhatsApp) */
+const DOCS={asal:{t:"Documentos para asalariados",d:["Estatus permanente en tu trabajo","Mínimo 1 año de trabajo (hay excepciones; consultamos tu caso)","Cédula de identidad personal","Talonario o comprobante de pago quincenal","Ficha de la CSS (te llega por correo)","Carta de trabajo"],n:"Los documentos los aportas después de tu recorrido, cuando ya elegiste la mejor opción para ti y tu familia."},
+ indep:{t:"Requisitos para independientes",d:["Declaración de renta o estados financieros de mínimo 2 años","Movimiento bancario de mínimo 6 meses","Cartas de referencias comerciales","Abono entre 10 % y 20 %, normalmente en varios pagos durante la construcción"],n:"Los profesionales independientes son una excepción en el porcentaje de abono. Si cumples, te ayudamos a buscar la vivienda que se ajuste a tu presupuesto."}};
+let tipo="asal";const have=new Set();
+function renderDocs(){const D=DOCS[tipo];$("#need-title").textContent=D.t;$("#need-note").textContent=D.n;
+  $("#docs").innerHTML=D.d.map((x,i)=>`<label class="doc"><input type="checkbox" data-d="${i}" ${have.has(tipo+i)?"checked":""}><span>${x}</span></label>`).join("");
+  $$("#docs input").forEach(c=>c.addEventListener("change",()=>{c.checked?have.add(tipo+c.dataset.d):have.delete(tipo+c.dataset.d);countDocs();buildWA();}));countDocs();buildWA();}
+function countDocs(){const n=DOCS[tipo].d.filter((_,i)=>have.has(tipo+i)).length;$("#need-count").textContent=`${n} de ${DOCS[tipo].d.length} listos`;}
+$$("#c-tipo button").forEach(b=>b.addEventListener("click",()=>{tipo=b.dataset.t;$$("#c-tipo button").forEach(x=>x.classList.toggle("on",x===b));renderDocs();}));
+const QP=P.filter(p=>p.cat==="Casa");
+$("#c-prop").innerHTML=`<option value="">Aún no sé, ayúdame a elegir</option>`+QP.map(p=>`<option value="${p.id}">${p.n}${p.z?" · "+p.z:""}${p.precio?" · "+(p.desde?"desde ":"")+fmt(p.precio):""}</option>`).join("");
+$("#l-prop").innerHTML+=P.map(p=>`<option>${p.n} (${p.z||p.cat})</option>`).join("");
+function setQ(id){$("#c-prop").value=QP.find(p=>p.id===id)?id:"";pub();}
+function pub(){const p=QP.find(x=>x.id===$("#c-prop").value);const box=$("#c-pub");
+  if(!p){box.innerHTML=`<p class="muted" style="font-size:.9rem">Sin problema: con tu ingreso te decimos qué proyectos están dentro de tu capacidad.</p>`;buildWA();return;}
+  box.innerHTML=`<div class="pubhead"><img src="${IMG[p.img[0]]}" alt=""><div><b>${p.n}</b><span class="muted">${zonaTxt(p)}</span><span class="pubprice">${p.precio==null?"Precio: consultar":(p.desde?"Desde ":"")+fmt(p.precio)}${p.antes?` <s>${fmt(p.antes)}</s>`:""}</span></div></div>
+   <div class="flabel" style="margin-top:4px">Según su publicación</div><ul class="ticks">${p.pagos.map(x=>`<li>${x}</li>`).join("")}</ul>
+   ${p.precio&&p.precio<=80000?`<div class="fine">Casa de hasta $80,000: puede aplicar al Bono Pa' Ti si es tu primera vivienda con interés preferencial.</div>`:""}`;buildWA();}
+$("#c-prop").addEventListener("change",pub);["c-nombre","c-sal"].forEach(id=>$("#"+id).addEventListener("input",buildWA));
+function buildWA(){const p=QP.find(x=>x.id===$("#c-prop").value);const D=DOCS[tipo].d,ok=D.filter((_,i)=>have.has(tipo+i)),no=D.filter((_,i)=>!have.has(tipo+i));
+  const nom=$("#c-nombre").value.trim(),sal=$("#c-sal").value;
+  const L=["Hola C4 Realty, quiero cotizar mi casa.",nom?`Nombre: ${nom}`:"",`Ingreso: ${tipo==="asal"?"Asalariado":"Independiente"}${sal?` · $${(+sal).toLocaleString("en-US")} mensual`:""}`,
+   p?`Me interesa: ${p.n}${p.z?` (${p.z})`:""}${p.precio?` · ${p.desde?"desde ":""}${fmt(p.precio)}`:""}`:"Aún no elijo casa; ¿qué opciones tengo?",
+   ok.length?`Ya tengo: ${ok.join("; ")}`:"",no.length?`Me falta: ${no.join("; ")}`:""].filter(Boolean);
+  $("#c-wa").href="https://wa.me/50762531751?text="+encodeURIComponent(L.join("\n"));}
+$("#c-wa").addEventListener("click",()=>{const p=QP.find(x=>x.id===$("#c-prop").value);hubspot("cotizacion",{firstname:$("#c-nombre").value,proyecto:p?p.n:"",tipo_ingreso:tipo,salario:$("#c-sal").value});});
+renderDocs();setQ("");
+
+/* videos y entregas */
+$("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="videos/${c}.jpg" src="videos/${c}.mp4" aria-label="${t}"></video><div class="vt"><small>${z}</small>${t}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
+document.addEventListener("play",e=>{document.querySelectorAll("video").forEach(v=>{if(v!==e.target)v.pause();});},true);
+$("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel="noopener"><img src="${IMG[f]}" alt="Entrega de casa" loading="lazy"></a>`).join("");
+
+/* contacto */
+$$("[data-copy]").forEach(b=>b.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);toast("Copiado");}catch(e){toast(b.dataset.copy);}}));
+$("#lead-form").addEventListener("submit",async e=>{e.preventDefault();const [firstname,...rest]=$("#l-nombre").value.trim().split(" ");
+  const ok=await hubspot("contacto",{firstname,lastname:rest.join(" "),phone:$("#l-tel").value,salario:$("#l-sal").value,proyecto_interes:$("#l-prop").value});
+  $("#lead-note").textContent=ok?"Recibido. Te escribimos por WhatsApp (demo: no se envía nada).":"No se pudo enviar. Escríbenos al 6253-1751.";});
+$$(".privlink").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();$("#priv").classList.add("open");}));
+$("#priv-ok").addEventListener("click",()=>$("#priv").classList.remove("open"));
+$("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
+render();
+/* navegación por secciones */
+const PAGES=["inicio","catalogo","cotizar","bono","videos","contacto"];
+function show(pg,noScroll){if(!PAGES.includes(pg))pg="inicio";$$("[data-page]").forEach(s=>s.hidden=s.dataset.page!==pg);
+  $$(".nav ul a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+pg));$$("video").forEach(v=>v.pause());
+  if(!noScroll)window.scrollTo(0,0);try{history.replaceState(null,"","#"+pg);}catch(e){}}
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const pg=a.getAttribute("href").slice(1);if(PAGES.includes(pg)){e.preventDefault();closeSheet();show(pg);}});
+show(PAGES.includes(location.hash.slice(1))?location.hash.slice(1):"inicio",true);
+</script>
+
+</body>
+</html>
