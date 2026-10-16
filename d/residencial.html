@@ -3,129 +3,269 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>C4 Realty · Casas en Chiriquí</title>
-<meta name="description" content="C4 Realty: casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón y Aguacatal. Cotiza tu vivienda.">
+<title>C4 Realty · Especialistas en casas en Chiriquí</title>
+<meta name="description" content="C4 Realty: especialistas en casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón y Aguacatal. Cotización, recorrido y asesoría gratis.">
 <link rel="icon" href="../img/logo.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@500;600;700;800;900&family=Figtree:wght@400;500;600;700&display=swap">
 <script>window.C4_BASE="../";</script>
 <script src="../js/c4.js"></script>
 <script>C4.tema("residencial");</script>
 <style>
 :root{
-  --sage:#dfe7dd;--pine:#22382e;--moss:#5d7a62;--linen:#f7f8f4;--brass:#c49a5b;--ink:#18241d;--mut:#5f6f63;--line:#c9d4c6;
+  --pine:#1f3a2e;--deep:#122219;--sage:#e3eadf;--mist:#eef2eb;--linen:#f8f9f5;--brass:#b8894a;--brass2:#d9b27a;--ink:#15201a;--mut:#5d6b61;--line:#d6ddd2;
   --t:"Urbanist",system-ui,sans-serif;--b:"Figtree",system-ui,sans-serif;
-  --f-bg:#f7f8f4;--f-fg:#18241d;--f-mut:#5f6f63;--f-line:#d5ddd2;--f-soft:#e9eee6;--f-acc:#22382e;--f-acc-ink:#fff;--f-title:var(--t);--f-body:var(--b);--f-media:#22382e;
+  --sh:0 1px 2px rgba(18,34,25,.06),0 12px 32px -12px rgba(18,34,25,.18);
+  --f-bg:#f8f9f5;--f-fg:#15201a;--f-mut:#5d6b61;--f-line:#d6ddd2;--f-soft:#eef2eb;--f-acc:#1f3a2e;--f-acc-ink:#fff;--f-title:var(--t);--f-body:var(--b);--f-media:#122219;
 }
 *{box-sizing:border-box}html{scroll-behavior:smooth;overflow-x:clip}
-body{margin:0;background:var(--sage);color:var(--ink);font:400 16px/1.6 var(--b)}
-h1,h2,h3{font-family:var(--t);line-height:1.05;margin:0;letter-spacing:-.01em}
+body{margin:0;background:var(--linen);color:var(--ink);font:400 16px/1.6 var(--b);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--t);line-height:1.04;margin:0;letter-spacing:-.015em}
 a{color:inherit}img{display:block;max-width:100%}button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--brass);outline-offset:3px}
-.w{max-width:1200px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
-/* barra */
-.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--sage) 88%,transparent);backdrop-filter:blur(10px)}
-.top .w{display:flex;align-items:center;justify-content:space-between;gap:16px;height:74px}
-.top img{height:30px;filter:brightness(0) saturate(100%) invert(17%) sepia(12%) saturate(1347%) hue-rotate(95deg) brightness(93%)}
-.top nav{display:flex;gap:26px;font-weight:600}.top nav a{text-decoration:none;opacity:.8}.top nav a:hover{opacity:1}
-.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:12px 22px;font-weight:700;text-decoration:none;border:1.5px solid var(--pine);background:transparent;cursor:pointer}
-.pill.dark{background:var(--pine);color:#fff}.pill.wa{background:#25d366;border-color:#25d366;color:#05230f}
-@media (max-width:820px){.top nav{display:none}}
-/* portada: arco con el titular y banda de fotos */
-.hero{padding:26px 0 0;text-align:center}
-.arch{position:relative;margin:0 auto;max-width:880px;border:1.5px solid var(--pine);border-radius:420px 420px 0 0;border-bottom:0;padding:clamp(54px,8vw,92px) clamp(20px,6vw,90px) 40px}
-.arch h1{font-size:clamp(2.3rem,6vw,4.6rem);font-weight:800;text-wrap:balance}
-.arch p{max-width:56ch;margin:18px auto 26px;color:var(--mut);font-size:1.05rem}
-.arch .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.arcos{position:relative;margin:0 calc(50% - 50vw);overflow:hidden;padding:4px 0 6px;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.pista{display:flex;gap:22px;width:max-content;animation:desliza var(--dur,60s) linear infinite}
-.arcos:hover .pista,.arcos:focus-within .pista{animation-play-state:paused}
-@keyframes desliza{to{transform:translateX(-50%)}}
-.arco{flex:none;width:clamp(200px,19vw,270px);display:grid;gap:10px;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit}
-.arco .ph{aspect-ratio:3/4;border-radius:200px 200px 20px 20px}
-.arco b{font-family:var(--t);font-size:1.1rem}.arco span{color:var(--mut);font-size:.9rem}
-@media (prefers-reduced-motion:reduce){.pista{animation:none}.arcos{overflow-x:auto}}
-/* zonas */
-.zonas{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:34px 0 10px}
-.zonas button{border:1.5px solid var(--line);background:var(--linen);border-radius:999px;padding:10px 18px;font-weight:600;cursor:pointer}
-.zonas button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#fff}
-.zonas small{opacity:.65;margin-left:6px}
+.w{max-width:1240px;margin:0 auto;padding:0 max(18px,env(safe-area-inset-left))}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:999px;padding:14px 24px;font-weight:700;text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:background .2s,transform .2s,box-shadow .2s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--pine);color:#fff}.btn.pri:hover{background:var(--deep);box-shadow:var(--sh)}
+.btn.out{border-color:var(--pine);color:var(--pine);background:transparent}.btn.out:hover{background:var(--pine);color:#fff}
+.btn.gold{background:var(--brass);color:#fff}.btn.gold:hover{background:#a2763d}
+.btn.wa{background:#25d366;color:#05230f}
+/* barra superior */
+.util{background:var(--deep);color:#c8d4cb;font-size:.85rem}
+.util .w{display:flex;justify-content:space-between;gap:16px;height:38px;align-items:center}
+.util a{text-decoration:none}.util span{display:inline-flex;gap:18px}
+@media (max-width:700px){.util .r{display:none}}
+.top{position:sticky;top:0;z-index:40;background:rgba(248,249,245,.92);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.sh{border-color:var(--line)}
+.top .w{display:flex;align-items:center;justify-content:space-between;gap:18px;height:78px}
+.top img{height:32px;filter:brightness(0) saturate(100%) invert(18%) sepia(17%) saturate(1100%) hue-rotate(96deg) brightness(92%)}
+.top nav{display:flex;gap:28px;font-weight:600;font-size:.97rem}.top nav a{text-decoration:none;color:#2c3a31}.top nav a:hover{color:var(--brass)}
+@media (max-width:980px){.top nav{display:none}}
+/* portada */
+.hero{padding:48px 0 70px;background:radial-gradient(120% 90% at 85% 10%,var(--sage) 0%,var(--linen) 62%)}
+.hero .w{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(2.7rem,5.6vw,5.3rem);font-weight:900;text-wrap:balance;color:var(--deep)}
+.hero .lead{font-size:1.18rem;color:var(--mut);max-width:44ch;margin:22px 0 30px}
+.buscar{background:#fff;border-radius:24px;box-shadow:var(--sh);padding:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:6px;align-items:stretch;border:1px solid var(--line)}
+.buscar label{display:grid;gap:2px;padding:8px 14px;border-radius:16px;font-size:.78rem;color:var(--mut);font-weight:600}
+.buscar label:hover{background:var(--mist)}
+.buscar select{border:0;background:transparent;font-weight:700;color:var(--ink);font-size:.98rem;padding:0;appearance:none;cursor:pointer}
+.buscar .btn{border-radius:18px;padding:14px 22px}
+@media (max-width:720px){.buscar{grid-template-columns:1fr 1fr}.buscar .btn{grid-column:1/-1}}
+.trust{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:22px;color:#33443a;font-weight:600;font-size:.95rem}
+.trust span{display:inline-flex;gap:8px;align-items:center}.trust svg{color:var(--brass)}
+.vis{position:relative;display:grid;grid-template-columns:1fr .62fr;gap:16px;align-items:end}
+.arch{position:relative;border-radius:400px 400px 28px 28px;overflow:hidden;aspect-ratio:3/4;background:var(--sage);box-shadow:var(--sh)}
+.arch img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:0;transition:opacity 1.1s ease}
+.arch img.on{opacity:1}
+.arch.small{aspect-ratio:3/4.4;margin-bottom:40px}
+.flot{position:absolute;left:-28px;bottom:34px;background:#fff;border-radius:18px;box-shadow:var(--sh);padding:14px 18px;display:grid;gap:2px;min-width:230px;cursor:pointer;border:1px solid var(--line);text-align:left}
+.flot small{color:var(--mut);font-weight:600}.flot b{font-family:var(--t);font-size:1.15rem}.flot .p{font-family:var(--t);font-weight:800;color:var(--pine);font-size:1.25rem}
+.flot .p s{font-family:var(--b);font-size:.85rem;color:var(--mut);font-weight:500;margin-left:6px}
+@media (max-width:980px){.hero .w{grid-template-columns:1fr}.vis{max-width:560px}.flot{left:12px}}
+/* bancos */
+.bancos{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}
+.bancos .w{display:flex;align-items:center;gap:36px;flex-wrap:wrap;justify-content:space-between;padding-top:22px;padding-bottom:22px}
+.bancos p{margin:0;color:var(--mut);font-weight:600;font-size:.92rem}
+.bancos ul{display:flex;gap:clamp(18px,4vw,56px);list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.bancos li{font-family:var(--t);font-weight:800;font-size:1.25rem;color:#7b887f;letter-spacing:-.01em}
+/* encabezados de sección */
+.sec{padding:96px 0}
+.sh2{display:flex;justify-content:space-between;align-items:end;gap:22px;flex-wrap:wrap;margin-bottom:40px}
+.sh2 h2{font-size:clamp(2.1rem,4.2vw,3.4rem);font-weight:800;color:var(--deep);max-width:16ch}
+.sh2 p{margin:0;max-width:44ch;color:var(--mut);font-size:1.05rem}
 /* ofertas */
-.of{margin-top:70px;background:var(--pine);color:#eef3ec;border-radius:48px 48px 0 0;padding:70px 0 80px}
-.head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:34px}
-.head h2{font-size:clamp(2rem,4vw,3rem);font-weight:800}.head p{max-width:46ch;margin:0;opacity:.8}
-.ofl{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:24px}
-/* tarjetas con foto en arco */
-.card{display:grid;gap:14px;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit}
-.ph{position:relative;aspect-ratio:4/5;border-radius:200px 200px 22px 22px;overflow:hidden;background:#c9d4c6}
+.of{background:var(--pine);color:#eef3ec;border-radius:44px;margin:0 max(10px,calc((100vw - 1320px)/2));padding:84px 0}
+.of>.w{display:grid;grid-template-columns:minmax(260px,.75fr) 2fr;gap:48px;align-items:center}.of .sh2{flex-direction:column;align-items:flex-start;margin:0}.of .sh2 h2{color:#fff}@media (max-width:980px){.of>.w{grid-template-columns:1fr;gap:30px}}.of .sh2 p{color:#c7d4c9}
+.ofl{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}
+/* tarjetas */
+.card{display:grid;gap:0;text-align:left;background:#fff;border:1px solid var(--line);border-radius:26px;padding:12px;cursor:pointer;color:var(--ink);transition:transform .25s,box-shadow .25s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--sh)}
+.of .card{border-color:transparent}
+.ph{position:relative;aspect-ratio:4/5;border-radius:200px 200px 16px 16px;overflow:hidden;background:var(--sage)}
 .ph img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:opacity .2s}
-.ph .tg{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:var(--brass);color:#1d150a;border-radius:999px;padding:6px 14px;font-weight:700;font-size:.85rem;white-space:nowrap}
-.card h3{font-size:1.45rem;font-weight:700}
-.meta{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-.meta .z{opacity:.75}.pr{font-family:var(--t);font-weight:800;font-size:1.35rem}.pr s{font-family:var(--b);font-weight:500;font-size:.9rem;opacity:.6;margin-left:6px}
-.spec{font-size:.92rem;opacity:.8}
+.badge{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;flex-wrap:wrap}
+.badge span{background:#fff;color:var(--deep);border-radius:999px;padding:5px 11px;font-weight:700;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.badge span.d{background:#c2412d;color:#fff}
+.cb{padding:16px 8px 6px;display:grid;gap:10px}
+.cb .z{display:flex;gap:6px;align-items:center;color:var(--mut);font-size:.9rem;font-weight:600}
+.cb h3{font-size:1.4rem;font-weight:800}
+.ic{display:flex;gap:16px;flex-wrap:wrap;color:#3c4a41;font-size:.9rem;padding-top:10px;border-top:1px solid var(--line)}
+.ic span{display:inline-flex;gap:6px;align-items:center}
+.cf{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pr{font-family:var(--t);font-weight:800;font-size:1.45rem;color:var(--pine)}.pr small{font-family:var(--b);font-size:.78rem;color:var(--mut);font-weight:600;display:block;line-height:1}
+.pr s{font-family:var(--b);font-weight:500;font-size:.85rem;color:var(--mut);margin-left:6px}
+.go{width:42px;height:42px;border-radius:50%;background:var(--mist);display:grid;place-items:center;flex:none}
+.card:hover .go{background:var(--pine);color:#fff}
 /* catálogo */
-.cat{background:var(--linen);padding:80px 0}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 28px}
-@media (max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}@media (max-width:600px){.grid{grid-template-columns:1fr}}
-/* cifras reales del catálogo */
-.cifras{display:grid;grid-template-columns:repeat(4,1fr);border-top:1.5px solid var(--pine);border-bottom:1.5px solid var(--pine)}
-.cifras div{padding:26px 18px;border-left:1.5px solid var(--pine)}.cifras div:first-child{border-left:0}
-.cifras b{display:block;font-family:var(--t);font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:800;line-height:1}.cifras span{color:var(--mut)}
-@media (max-width:760px){.cifras{grid-template-columns:repeat(2,1fr)}.cifras div:nth-child(3){border-left:0}.cifras div:nth-child(n+3){border-top:1.5px solid var(--pine)}}
-.sec{padding:80px 0}
-/* pasos (es una secuencia real) */
-.pasos{display:grid;grid-template-columns:repeat(7,1fr);gap:0;counter-reset:p}
-.pasos li{list-style:none;padding:0 16px 0 0;position:relative}
-.pasos li::before{counter-increment:p;content:counter(p);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--pine);color:#fff;font-family:var(--t);font-weight:800;margin-bottom:14px}
-.pasos li::after{content:"";position:absolute;top:22px;left:52px;right:8px;height:1.5px;background:var(--pine);opacity:.35}
+.tool{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:30px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:.93rem}
+.chips button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#fff}
+.chips small{opacity:.6;margin-left:5px}
+.tool select{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-weight:600}
+.cnt{color:var(--mut);font-weight:600;font-size:.92rem;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+@media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:640px){.grid{grid-template-columns:1fr}}
+.empty{grid-column:1/-1;padding:40px;text-align:center;color:var(--mut);background:#fff;border-radius:22px;border:1px dashed var(--line)}
+/* por qué */
+.why{background:var(--sage)}
+.wg{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:22px}
+.wbig{grid-row:span 2;background:var(--deep);color:#e6ede7;border-radius:30px;padding:40px;display:flex;flex-direction:column;justify-content:space-between;gap:30px;min-height:420px;position:relative;overflow:hidden}
+.wbig b{font-family:var(--t);font-size:clamp(5rem,10vw,8rem);line-height:.85;font-weight:900;color:var(--brass2)}
+.wbig h3{font-size:1.8rem;font-weight:800;color:#fff}
+.wbig p{margin:0;color:#b9c7bd}
+.wc{background:#fff;border-radius:26px;padding:28px;display:grid;gap:12px;align-content:start;border:1px solid var(--line)}
+.wc .ico{width:48px;height:48px;border-radius:14px;background:var(--mist);color:var(--pine);display:grid;place-items:center}
+.wc .ico svg{width:24px;height:24px}
+.wc h3{font-size:1.25rem;font-weight:800}.wc p{margin:0;color:var(--mut)}
+@media (max-width:980px){.wg{grid-template-columns:1fr 1fr}.wbig{grid-row:auto;grid-column:1/-1;min-height:0}}@media (max-width:600px){.wg{grid-template-columns:1fr}}
+/* zonas */
+.zg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.zt{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:1/1;border:0;padding:0;cursor:pointer;text-align:left;color:#fff;background:var(--deep)}
+.zt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 88%;transition:transform .8s ease}
+.zt:hover img{transform:scale(1.05)}
+.zt div{position:absolute;inset:auto 0 0 0;padding:60px 20px 18px;background:linear-gradient(transparent,rgba(12,24,17,.9))}
+.zt b{display:block;font-family:var(--t);font-size:1.45rem;font-weight:800}.zt span{font-size:.92rem;color:#d8e2da}
+@media (max-width:980px){.zg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* cifras */
+.cifras{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:28px;border:1px solid var(--line)}
+.cifras div{padding:30px 26px;border-left:1px solid var(--line)}.cifras div:first-child{border-left:0}
+.cifras b{display:block;font-family:var(--t);font-size:clamp(2rem,3.6vw,2.9rem);font-weight:900;line-height:1;color:var(--pine)}.cifras span{color:var(--mut);font-weight:600}
+@media (max-width:760px){.cifras{grid-template-columns:repeat(2,1fr)}.cifras div:nth-child(3){border-left:0}.cifras div:nth-child(n+3){border-top:1px solid var(--line)}}
+/* pasos */
+.pasos{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;counter-reset:p;padding:0;margin:0}
+.pasos li{list-style:none;padding:0 18px 0 0;position:relative}
+.pasos li::before{counter-increment:p;content:counter(p);display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#fff;border:1.5px solid var(--pine);color:var(--pine);font-family:var(--t);font-weight:900;font-size:1.1rem;margin-bottom:16px;position:relative;z-index:1}
+.pasos li:last-child::before{background:var(--pine);color:#fff}
+.pasos li::after{content:"";position:absolute;top:24px;left:48px;right:0;height:1.5px;background:var(--line)}
 .pasos li:last-child::after{display:none}
-.pasos b{display:block;font-family:var(--t);font-size:1.1rem}.pasos span{color:var(--mut);font-size:.92rem}
-@media (max-width:900px){.pasos{grid-template-columns:1fr 1fr;gap:26px}.pasos li::after{display:none}}
+.pasos b{display:block;font-family:var(--t);font-size:1.12rem;font-weight:800}.pasos span{color:var(--mut);font-size:.92rem}
+@media (max-width:980px){.pasos{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.pasos li::after{display:none}}
+/* bono */
+.bono{background:var(--deep);color:#e6ede7;border-radius:36px;padding:clamp(30px,5vw,64px);display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+.bono h2{font-size:clamp(2.2rem,4.4vw,3.6rem);font-weight:900;color:#fff}.bono h2 em{font-style:normal;color:var(--brass2)}
+.bono ul{margin:20px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.bono li{display:flex;gap:10px}.bono li svg{color:var(--brass2);margin-top:3px}
+.bl{display:grid;gap:10px}
+.bl button{display:flex;justify-content:space-between;gap:12px;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 18px;color:#fff;cursor:pointer;text-align:left}
+.bl button:hover{background:rgba(255,255,255,.12)}.bl b{font-family:var(--t);font-size:1.05rem}.bl span{color:#b9c7bd;font-size:.88rem}.bl .p{font-family:var(--t);font-weight:800;color:var(--brass2)}
+@media (max-width:900px){.bono{grid-template-columns:1fr}}
 /* contacto */
-.ct{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-.ct .ph{aspect-ratio:4/5}
-form.f{background:var(--linen);border-radius:28px;padding:30px;display:grid;gap:14px}
-form.f label{display:grid;gap:6px;font-weight:600;font-size:.9rem}
-form.f input,form.f select{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px}
+.ct{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}.ct>*{min-width:0}
+.ct h2{font-size:clamp(2.2rem,4.4vw,3.6rem);font-weight:900;color:var(--deep)}
+.cl{margin:26px 0 0;padding:0;list-style:none;display:grid;gap:14px}
+.cl li{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.cl .ico{width:44px;height:44px;border-radius:12px;background:var(--mist);color:var(--pine);display:grid;place-items:center;flex:none}
+.cl small{display:block;color:var(--mut);font-weight:600}.cl a{font-weight:700;text-decoration:none;font-size:1.05rem}
+form.f{background:#fff;border-radius:30px;padding:34px;display:grid;gap:14px;border:1px solid var(--line);box-shadow:var(--sh)}
+form.f h3{font-size:1.6rem;font-weight:800}
+form.f label{display:grid;gap:6px;font-weight:600;font-size:.88rem;color:#33443a}
+form.f input,form.f select{width:100%;min-width:0;border:1px solid var(--line);background:var(--linen);border-radius:14px;padding:13px 14px;font-size:1rem}
+form.f input:focus,form.f select:focus{border-color:var(--pine);outline:none;box-shadow:0 0 0 3px rgba(31,58,46,.12)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
-@media (max-width:820px){.ct{grid-template-columns:1fr}.ct .ph{display:none}}
-footer{background:var(--pine);color:#cfdccd;padding:40px 0}
-footer .w{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
-footer img{height:26px;filter:brightness(0) invert(1)}
+.fine{font-size:.82rem;color:var(--mut);margin:0}
+@media (max-width:900px){.ct{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+/* pie */
+footer{background:var(--deep);color:#b9c7bd;padding:70px 0 30px}
+.fg{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:34px}
+footer img{height:30px;filter:brightness(0) invert(1);margin-bottom:16px}
+footer h4{font-family:var(--b);font-size:.95rem;color:#fff;margin-bottom:14px;font-weight:700}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}footer a{text-decoration:none}footer a:hover{color:#fff}
+footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}footer button:hover{color:#fff}
+.fb{border-top:1px solid rgba(255,255,255,.1);margin-top:50px;padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.86rem}
+@media (max-width:820px){.fg{grid-template-columns:1fr 1fr}}
 .wa-f{position:fixed;right:18px;bottom:18px;z-index:50;width:58px;height:58px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.25)}
-.empty{padding:30px;text-align:center;color:var(--mut)}
-@media (max-width:560px){.top .pill{display:none}.arco{width:62vw}.arch{border-radius:300px 300px 0 0}}
+@media (max-width:640px){
+ .top .btn{display:none}.sec{padding:64px 0}.of{border-radius:28px;padding:56px 0}
+ .vis{grid-template-columns:1fr}.arch.small{display:none}.arch{aspect-ratio:4/4.6}.flot{left:12px;bottom:14px;min-width:0}
+ .ofl{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:84%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:none}.ofl::-webkit-scrollbar{display:none}.ofl .card{scroll-snap-align:start}
+ .grid{gap:14px}.grid .badge span:not(.d){display:none}
+ .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:0 18px 4px;flex:1 1 100%}.chips::-webkit-scrollbar{display:none}.chips button{flex:none}
+ .cifras b{font-size:1.75rem;white-space:nowrap}.cifras div{padding:22px 18px}
+ .wc{padding:22px}.wbig{padding:30px}
+ .grid .card{grid-template-columns:40% 1fr;padding:10px;border-radius:20px;align-items:center}
+ .grid .ph{aspect-ratio:3/4;border-radius:90px 90px 12px 12px}.grid .badge{left:6px;bottom:6px}.grid .badge span{font-size:.68rem;padding:3px 7px}
+ .grid .cb{padding:4px 4px 4px 14px;gap:6px}.grid .cb h3{font-size:1.12rem}.grid .pr{font-size:1.15rem}.grid .pr s{display:block;margin:0}.grid .go{display:none}
+ .grid .ic{gap:4px 10px;font-size:.8rem;padding-top:8px}.grid .ic svg{width:15px;height:15px}.grid .cb .z{font-size:.8rem}
+ .zg{gap:12px}.zt b{font-size:1.15rem}.zt div{padding:40px 14px 12px}.zt span{font-size:.8rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header class="top"><div class="w"><a href="#inicio" aria-label="C4 Realty, inicio"><img src="../img/logo.png" alt="C4 Realty"></a>
-  <nav aria-label="Secciones"><a href="#ofertas">Ofertas</a><a href="#casas">Casas</a><a href="#pasos">Cómo comprar</a><a href="#contacto">Contacto</a></nav>
-  <a class="pill dark" href="#contacto">Agendar recorrido</a></div></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-cama" viewBox="0 0 24 24"><path d="M3 18V7M3 13h18v5M21 18v-3a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/></symbol>
+ <symbol id="i-bano" viewBox="0 0 24 24"><path d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2zM6 12V5a2 2 0 0 1 3.5-1.3M7 19l-1 2M17 19l1 2"/></symbol>
+ <symbol id="i-lote" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h4M16 4v4M20 15h-4M9 20v-4"/></symbol>
+ <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+ <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.6 2.5L16 9.5"/></symbol>
+ <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+ <symbol id="i-banco" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></symbol>
+ <symbol id="i-ruta" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></symbol>
+ <symbol id="i-regalo" viewBox="0 0 24 24"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7S10.5 3 8 3.5 7 7 12 7zm0 0s1.5-4 4-3.5S17 7 12 7z"/></symbol>
+ <symbol id="i-tel" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+ <symbol id="i-mail" viewBox="0 0 24 24"><path d="M3 6h18v12H3z"/><path d="m3 7 9 6 9-6"/></symbol>
+ <symbol id="i-ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8"/></symbol>
+</svg>
+<div class="util"><div class="w"><span><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></span><span class="r"><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">Instagram @c4realty1</a></span></div></div>
+<header class="top" id="top"><div class="w"><a href="#inicio" aria-label="C4 Realty, inicio"><img src="../img/logo.png" alt="C4 Realty"></a>
+  <nav aria-label="Secciones"><a href="#casas">Casas</a><a href="#ofertas">Ofertas</a><a href="#zonas">Zonas</a><a href="#bono">Bono Pa' Ti</a><a href="#pasos">Cómo comprar</a><a href="#contacto">Contacto</a></nav>
+  <a class="btn pri" href="#contacto">Cotizar gratis</a></div></header>
 
 <main id="inicio">
-  <section class="hero w">
-    <div class="arch">
-      <h1>Cotizar es tu primer paso para obtener tu vivienda</h1>
-      <p>Somos especialistas en casas en Chiriquí. Compara proyectos, precios y planes de pago en un solo lugar.</p>
-      <div class="acts"><a class="pill dark" href="#casas">Ver las casas</a><a class="pill wa" href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a></div>
+  <section class="hero"><div class="w">
+    <div>
+      <h1>Especialistas en casas en Chiriquí</h1>
+      <p class="lead">Te acompañamos desde la cotización bancaria hasta la entrega de tus llaves. Compara proyectos, precios y planes de pago en un solo lugar.</p>
+      <form class="buscar" id="buscar" role="search" aria-label="Buscar casas">
+        <label>Zona<select id="b-zona"><option value="">Todas las zonas</option></select></label>
+        <label>Presupuesto<select id="b-pre"><option value="">Cualquiera</option><option value="0-70000">Hasta $70,000</option><option value="70000-80000">$70,000 – $80,000</option><option value="80000-0">Más de $80,000</option></select></label>
+        <label>Recámaras<select id="b-rec"><option value="">Cualquiera</option><option value="2">2 recámaras</option><option value="3">3 recámaras</option></select></label>
+        <button class="btn pri" type="submit">Buscar casas</button>
+      </form>
+      <div class="trust"><span><svg class="i"><use href="#i-ok"/></svg>Cotización gratis</span><span><svg class="i"><use href="#i-ok"/></svg>Recorrido gratis</span><span><svg class="i"><use href="#i-ok"/></svg>Asesoría gratuita</span></div>
     </div>
-    <div class="arcos" aria-label="Casas disponibles"><div class="pista" id="pista"></div></div>
-    <div class="zonas" id="zonas" role="group" aria-label="Filtrar por zona"></div>
-  </section>
+    <div class="vis" aria-label="Casas destacadas">
+      <div class="arch" id="arch1"></div>
+      <div class="arch small" id="arch2"></div>
+      <button class="flot" id="flot" type="button"></button>
+    </div>
+  </div></section>
 
-  <section class="of" id="ofertas" hidden><div class="w">
-    <div class="head"><h2>En oferta</h2><p>Casas con precio rebajado o de lanzamiento, por tiempo limitado.</p></div>
-    <div class="ofl" id="ofl"></div></div></section>
+  <section class="bancos" aria-label="Bancos"><div class="w"><p>Financiamiento y promociones con</p><ul><li>Banco General</li><li>Global Bank</li><li>Caja de Ahorros</li><li>Banco Nacional</li></ul></div></section>
 
-  <section class="cat" id="casas"><div class="w">
-    <div class="head"><h2 id="cat-t">Casas disponibles</h2><p>Toca una casa para ver fotos, precios por modelo, financiamiento y plano.</p></div>
+  <section class="sec" id="ofertas" hidden style="padding-bottom:0"><div class="of"><div class="w">
+    <div class="sh2"><h2>Ofertas de esta temporada</h2><p>Precios de lanzamiento y rebajas por tiempo limitado. Confirma la disponibilidad por WhatsApp.</p></div>
+    <div class="ofl" id="ofl"></div></div></div></section>
+
+  <section class="sec" id="casas"><div class="w">
+    <div class="sh2"><h2 id="cat-t">Casas disponibles</h2><p>Fotos reales, precio por modelo, financiamiento y plano de cada casa.</p></div>
+    <div class="tool"><div class="chips" id="chips" role="group" aria-label="Filtrar por zona"></div>
+      <label class="sr" style="position:absolute;left:-9999px" for="orden">Ordenar</label><select id="orden"><option value="">Recomendadas</option><option value="a">Precio: menor a mayor</option><option value="d">Precio: mayor a menor</option></select></div>
+    <div class="cnt" id="cnt" role="status"></div>
     <div class="grid" id="grid"></div></div></section>
 
-  <section class="sec w"><div class="cifras" id="cifras"></div></section>
+  <section class="sec why"><div class="w">
+    <div class="sh2"><h2>Por qué comprar con C4 Realty</h2><p>No vendemos una casa, vendemos hogares. Te ayudamos desde cero hasta tener tus llaves.</p></div>
+    <div class="wg">
+      <div class="wbig"><b>10</b><div><h3>años recorriendo el mercado de Chiriquí</h3><p style="margin-top:10px">Conocemos cada proyecto, cada promotora y cada banco, para llevarte a la casa que de verdad puedes comprar.</p></div><a class="btn gold" href="#contacto" style="align-self:flex-start">Hablar con un asesor</a></div>
+      <div class="wc"><div class="ico"><svg class="i"><use href="#i-banco"/></svg></div><h3>Precalificación rápida</h3><p>Envíanos tus documentos y en 5 minutos iniciamos tu precalificación con el banco.</p></div>
+      <div class="wc"><div class="ico"><svg class="i"><use href="#i-ruta"/></svg></div><h3>Recorridos sin costo</h3><p>Visitas solo los proyectos que están dentro de tu capacidad.</p></div>
+      <div class="wc"><div class="ico"><svg class="i"><use href="#i-regalo"/></svg></div><h3>Promociones de los bancos</h3><p>Gastos legales gratis y bonos según el proyecto y el banco que elijas.</p></div>
+      <div class="wc"><div class="ico"><svg class="i"><use href="#i-ok"/></svg></div><h3>Te guiamos en cada paso</h3><p>Cotización, apartado, documentos, aprobación y firma, hasta la entrega de tus llaves.</p></div>
+    </div></div></section>
 
-  <section class="sec w" id="pasos" style="padding-top:20px">
-    <div class="head"><h2>Cómo comprar tu casa</h2><p>En cada paso te guiamos hasta la entrega de tus llaves.</p></div>
-    <ol class="pasos" style="padding:0;margin:0">
+  <section class="sec" id="zonas"><div class="w">
+    <div class="sh2"><h2>Explora por zona</h2><p>Casas en los proyectos más buscados de Chiriquí.</p></div>
+    <div class="zg" id="zg"></div></div></section>
+
+  <section class="w" aria-label="El catálogo en cifras"><div class="cifras" id="cifras"></div></section>
+
+  <section class="sec" id="pasos"><div class="w">
+    <div class="sh2"><h2>Cómo comprar tu casa</h2><p>En cada uno de estos pasos te guiamos hasta la entrega de tus llaves.</p></div>
+    <ol class="pasos">
       <li><b>Cotización bancaria</b><span>Conoce tu capacidad.</span></li>
       <li><b>Recorrido</b><span>Visita los proyectos que están dentro de tu capacidad.</span></li>
       <li><b>Aparta</b><span>Tu lote favorito con el modelo de tu preferencia.</span></li>
@@ -133,48 +273,93 @@ footer img{height:26px;filter:brightness(0) invert(1)}
       <li><b>Aprobación</b><span>Aprobación bancaria lista.</span></li>
       <li><b>Contrato</b><span>Firma del contrato con la constructora.</span></li>
       <li><b>Abonos y llaves</b><span>Abonos del % indicado hasta la entrega de tus llaves.</span></li>
-    </ol>
-  </section>
+    </ol></div></section>
 
-  <section class="sec w" id="contacto">
-    <div class="ct"><div class="ph"><img id="ct-img" alt=""></div>
-      <form class="f" data-c4-contacto>
-        <h2 style="font-size:2.2rem;font-weight:800">Agenda tu recorrido</h2>
-        <p style="margin:0;color:var(--mut)">Te ayudamos desde cero: cotización, recorrido y asesoría gratis.</p>
-        <label>Nombre<input name="nombre" autocomplete="name" required></label>
-        <label>Teléfono o WhatsApp<input name="telefono" autocomplete="tel" required></label>
-        <label>Salario mensual aprox.<input name="salario" type="number" min="0" step="50"></label>
-        <label>Casa que te interesa<select name="propiedad" id="f-prop"><option value="">Aún no sé, ayúdame a elegir</option></select></label>
-        <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button class="pill dark" style="justify-content:center">Enviar</button>
-        <p data-msg style="margin:0;font-weight:600" role="status"></p>
-      </form></div>
-  </section>
+  <section class="w" id="bono"><div class="bono">
+    <div><h2>Bono Pa' Ti: <em>$3,000</em> para tu casa nueva</h2>
+      <ul><li><svg class="i"><use href="#i-ok"/></svg>Subsidio estatal no reembolsable de $3,000 para el abono inicial de una casa nueva (Decreto Ejecutivo N° 35).</li>
+      <li><svg class="i"><use href="#i-ok"/></svg>Solo para tu primera vivienda con interés preferencial.</li>
+      <li><svg class="i"><use href="#i-ok"/></svg>Aplica para viviendas con valor no mayor de $80,000.</li></ul></div>
+    <div><p style="margin:0 0 14px;color:#b9c7bd;font-weight:600">Casas de nuestro catálogo dentro del tope de $80,000</p><div class="bl" id="bl"></div></div>
+  </div></section>
+
+  <section class="sec" id="contacto"><div class="w ct">
+    <div><h2>Agenda tu recorrido</h2>
+      <p style="color:var(--mut);font-size:1.08rem;max-width:44ch;margin:18px 0 0">Te ayudamos desde cero. Déjanos tus datos y te escribimos por WhatsApp con tu cotización.</p>
+      <ul class="cl">
+        <li><div class="ico"><svg class="i"><use href="#i-tel"/></svg></div><div><small>WhatsApp</small><a href="https://wa.me/50762531751" target="_blank" rel="noopener">6253-1751</a></div></li>
+        <li><div class="ico"><svg class="i"><use href="#i-mail"/></svg></div><div><small>Correo</small><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></div></li>
+        <li><div class="ico"><svg class="i"><use href="#i-ig"/></svg></div><div><small>Instagram</small><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">@c4realty1</a></div></li>
+      </ul></div>
+    <form class="f" data-c4-contacto>
+      <h3>Recibe tu cotización</h3>
+      <div class="two"><label>Nombre<input name="nombre" autocomplete="name" required></label>
+      <label>Teléfono o WhatsApp<input name="telefono" autocomplete="tel" inputmode="tel" required></label></div>
+      <div class="two"><label>Correo (opcional)<input name="email" type="email" autocomplete="email"></label>
+      <label>Salario mensual aprox.<input name="salario" type="number" min="0" step="50" inputmode="numeric"></label></div>
+      <label>Casa que te interesa<select name="propiedad" id="f-prop"><option value="">Aún no sé, ayúdame a elegir</option></select></label>
+      <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn pri" style="width:100%">Enviar mis datos</button>
+      <p data-msg style="margin:0;font-weight:700;color:var(--pine)" role="status"></p>
+      <p class="fine">No te cobramos por cotizar ni por el recorrido.</p>
+    </form></div></section>
 </main>
-<footer><div class="w"><img src="../img/logo.png" alt="C4 Realty"><span>WhatsApp 6253-1751 · c4realty1@gmail.com · Instagram @c4realty1</span></div></footer>
+<footer><div class="w">
+  <div class="fg">
+    <div><img src="../img/logo.png" alt="C4 Realty"><p style="margin:0;max-width:34ch">Especialistas en casas en Chiriquí. No vendemos una casa, vendemos hogares.</p></div>
+    <div><h4>Zonas</h4><ul id="fz"></ul></div>
+    <div><h4>Navegación</h4><ul><li><a href="#casas">Casas</a></li><li><a href="#ofertas">Ofertas</a></li><li><a href="#bono">Bono Pa' Ti</a></li><li><a href="#pasos">Cómo comprar</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+    <div><h4>Contacto</h4><ul><li><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a></li><li><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></li><li><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">@c4realty1</a></li></ul></div>
+  </div>
+  <div class="fb"><span>© <span id="yr"></span> C4 Realty · Chiriquí, Panamá</span><span>Precios y promociones sujetos a confirmación.</span></div>
+</div></footer>
 <a class="wa-f" href="https://wa.me/50762531751" target="_blank" rel="noopener" aria-label="WhatsApp 6253-1751"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2 .6 2.8.5a2.4 2.4 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1c0-.1-.2-.2-.5-.3z"/></svg></a>
 <script>
+document.getElementById("yr").textContent=new Date().getFullYear();
+addEventListener("scroll",()=>document.getElementById("top").classList.toggle("sh",scrollY>10),{passive:true});
 (async()=>{
   const {$,$$,esc,fmt}=C4;const P=(await C4.cargar()).filter(p=>p.cat!=="Alquiler");
-  const card=p=>{const d=C4.desc(p);return `<button class="card" type="button" data-c4="${esc(p.id)}"><div class="ph"><img src="${esc(p.img[0])}" alt="${esc(p.n)}" loading="lazy">${d?`<span class="tg">−${d} %</span>`:p.tag?`<span class="tg">${esc(p.tag)}</span>`:""}</div>
-    <div class="meta"><h3>${esc(p.n)}</h3></div><div class="meta"><span class="z">${esc(p.zl||p.z)}</span><span class="pr">${esc(C4.precioTxt(p))}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</span></div><div class="spec">${C4.datos(p).map(esc).join(" · ")}</div></button>`;};
-  /* portada: fila de arcos que se desliza sola */
-  const arco=p=>`<button class="arco" type="button" data-c4="${esc(p.id)}"><div class="ph"><img src="${esc(p.img[0])}" alt="${esc(p.n)}, ${esc(p.z)}" loading="lazy"></div><b>${esc(p.n)}</b><span>${esc(p.z)} · ${esc(C4.precioTxt(p))}</span></button>`;
-  $("#pista").innerHTML=P.map(arco).join("")+P.map(arco).join("").replace(/<button /g,'<button tabindex="-1" aria-hidden="true" ');
-  $("#pista").style.setProperty("--dur",Math.max(30,P.length*6)+"s");
-  /* zonas y catálogo */
-  const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();let zona="";
-  const pintar=()=>{const L=P.filter(p=>!zona||p.z===zona);$("#cat-t").textContent=zona?"Casas en "+zona:"Casas disponibles";$("#grid").innerHTML=L.length?L.map(card).join(""):`<div class="empty">No hay casas en esa zona.</div>`;
-    $$("#zonas button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.z===zona)));};
-  $("#zonas").innerHTML=`<button type="button" data-z="">Todas<small>${P.length}</small></button>`+zs.map(z=>`<button type="button" data-z="${esc(z)}">${esc(z)}<small>${P.filter(p=>p.z===z).length}</small></button>`).join("");
-  $$("#zonas button").forEach(b=>b.onclick=()=>{zona=b.dataset.z;pintar();$("#casas").scrollIntoView({behavior:"smooth"});});
+  const ico=(id,t)=>`<span><svg class="i"><use href="#i-${id}"/></svg>${esc(t)}</span>`;
+  const g=(p,k)=>(p.kv.find(x=>x[0]===k)||[])[1];
+  const card=p=>{const d=C4.desc(p),r=g(p,"Recámaras"),b=g(p,"Baños"),l=g(p,"Lote")||g(p,"Lotes");
+    return `<button class="card" type="button" data-c4="${esc(p.id)}"><div class="ph"><img src="${esc(p.img[0])}" alt="${esc(p.n)}, ${esc(p.z)}" loading="lazy"><div class="badge">${d?`<span class="d">−${d} %</span>`:""}${p.tag?`<span>${esc(p.tag)}</span>`:""}</div></div>
+     <div class="cb"><div class="z"><svg class="i"><use href="#i-pin"/></svg>${esc(p.zl||p.z)}</div><h3>${esc(p.n)}</h3>
+      <div class="cf"><div class="pr">${p.desde?"<small>Desde</small>":""}${p.precio==null?"Consultar":fmt(p.precio)}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</div><span class="go" aria-hidden="true"><svg class="i"><use href="#i-flecha"/></svg></span></div>
+      <div class="ic">${r?ico("cama",r+" rec."):""}${b?ico("bano",b+(b==="1"?" baño":" baños")):""}${l?ico("lote",l):""}</div></div></button>`;};
+  /* portada */
+  const H=P.filter(p=>p.img.length);let hi=0;
+  const pone=(el,k)=>{const im=document.createElement("img");im.alt="";im.src=H[k%H.length].img[0];el.append(im);requestAnimationFrame(()=>im.classList.add("on"));const old=$$("img",el);if(old.length>2)old[0].remove();};
+  const gira=()=>{pone($("#arch1"),hi);pone($("#arch2"),hi+1);const p=H[hi%H.length];const d=C4.desc(p);
+    $("#flot").innerHTML=`<small>${esc(p.zl||p.z)}</small><b>${esc(p.n)}</b><span class="p">${esc(C4.precioTxt(p))}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</span>`;$("#flot").dataset.c4=p.id;hi++;};
+  gira();if(!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(gira,5200);
+  /* buscador y catálogo */
+  const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();
+  $("#b-zona").innerHTML+=zs.map(z=>`<option>${esc(z)}</option>`).join("");
+  const F={z:"",pre:"",rec:"",ord:""};
+  const pasa=p=>{if(F.z&&p.z!==F.z)return false;if(F.pre){const[a,b]=F.pre.split("-").map(Number);if(p.precio==null||p.precio<a||(b&&p.precio>b))return false;}if(F.rec&&!String(g(p,"Recámaras")||"").includes(F.rec))return false;return true;};
+  const pintar=()=>{let L=P.filter(pasa);if(F.ord)L=[...L].sort((a,b)=>((a.precio??1e9)-(b.precio??1e9))*(F.ord==="a"?1:-1));
+    $("#cat-t").textContent=F.z?"Casas en "+F.z:"Casas disponibles";$("#cnt").textContent=L.length+(L.length===1?" casa":" casas")+(F.pre||F.rec?" con tu búsqueda":"");
+    $("#grid").innerHTML=L.length?L.map(card).join(""):`<div class="empty">No hay casas con esa búsqueda. Prueba otra zona o presupuesto, o escríbenos y te ayudamos a encontrarla.</div>`;
+    $$("#chips button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.z===F.z)));$("#b-zona").value=F.z;};
+  $("#chips").innerHTML=`<button type="button" data-z="">Todas<small>${P.length}</small></button>`+zs.map(z=>`<button type="button" data-z="${esc(z)}">${esc(z)}<small>${P.filter(p=>p.z===z).length}</small></button>`).join("");
+  $$("#chips button").forEach(b=>b.onclick=()=>{F.z=b.dataset.z;pintar();});
+  $("#orden").onchange=e=>{F.ord=e.target.value;pintar();};
+  $("#buscar").onsubmit=e=>{e.preventDefault();F.z=$("#b-zona").value;F.pre=$("#b-pre").value;F.rec=$("#b-rec").value;pintar();$("#casas").scrollIntoView({behavior:"smooth"});};
+  const verZona=z=>{F.z=z;F.pre="";F.rec="";$("#b-pre").value="";$("#b-rec").value="";pintar();$("#casas").scrollIntoView({behavior:"smooth"});};
   pintar();
+  /* ofertas */
   const O=P.filter(p=>C4.desc(p)>0||p.destacada).sort((a,b)=>C4.desc(b)-C4.desc(a));if(O.length){$("#ofertas").hidden=false;$("#ofl").innerHTML=O.map(card).join("");}
-  /* cifras sacadas del catálogo */
+  /* zonas */
+  $("#zg").innerHTML=zs.map(z=>{const L=P.filter(p=>p.z===z),pr=L.filter(p=>p.precio).map(p=>p.precio);return `<button class="zt" type="button" data-z2="${esc(z)}"><img src="${esc(L[0].img[0])}" alt="" loading="lazy"><div><b>${esc(z)}</b><span>${L.length} ${L.length===1?"casa":"casas"}${pr.length?" · desde "+fmt(Math.min(...pr)):""}</span></div></button>`;}).join("");
+  $$("[data-z2]").forEach(b=>b.onclick=()=>verZona(b.dataset.z2));
+  $("#fz").innerHTML=zs.map(z=>`<li><button type="button" data-z3="${esc(z)}">${esc(z)}</button></li>`).join("");$$("[data-z3]").forEach(b=>b.onclick=()=>verZona(b.dataset.z3));
+  /* cifras */
   const pr=P.filter(p=>p.precio).map(p=>p.precio),lt=P.map(p=>p.lote).filter(Boolean);
   $("#cifras").innerHTML=[[P.length,"casas disponibles"],[zs.length,"zonas de Chiriquí"],[pr.length?fmt(Math.min(...pr)):"—","precio desde"],[lt.length?Math.min(...lt)+" m²":"—","lotes desde"]].map(([b,s])=>`<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
+  /* bono */
+  const B=P.filter(p=>p.precio&&p.precio<=80000).sort((a,b)=>a.precio-b.precio);
+  $("#bl").innerHTML=B.slice(0,6).map(p=>`<button type="button" data-c4="${esc(p.id)}"><div><b>${esc(p.n)}</b><br><span>${esc(p.zl||p.z)}</span></div><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("")||`<p>Escríbenos y te decimos qué proyectos aceptan el bono.</p>`;
   $("#f-prop").innerHTML+=P.map(p=>`<option value="${esc(p.id)}">${esc(p.n)} · ${esc(p.z)}</option>`).join("");
-  const ex=P.find(p=>p.img.length>1);$("#ct-img").src=ex?ex.img[1]:P[0].img[0];
   document.addEventListener("click",e=>{const c=e.target.closest("[data-c4]");if(c&&c.tagName==="BUTTON"){const p=P.find(x=>x.id===c.dataset.c4);if(p)C4.ficha(p);}});
   C4.hover(".card[data-c4]",P);
   C4.contacto($("[data-c4-contacto]"),P);C4.abrirDesdeUrl(P);
