@@ -181,6 +181,15 @@
     });
   }
 
+  /* aviso por correo de cada formulario (FormSubmit; la primera vez hay que activarlo desde el correo) */
+  const AVISO = "c4realty0@gmail.com";
+  async function avisar(d) {
+    if (d.sitio_web) return;
+    try {
+      await fetch("https://formsubmit.co/ajax/" + AVISO, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ _subject: "Nuevo cliente desde la página: " + (d.nombre || ""), _template: "table", _captcha: "false", Nombre: d.nombre || "", "Teléfono": d.telefono || "", Correo: d.email || "", "Salario mensual": d.ingreso_mensual || d.salario || "", "Casa que le interesa": d.interes || "Aún no sabe", "Página": location.href }) });
+    } catch (e) { }
+  }
   /* contacto */
   async function contacto(form, P) {
     const msg = form.querySelector("[data-msg]");
@@ -189,6 +198,7 @@
       const prop = P.find(p => p.id === f.get("propiedad"));
       const body = { nombre: String(f.get("nombre") || "").trim(), telefono: f.get("telefono"), email: f.get("email") || "", ingreso_mensual: f.get("salario") || "", propiedad: f.get("propiedad") || "", interes: prop ? prop.n + (prop.z ? " (" + prop.z + ")" : "") : "", origen: "web_contacto", sitio_web: f.get("sitio_web") || "" };
       if (!body.nombre || !body.telefono) { msg.textContent = "Escribe tu nombre y tu teléfono."; return; }
+      avisar(body);
       let ok = false; try { const r = await fetch(API + "/public/contacto", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); ok = r.ok; } catch (x) { }
       msg.textContent = ok ? "Recibido. Te escribimos pronto por WhatsApp." : "No se pudo enviar. Escríbenos al 6253-1751."; if (ok) form.reset();
     });
@@ -196,5 +206,5 @@
   /* enlace directo ?p=codigo */
   function abrirDesdeUrl(P) { try { const c = new URLSearchParams(location.search).get("p"); const p = c && P.find(x => x.id === c); if (p) ficha(p); } catch (e) { } }
 
-  window.C4 = { API, WA, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
+  window.C4 = { avisar, API, WA, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
 })();

@@ -785,7 +785,7 @@ $$("[data-copy]").forEach(b=>b.addEventListener("click",async()=>{try{await navi
 $("#lead-form").addEventListener("submit",async e=>{e.preventDefault();const [firstname,...rest]=$("#l-nombre").value.trim().split(" ");
   const ok=await hubspot("contacto",{firstname,lastname:rest.join(" "),phone:$("#l-tel").value,salario:$("#l-sal").value,proyecto_interes:$("#l-prop").selectedOptions[0]?.value?$("#l-prop").selectedOptions[0].text:""});
   const ok2=await c4Contacto({nombre:$("#l-nombre").value.trim(),telefono:$("#l-tel").value,ingreso_mensual:$("#l-sal").value,propiedad:$("#l-prop").value,interes:$("#l-prop").value?$("#l-prop").selectedOptions[0].text:"",origen:"web_contacto",sitio_web:$("#l-web")?$("#l-web").value:""});
-  $("#lead-note").textContent=ok2?"Recibido. Te escribimos pronto por WhatsApp.":"No se pudo enviar. Escríbenos al 6253-1751.";if(ok2)e.target.reset();});
+  if(window.C4)C4.avisar({nombre:$("#l-nombre").value.trim(),telefono:$("#l-tel").value,ingreso_mensual:$("#l-sal").value,interes:$("#l-prop").value?$("#l-prop").selectedOptions[0].text:""});$("#lead-note").textContent=ok2?"Recibido. Te escribimos pronto por WhatsApp.":"No se pudo enviar. Escríbenos al 6253-1751.";if(ok2)e.target.reset();});
 $$(".privlink").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();$("#priv").classList.add("open");}));
 $("#priv-ok").addEventListener("click",()=>$("#priv").classList.remove("open"));
 $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
