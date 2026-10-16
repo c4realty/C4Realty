@@ -349,6 +349,49 @@ footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px s
 .photo.hov .ph-dots{opacity:1}.photo.hov .ph-play{opacity:0}
 .ph-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 3px rgba(0,0,0,.5)}
 .ph-dots i.on{background:#fff;width:16px;border-radius:3px}
+
+/* ficha profesional (octubre 2026) */
+.panel{width:min(720px,100%);display:flex;flex-direction:column;overflow:auto;font-family:var(--font-body)}
+.panel .pbar{gap:10px}.panel .pbar-t{flex:1;min-width:0;font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s}
+.panel.scrolled .pbar-t{opacity:1}
+.panel .hero-img{position:relative;overflow:hidden;background:#0b1526;flex:none}
+.panel .hero-img::before{content:"";position:absolute;inset:-40px;background:var(--hb,none) center/cover;filter:blur(30px) brightness(.55) saturate(1.2);transform:scale(1.1)}
+.panel .hero-img img{position:relative;z-index:1;max-height:min(560px,62vh);width:auto;max-width:100%;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.panel .hi-nav{z-index:2}.panel .hi-tip{z-index:2}
+.hi-n{position:absolute;left:12px;bottom:12px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font-size:.78rem;font-weight:700;border-radius:999px;padding:5px 10px;font-variant-numeric:tabular-nums}
+.panel .strip{padding:12px 24px 0;gap:8px;scrollbar-width:none}.panel .strip::-webkit-scrollbar{display:none}
+.panel .strip button{width:64px;height:64px;border-radius:10px;opacity:.6;transition:opacity .2s}.panel .strip button.on,.panel .strip button:hover{opacity:1}
+.panel .pbody{padding:22px 24px 30px;gap:18px;flex:1}
+.panel .phead{display:grid;gap:8px}
+.panel .ploc{display:flex;align-items:center;gap:6px;color:#9a6b00;font-weight:700;margin:0}
+.panel .ploc::before{content:"";width:14px;height:14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center/contain no-repeat}
+.panel h2{font-size:clamp(1.7rem,3.4vw,2.3rem);line-height:1.1;letter-spacing:-.02em}
+.panel .pcard{border-radius:18px;padding:18px 20px;background:linear-gradient(135deg,#0b1526,#16294a);color:#fff;display:grid;gap:10px}
+.panel .pcard .pprice{color:#fff;font-size:clamp(2rem,4.4vw,2.6rem)}.panel .pcard .pprice small,.panel .pcard .pprice s{color:#9fb0c8}
+.psave,.pbono{display:flex;flex-wrap:wrap;gap:8px}.psave:empty,.pbono:empty{display:none}
+.psave span,.pbono span{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 12px;font-size:.84rem;font-weight:700}
+.psave span{background:#1f9d55;color:#fff}.pbono span{background:#f2b84b;color:#1b1406}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}.facts:empty{display:none}
+.facts div{border:1px solid var(--rule);border-radius:14px;padding:14px 12px;display:grid;gap:4px;justify-items:start;background:#fff}
+.facts svg{width:22px;height:22px;stroke:#0b1526;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.facts b{font-family:var(--font-display);font-size:1.15rem;line-height:1.1}.facts small{color:var(--ink2);font-size:.78rem;font-weight:600}
+@media (max-width:560px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.facts div:nth-child(3):last-child{grid-column:1/-1}}
+.panel .psec{border:1px solid var(--rule);border-radius:16px;padding:16px 18px;gap:10px;background:#fff}
+.panel .psec>h4{font-family:var(--font-display);font-size:1.05rem;letter-spacing:-.01em;text-transform:none;color:var(--ink);border:0;padding:0;display:flex;align-items:center;gap:10px}
+.panel .psec>h4::before{content:"";width:4px;height:18px;border-radius:2px;background:#f2b84b}
+.panel ul.plist.ok{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px}
+@media (max-width:560px){.panel ul.plist.ok{grid-template-columns:1fr}}
+.panel ul.plist.ok li::before{width:18px;height:18px;border-radius:50%;margin-top:.1em;background:#1f9d55 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+.panel .vrows div{align-items:center}.panel .vrows b{font-family:var(--font-display);font-size:1.02rem}
+.planos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,260px));gap:12px}
+.plano{border:1px solid var(--rule);border-radius:14px;overflow:hidden;display:grid;background:var(--soft)}
+.plano button.pv{border:0;padding:0;cursor:zoom-in;background:#fff;aspect-ratio:3/4;overflow:hidden}.plano button.pv img{width:100%;height:100%;object-fit:cover;transition:transform .4s}.plano button.pv:hover img{transform:scale(1.04)}
+.plano div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-weight:700;font-size:.88rem}.plano a{color:#1f5fbf;font-weight:600;text-decoration:none;font-size:.82rem}
+.pasesor{border-radius:16px;padding:16px 18px;background:#fff8e8;border:1px solid #f2d79b;display:grid;gap:3px;font-size:.9rem;color:#5c4200}.pasesor b{font-family:var(--font-display);font-size:1.05rem;color:#14171c}
+.pcta{position:sticky;bottom:0;z-index:3;display:flex;align-items:center;gap:8px;padding:12px 24px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--rule);flex:none}
+.pcta-p{flex:1;min-width:0;font-family:var(--font-display);font-weight:800;font-size:1.15rem;line-height:1.1}.pcta-p small{display:block;font-family:var(--font-body);font-weight:600;font-size:.74rem;color:var(--ink2)}
+.pcta .pbtn{padding:12px 18px}
+@media (max-width:560px){.panel .rows div{grid-template-columns:132px 1fr}.pcta-p small{white-space:nowrap}.panel .pbar-t{display:none}.panel .pbody{padding:18px 16px 24px}.pcta{padding:10px 16px}.panel .strip{padding:10px 16px 0}.pcta .pbtn{padding:11px 14px}}
 </style>
 <script>
 /* Plantilla de diseño elegida en el panel (se guarda para aplicarla sin parpadeo) */
@@ -584,23 +627,24 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
 <div class="drawer" id="modal" role="dialog" aria-modal="true" aria-label="Ficha de la propiedad">
   <div class="scrim" id="m-scrim"></div>
   <div class="panel" id="panel">
-    <div class="pbar"><button type="button" id="m-close">‹ Volver al catálogo</button><div class="pnav"><button type="button" id="m-prev" aria-label="Propiedad anterior">‹</button><button type="button" id="m-next" aria-label="Propiedad siguiente">›</button></div></div>
-    <div class="hero-img"><img id="m-img" alt=""><button type="button" class="hi-nav prev" id="m-ip" aria-label="Foto anterior">‹</button><button type="button" class="hi-nav next" id="m-in" aria-label="Foto siguiente">›</button><span class="hi-tip" id="m-tip">⤢ Toca para ver en grande</span></div>
+    <div class="pbar"><button type="button" id="m-close">‹ Volver al catálogo</button><span class="pbar-t" id="m-bt"></span><div class="pnav"><button type="button" id="m-share" aria-label="Copiar enlace de esta casa" title="Copiar enlace">⧉</button><button type="button" id="m-prev" aria-label="Propiedad anterior">‹</button><button type="button" id="m-next" aria-label="Propiedad siguiente">›</button></div></div>
+    <div class="hero-img"><img id="m-img" alt=""><button type="button" class="hi-nav prev" id="m-ip" aria-label="Foto anterior">‹</button><button type="button" class="hi-nav next" id="m-in" aria-label="Foto siguiente">›</button><span class="hi-n" id="m-n"></span><span class="hi-tip" id="m-tip">⤢ Ver en grande</span></div>
     <div class="strip" id="m-thumbs"></div>
     <div class="pbody">
-      <div><h2 id="m-title"></h2><div class="ploc" id="m-loc"></div></div>
-      <div class="pills" id="m-pills"></div>
-      <div class="pprice" id="m-price"></div>
-      <div class="psec"><h4>Características</h4><div class="rows" id="m-kv"></div></div>
-      <div class="psec" id="m-pts-sec"><h4>Lo que incluye</h4><ul class="plist" id="m-pts"></ul></div>
+      <div class="phead"><div class="ploc" id="m-loc"></div><h2 id="m-title"></h2><div class="pills" id="m-pills"></div></div>
+      <div class="pcard"><div class="pprice" id="m-price"></div><div class="psave" id="m-save"></div><div class="pbono" id="m-bono"></div></div>
+      <div class="facts" id="m-facts"></div>
+      <div class="psec" id="m-pts-sec"><h4>Lo que incluye</h4><ul class="plist ok" id="m-pts"></ul></div>
       <div class="psec"><h4>Precio y financiamiento</h4><div class="vrows" id="m-vr"></div><ul class="plist" id="m-pagos"></ul><div class="aviso" id="m-aviso"></div><div class="pact" style="margin-top:6px" id="m-quote-wrap"><button class="pbtn dark" type="button" id="m-quote">Cotizar esta casa</button></div></div>
-      <div class="psec" id="m-plano-sec"><h4>Plano</h4><div class="pact" id="m-plano"></div></div>
+      <div class="psec"><h4>Características</h4><div class="rows" id="m-kv"></div></div>
+      <div class="psec" id="m-plano-sec"><h4>Plano</h4><div class="planos" id="m-plano"></div></div>
       <div class="psec" id="m-vid-sec"><h4>Videos</h4><div id="m-vid"></div></div>
       <div class="psec"><h4>Ubicación</h4><div class="rows"><div><span>Zona</span><span id="m-zona"></span></div></div><div class="pact" id="m-map-wrap"><a class="pbtn" id="m-map" href="#" target="_blank" rel="noopener">Ver zona en Google Maps</a></div></div>
       <div class="psec" id="m-txt-sec"><h4>Información del proyecto</h4><div id="m-txt" style="display:grid;gap:8px"></div></div>
-      <div class="pact"><a class="pbtn pwa" id="m-wa" href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a></div>
+      <div class="pasesor"><b>¿Te interesa esta casa?</b><span>Cotización gratis · Recorrido gratis · Asesoría gratuita</span><span>WhatsApp 6253-1751</span></div>
       <div class="psrc" id="m-src"></div>
     </div>
+    <div class="pcta"><div class="pcta-p" id="m-cta-p"></div><button class="pbtn dark" type="button" id="m-cta-q">Cotizar</button><a class="pbtn pwa" id="m-wa" href="#" target="_blank" rel="noopener">WhatsApp</a></div>
   </div>
 </div>
 
@@ -714,13 +758,18 @@ $("#logout").addEventListener("click",()=>{try{localStorage.removeItem(RK);}catc
 let cur=null,ORDER=[];
 const CATC={Casa:"#2f6fd6",Terreno:"#b7791f",Finca:"#2f855a",Alquiler:"#1fa855"};
 let curI=0;
-function setImg(i){i=(i+cur.img.length)%cur.img.length;curI=i;$("#m-img").src=IMG[cur.img[i]];$("#m-ip").style.display=$("#m-in").style.display=cur.img.length>1?"":"none";$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
+function setImg(i){i=(i+cur.img.length)%cur.img.length;curI=i;$("#m-img").src=IMG[cur.img[i]];$(".panel .hero-img").style.setProperty("--hb",`url("${IMG[cur.img[i]]}")`);$("#m-n").textContent=cur.img.length>1?`${i+1} / ${cur.img.length}`:"";$("#m-ip").style.display=$("#m-in").style.display=cur.img.length>1?"":"none";$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
 function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;window.C4_CUR=id;if(window.C4)C4.vista(id);
   $$("#modal video").forEach(v=>v.pause());
   $("#m-thumbs").innerHTML=p.img.length>1?p.img.map((f,i)=>`<button type="button" data-i="${i}" aria-label="Foto ${i+1}"><img src="${IMG[f]}" alt=""></button>`).join(""):"";
   $("#m-thumbs").style.display=p.img.length>1?"":"none";
   $$("#m-thumbs button").forEach(b=>b.addEventListener("click",()=>setImg(+b.dataset.i)));setImg(0);
-  $("#m-title").textContent=p.n;$("#m-loc").textContent=zonaTxt(p);
+  $("#m-title").textContent=p.n;$("#m-loc").textContent=zonaTxt(p);$("#m-bt").textContent=p.n+" · "+(p.zl||p.z||"");
+  {const g=k=>(p.kv.find(x=>x[0]===k)||[])[1];const IC={cama:'<path d="M3 18V7M3 13h18v5M21 18v-3a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="10.5" r="1.6"/>',bano:'<path d="M4 12h16v2a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2zM6 12V5a2 2 0 0 1 3.5-1.3M7 19l-1 2M17 19l1 2"/>',lote:'<path d="M4 4h16v16H4zM4 9h4M16 4v4M20 15h-4M9 20v-4"/>',casa:'<path d="M3 11 12 4l9 7M5 10v10h14V10M10 20v-6h4v6"/>',auto:'<path d="M5 16V11l2-5h10l2 5v5M5 16h14M5 16v2M19 16v2M7.5 13h.01M16.5 13h.01"/>'};
+   const F=[["cama","Recámaras",g("Recámaras")],["bano","Baños",g("Baños")],["lote","Lote",g("Lote")||g("Lotes")],["casa","Construcción",(g("Construcción")||"").split(" (")[0]],["auto","Estacionamiento",g("Estacionamiento")||g("Garaje")]].filter(x=>x[2]).slice(0,4);
+   $("#m-facts").innerHTML=F.map(([i,l,v])=>`<div><svg viewBox="0 0 24 24">${IC[i]}</svg><b>${v}</b><small>${l}</small></div>`).join("");}
+  {const d=p.antes&&p.precio?p.antes-p.precio:0;$("#m-save").innerHTML=d>0?`<span>Ahorras ${fmt(d)} · −${Math.round(d/p.antes*100)} %</span>`:"";
+   const tope=window.C4?+C4.cfg().bono_tope_precio:80000,bm=window.C4?+C4.cfg().bono_monto:3000;$("#m-bono").innerHTML=p.cat==="Casa"&&p.precio&&p.precio<=tope?`<span>Puede aplicar al Bono Pa' Ti de ${fmt(bm)}</span>`:"";}
   $("#m-pills").innerHTML=`<span class="pill"><i style="background:${CATC[p.cat]}"></i>${p.cat==="Alquiler"?"Alquiler":p.cat}</span>`+(p.tag?`<span class="pill">${p.tag}</span>`:"")+`<span class="pill">Publicado ${fdate(p.f)}</span>`;
   $("#m-price").innerHTML=p.cat==="Alquiler"?`${fmt(p.renta)}<small>mensual</small>`:p.ptxt?`${p.ptxt}`:p.precio==null?`Consultar<small>precio por WhatsApp</small>`:`${fmt(p.precio)}${p.antes?`<s>${fmt(p.antes)}</s>`:""}<small>${p.desde?"precio desde":"precio de venta"}</small>`;
   $("#m-kv").innerHTML=p.kv.map(([k,v])=>`<div><span>${k}</span><span>${v}</span></div>`).join("");
@@ -728,13 +777,14 @@ function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;window.C4
   $("#m-vr").innerHTML=(p.vr||[]).map(([k,v])=>`<div><span>${k}</span><b>${fmt(v)}</b></div>`).join("");$("#m-vr").style.display=p.vr?"":"none";
   $("#m-pagos").innerHTML=p.pagos.map(x=>`<li>${x}</li>`).join("");
   $("#m-aviso").innerHTML=p.aviso?`<b>Importante:</b> ${p.aviso}`:"";$("#m-aviso").style.display=p.aviso?"":"none";
-  $("#m-plano").innerHTML=(p.plano||[]).map(([t,u],k)=>`<button type="button" class="pbtn" data-plano="${k}">📐 Ver ${t}</button>`).join("");$$("#m-plano [data-plano]").forEach(b=>b.onclick=()=>lbOpen(cur,cur.img.length+ +b.dataset.plano));$("#m-plano-sec").style.display=p.plano?"":"none";
-  $("#m-quote-wrap").style.display=p.cat==="Casa"&&p.precio?"":"none";
+  $("#m-plano").innerHTML=(p.plano||[]).map(([t,u],k)=>`<div class="plano"><button type="button" class="pv" data-plano="${k}" aria-label="Ver ${t}"><img src="${u.replace(/\.pdf$/i,".jpg")}" alt="${t}" loading="lazy"></button><div><span>${t}</span><a href="${u}" target="_blank" rel="noopener">PDF</a></div></div>`).join("");$$("#m-plano [data-plano]").forEach(b=>b.onclick=()=>lbOpen(cur,cur.img.length+ +b.dataset.plano));$("#m-plano-sec").style.display=p.plano?"":"none";
+  $("#m-quote-wrap").style.display=$("#m-cta-q").style.display=p.cat==="Casa"&&p.precio?"":"none";
+  $("#m-cta-p").innerHTML=p.precio==null?"Consultar<small>precio por WhatsApp</small>":`${fmt(p.precio)}<small>${p.desde?"precio desde":"precio de venta"}</small>`;
   const V=p.vids||[];$("#m-vid-sec").style.display=V.length?"":"none";
   $("#m-vid").innerHTML=V.length?`<div class="mvids">${V.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${v}.jpg" src="${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("")}</div>`:"";
   $("#m-zona").textContent=zonaTxt(p);$("#m-map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent((p.zl||p.z||"Chiriquí")+", Chiriquí, Panamá");$("#m-map-wrap").style.display=p.z?"":"none";
   const box=$("#m-txt");box.innerHTML="";$("#m-txt-sec").style.display=p.txt?"":"none";
-  if(p.txt){const d=document.createElement("details");d.open=true;const sm=document.createElement("summary");sm.textContent="Texto completo";const pp=document.createElement("p");pp.textContent=p.txt;d.append(sm,pp);box.append(d);}
+  if(p.txt){const d=document.createElement("details");d.open=false;const sm=document.createElement("summary");sm.textContent="Texto completo";const pp=document.createElement("p");pp.textContent=p.txt;d.append(sm,pp);box.append(d);}
   $("#m-wa").href=`https://wa.me/${window.C4?C4.WA:"50762531751"}?text=${encodeURIComponent("Hola C4 Realty, me interesa: "+p.n+" ("+zonaTxt(p)+").")}`;
   $("#m-src").innerHTML=`Información actualizada el ${fdate(p.f)}. Confirma precio y disponibilidad por WhatsApp.`;
   const k=ORDER.indexOf(p.id);$("#m-prev").disabled=k<=0;$("#m-next").disabled=k<0||k>=ORDER.length-1;
@@ -746,6 +796,9 @@ $("#m-next").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>=0
 document.addEventListener("keydown",e=>{if(!$("#modal").classList.contains("open")||$("#lb").classList.contains("open"))return;if(e.key==="Escape")closeSheet();if(e.key==="ArrowRight")$("#m-next").click();if(e.key==="ArrowLeft")$("#m-prev").click();});
 document.addEventListener("click",e=>{if(!e.target.closest(".grid"))return;const g=e.target.closest("[data-gal]");if(g){const p=P.find(x=>x.id===g.dataset.gal);if(p)lbOpen(p,0,true);return;}const o=e.target.closest("[data-open]");if(o){openSheet(o.dataset.open);return;}const q=e.target.closest("[data-quote]");if(q){setQ(q.dataset.quote);show("cotizar");}});
 $("#m-quote").addEventListener("click",()=>{closeSheet();setQ(cur.id);show("cotizar");});
+$("#m-cta-q").addEventListener("click",()=>$("#m-quote").click());
+$("#panel").addEventListener("scroll",()=>$("#panel").classList.toggle("scrolled",$("#panel").scrollTop>260),{passive:true});
+$("#m-share").addEventListener("click",async()=>{const u=new URL(location.href);u.search="?p="+encodeURIComponent(cur.id);u.hash="";try{await navigator.clipboard.writeText(u.href);toast("Enlace copiado");}catch(e){prompt("Copia el enlace:",u.href);}});
 
 /* cotizador (sin calculadora: muestra lo publicado y arma el WhatsApp) */
 const DOCS={asal:{t:"Documentos para asalariados",d:["Estatus permanente en tu trabajo","Mínimo 1 año de trabajo (hay excepciones; consultamos tu caso)","Cédula de identidad personal","Talonario o comprobante de pago quincenal","Ficha de la CSS (te llega por correo)","Carta de trabajo"],n:"Los documentos los aportas después de tu recorrido, cuando ya elegiste la mejor opción para ti y tu familia."},
