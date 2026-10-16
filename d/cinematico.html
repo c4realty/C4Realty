@@ -157,7 +157,7 @@ footer .w.fg{display:grid;align-items:start;grid-template-columns:1.4fr 1fr 1fr;
 <main>
  <section class="hero" id="inicio" aria-label="Portada">
   <div class="hcopy"><span class="eyb">Especialistas en casas en Chiriquí</span><h1>Casas en Chiriquí</h1>
-   <p>Cotizar es tu primer paso para obtener tu vivienda. Compara proyectos, precios y planes de pago en un solo lugar.</p>
+   <p><span data-cf="hero_titulo">Cotizar es tu primer paso para obtener tu vivienda</span>. Compara proyectos, precios y planes de pago en un solo lugar.</p>
    <div class="acts"><a class="btn gold" href="#casas">Ver las casas</a><a class="btn" href="#contacto">Agendar recorrido</a></div>
    <div class="cnt" id="cnt"></div></div>
   <div class="cols" id="cols" aria-label="Fotos de las casas"></div>
@@ -179,9 +179,9 @@ footer .w.fg{display:grid;align-items:start;grid-template-columns:1.4fr 1fr 1fr;
    <li><h3>Contigo hasta las llaves</h3><p>En cada uno de los pasos te guiamos hasta la entrega de tus llaves.</p></li>
   </ol></div></section>
  <section class="bono" id="bono" aria-label="Bono Pa' Ti"><div class="w">
-  <div><span class="eyb">Decreto Ejecutivo N° 35</span><h2>Bono Pa' Ti: <em>$3,000</em> para tu casa nueva</h2>
-   <ul><li>Subsidio estatal no reembolsable para el abono inicial de una casa nueva.</li><li>Solo para tu primera vivienda con interés preferencial.</li><li>Aplica para viviendas con valor no mayor de $80,000.</li></ul></div>
-  <div><p style="margin:0 0 6px;color:var(--fog)">Casas de nuestro catálogo dentro del tope de $80,000</p><div class="bl" id="bl"></div></div></div></section>
+  <div><span class="eyb">Decreto Ejecutivo N° 35</span><h2>Bono Pa' Ti: <em data-cf="bono_monto">$3,000</em> para tu casa nueva</h2>
+   <ul><li>Subsidio estatal no reembolsable para el abono inicial de una casa nueva.</li><li>Solo para tu primera vivienda con interés preferencial.</li><li>Aplica para viviendas con valor no mayor de <span data-cf="bono_tope_precio">$80,000</span>.</li></ul></div>
+  <div><p style="margin:0 0 6px;color:var(--fog)">Casas de nuestro catálogo dentro del tope de <span data-cf="bono_tope_precio">$80,000</span></p><div class="bl" id="bl"></div></div></div></section>
  <section class="idx w" id="indice"><h2>Todas las casas</h2><div class="zf" id="zf" role="group" aria-label="Filtrar por zona"></div>
   <table><thead><tr><th scope="col"></th><th scope="col">Modelo</th><th scope="col">Zona</th><th scope="col">Lote</th><th scope="col">Precio</th></tr></thead><tbody id="tb"></tbody></table></section>
  <section class="w" id="pasos" style="padding-top:20px"><h2 style="font-size:clamp(2.6rem,6vw,4.6rem);margin-bottom:40px">Cómo comprar tu casa</h2>
@@ -228,13 +228,13 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
     ${C4.desc(p)?`<span class="tg">−${C4.desc(p)} % · ${esc(p.tag||"Oferta")}</span>`:p.tag?`<span class="tg">${esc(p.tag)}</span>`:""}
     <div class="pr">${esc(C4.precioTxt(p))}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</div>
     ${p.kv.length?`<dl>${p.kv.slice(0,4).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`:""}
-    <div class="acts"><button class="btn gold" type="button" data-f="${esc(p.id)}">Ver la casa</button><a class="btn" href="${esc(C4.waProp(p))}" target="_blank" rel="noopener">Consultar</a></div></div></article>`).join("");
+    <div class="acts"><button class="btn gold" type="button" data-f="${esc(p.id)}">Ver la casa</button><a class="btn" href="${esc(C4.waProp(p))}" data-c4p="${esc(p.id)}" target="_blank" rel="noopener">Consultar</a></div></div></article>`).join("");
  document.getElementById("yr").textContent=new Date().getFullYear();
- $("#bl").innerHTML=P.filter(p=>p.precio&&p.precio<=80000).sort((a,b)=>a.precio-b.precio).slice(0,6).map(p=>`<button type="button" data-f="${esc(p.id)}"><span><b>${esc(p.n)}</b><small>${esc(p.zl||p.z)}</small></span><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("");
+ await C4.sitio;const TOPE=+C4.cfg().bono_tope_precio||80000;$("#bl").innerHTML=P.filter(p=>p.precio&&p.precio<=TOPE).sort((a,b)=>a.precio-b.precio).slice(0,6).map(p=>`<button type="button" data-f="${esc(p.id)}"><span><b>${esc(p.n)}</b><small>${esc(p.zl||p.z)}</small></span><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("");
  /* videos de Instagram */
  const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]],VNEW=[["aguacatal-vila-1","Recámara"],["aguacatal-vila-2","Baño"],["aguacatal-vila-3","Exterior"]];
  const vila=P.find(p=>p.id==="vila-aguacatal");
- $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+VNEW.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="../videos/${v}.jpg" src="../videos/${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("");
+ $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+(vila&&vila.vids.length?vila.vids.map(v=>[v,(VNEW.find(x=>v.endsWith("/"+x[0]))||[,""])[1]]):VNEW.map(([v,t])=>["../videos/"+v,t])).map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>${t?`<figcaption>${esc(t)}</figcaption>`:""}</figure>`).join("");
  if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
  $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div class="vt"><small>${esc(z)}</small>${esc(t)}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
  /* índice */

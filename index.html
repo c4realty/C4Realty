@@ -400,7 +400,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   <div class="wrap">
     <div>
       <div class="eyebrow">Casas · Terrenos · Fincas · Alquileres en Chiriquí</div>
-      <h1 style="margin-top:10px">Cotizar es tu primer paso para obtener tu vivienda</h1>
+      <h1 style="margin-top:10px" data-cf="hero_titulo">Cotizar es tu primer paso para obtener tu vivienda</h1>
       <p class="lead">Somos especialistas en casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón, Aguacatal y más: compara proyectos, precios y planes de pago en un solo lugar.</p>
       <div class="hero-ctas">
         <a class="btn btn-accent" href="#catalogo">Ver catálogo</a>
@@ -496,20 +496,20 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
 <section class="sec" id="bono" data-page="bono">
   <div class="wrap">
     <div class="sec-head">
-      <div><div class="eyebrow">Guía</div><h2>Bono Pa' Ti: $3,000 para tu casa nueva</h2></div>
+      <div><div class="eyebrow">Guía</div><h2>Bono Pa' Ti: <span data-cf="bono_monto">$3,000</span> para tu casa nueva</h2></div>
       <p class="muted">Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.</p>
     </div>
     <div class="bono">
       <div style="display:grid;gap:14px"><div class="vcard"><video controls playsinline preload="none" poster="videos/DeAvoR1RuE9.jpg" src="videos/DeAvoR1RuE9.mp4"></video><div class="vt"><small>Video</small>Caja de Ahorros confirma su participación</div></div></div>
       <div style="display:grid;gap:16px">
         <ul class="ticks">
-          <li>Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de $3,000 para el abono inicial de una casa nueva.</li>
+          <li>Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de <span data-cf="bono_monto">$3,000</span> para el abono inicial de una casa nueva.</li>
           <li>Solo para tu primera vivienda con interés preferencial.</li>
           <li>Aplica para viviendas con valor no mayor de $80,000.</li>
         </ul>
         <div class="banks">
           <div class="bank"><h3>Banco Nacional</h3><ul class="ticks"><li>Abono mínimo 2 %</li><li>Casas con permiso de ocupación</li><li>El bono se aplica al precio de venta</li><li>Se tramita en Panamá Conecta</li></ul></div>
-          <div class="bank"><h3>Caja de Ahorros</h3><ul class="ticks"><li>Sigues abonando el 3 % inicial</li><li>Los $3,000 reducen el precio base</li><li>Se solicita cuando la casa está para entrega inmediata</li></ul></div>
+          <div class="bank"><h3>Caja de Ahorros</h3><ul class="ticks"><li>Sigues abonando el 3 % inicial</li><li>Los <span data-cf="bono_monto">$3,000</span> reducen el precio base</li><li>Se solicita cuando la casa está para entrega inmediata</li></ul></div>
           <div class="bank"><h3>Banco General</h3><ul class="ticks"><li>Se suma al beneficio</li><li>La solicitud se hace con avance de obra</li></ul></div>
         </div>
         <div class="warn"><b>Actualización 14 de octubre:</b> algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.</div>
@@ -713,7 +713,7 @@ let cur=null,ORDER=[];
 const CATC={Casa:"#2f6fd6",Terreno:"#b7791f",Finca:"#2f855a",Alquiler:"#1fa855"};
 let curI=0;
 function setImg(i){i=(i+cur.img.length)%cur.img.length;curI=i;$("#m-img").src=IMG[cur.img[i]];$("#m-ip").style.display=$("#m-in").style.display=cur.img.length>1?"":"none";$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
-function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;
+function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;window.C4_CUR=id;if(window.C4)C4.vista(id);
   $$("#modal video").forEach(v=>v.pause());
   $("#m-thumbs").innerHTML=p.img.length>1?p.img.map((f,i)=>`<button type="button" data-i="${i}" aria-label="Foto ${i+1}"><img src="${IMG[f]}" alt=""></button>`).join(""):"";
   $("#m-thumbs").style.display=p.img.length>1?"":"none";
@@ -733,11 +733,11 @@ function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;
   $("#m-zona").textContent=zonaTxt(p);$("#m-map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent((p.zl||p.z||"Chiriquí")+", Chiriquí, Panamá");$("#m-map-wrap").style.display=p.z?"":"none";
   const box=$("#m-txt");box.innerHTML="";$("#m-txt-sec").style.display=p.txt?"":"none";
   if(p.txt){const d=document.createElement("details");d.open=true;const sm=document.createElement("summary");sm.textContent="Texto completo";const pp=document.createElement("p");pp.textContent=p.txt;d.append(sm,pp);box.append(d);}
-  $("#m-wa").href=`https://wa.me/50762531751?text=${encodeURIComponent("Hola C4 Realty, me interesa: "+p.n+" ("+zonaTxt(p)+").")}`;
+  $("#m-wa").href=`https://wa.me/${window.C4?C4.WA:"50762531751"}?text=${encodeURIComponent("Hola C4 Realty, me interesa: "+p.n+" ("+zonaTxt(p)+").")}`;
   $("#m-src").innerHTML=`Información actualizada el ${fdate(p.f)}. Confirma precio y disponibilidad por WhatsApp.`;
   const k=ORDER.indexOf(p.id);$("#m-prev").disabled=k<=0;$("#m-next").disabled=k<0||k>=ORDER.length-1;
   $("#modal").classList.add("open");document.body.style.overflow="hidden";$("#panel").scrollTop=0;}
-function closeSheet(){$$("#modal video").forEach(v=>v.pause());$("#modal").classList.remove("open");document.body.style.overflow="";}
+function closeSheet(){window.C4_CUR=null;$$("#modal video").forEach(v=>v.pause());$("#modal").classList.remove("open");document.body.style.overflow="";}
 $("#m-close").addEventListener("click",closeSheet);$("#m-scrim").addEventListener("click",closeSheet);
 $("#m-prev").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>0)openSheet(ORDER[k-1]);});
 $("#m-next").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>=0&&k<ORDER.length-1)openSheet(ORDER[k+1]);});
@@ -762,14 +762,14 @@ function pub(){const p=QP.find(x=>x.id===$("#c-prop").value);const box=$("#c-pub
   if(!p){box.innerHTML=`<p class="muted" style="font-size:.9rem">Sin problema: con tu ingreso te decimos qué proyectos están dentro de tu capacidad.</p>`;buildWA();return;}
   box.innerHTML=`<div class="pubhead"><img src="${IMG[p.img[0]]}" alt=""><div><b>${p.n}</b><span class="muted">${zonaTxt(p)}</span><span class="pubprice">${p.precio==null?"Precio: consultar":(p.desde?"Desde ":"")+fmt(p.precio)}${p.antes?` <s>${fmt(p.antes)}</s>`:""}</span></div></div>
    <div class="flabel" style="margin-top:4px">Precio y financiamiento</div><ul class="ticks">${(p.vr||[]).map(([k,v])=>`<li>${k}: ${fmt(v)}</li>`).join("")}${p.pagos.map(x=>`<li>${x}</li>`).join("")}</ul>
-   ${p.precio&&p.precio<=80000?`<div class="fine">Casa de hasta $80,000: puede aplicar al Bono Pa' Ti si es tu primera vivienda con interés preferencial.</div>`:""}`;buildWA();}
+   ${p.precio&&p.precio<=(window.C4?+C4.cfg().bono_tope_precio:80000)?`<div class="fine">Casa de hasta ${window.C4?"$"+(+C4.cfg().bono_tope_precio).toLocaleString("en-US"):"$80,000"}: puede aplicar al Bono Pa' Ti si es tu primera vivienda con interés preferencial.</div>`:""}`;buildWA();}
 $("#c-prop").addEventListener("change",pub);["c-nombre","c-sal"].forEach(id=>$("#"+id).addEventListener("input",buildWA));
 function buildWA(){const p=QP.find(x=>x.id===$("#c-prop").value);const D=DOCS[tipo].d,ok=D.filter((_,i)=>have.has(tipo+i)),no=D.filter((_,i)=>!have.has(tipo+i));
   const nom=$("#c-nombre").value.trim(),sal=$("#c-sal").value;
   const L=["Hola C4 Realty, quiero cotizar mi casa.",nom?`Nombre: ${nom}`:"",`Ingreso: ${tipo==="asal"?"Asalariado":"Independiente"}${sal?` · $${(+sal).toLocaleString("en-US")} mensual`:""}`,
    p?`Me interesa: ${p.n}${p.z?` (${p.z})`:""}${p.precio?` · ${p.desde?"desde ":""}${fmt(p.precio)}`:""}`:"Aún no elijo casa; ¿qué opciones tengo?",
    ok.length?`Ya tengo: ${ok.join("; ")}`:"",no.length?`Me falta: ${no.join("; ")}`:""].filter(Boolean);
-  $("#c-wa").href="https://wa.me/50762531751?text="+encodeURIComponent(L.join("\n"));}
+  $("#c-wa").href="https://wa.me/"+(window.C4?C4.WA:"50762531751")+"?text="+encodeURIComponent(L.join("\n"));}
 $("#c-wa").addEventListener("click",()=>{const p=QP.find(x=>x.id===$("#c-prop").value);hubspot("cotizacion",{firstname:$("#c-nombre").value,proyecto:p?p.n:"",tipo_ingreso:tipo,salario:$("#c-sal").value});});
 renderDocs();setQ("");
 

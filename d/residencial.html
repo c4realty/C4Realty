@@ -44,6 +44,7 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 /* portada */
 .hero{padding:48px 0 70px;background:radial-gradient(120% 90% at 85% 10%,var(--sage) 0%,var(--linen) 62%)}
 .hero .w{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.eyb{margin:0 0 16px;color:var(--brass);font-weight:700;letter-spacing:.02em;font-size:1rem}
 .hero h1{font-size:clamp(2.7rem,5.6vw,5.3rem);font-weight:900;text-wrap:balance;color:var(--deep)}
 .hero .lead{font-size:1.18rem;color:var(--mut);max-width:44ch;margin:22px 0 30px}
 .buscar{background:#fff;border-radius:24px;box-shadow:var(--sh);padding:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:6px;align-items:stretch;border:1px solid var(--line)}
@@ -235,6 +236,7 @@ footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;te
 <main id="inicio">
   <section class="hero"><div class="w">
     <div>
+      <p class="eyb" data-cf="hero_titulo">Cotizar es tu primer paso para obtener tu vivienda</p>
       <h1>Especialistas en casas en Chiriquí</h1>
       <p class="lead">Te acompañamos desde la cotización bancaria hasta la entrega de tus llaves. Compara proyectos, precios y planes de pago en un solo lugar.</p>
       <form class="buscar" id="buscar" role="search" aria-label="Buscar casas">
@@ -302,11 +304,11 @@ footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;te
     </ol></div></section>
 
   <section class="w" id="bono"><div class="bono">
-    <div><h2>Bono Pa' Ti: <em>$3,000</em> para tu casa nueva</h2>
-      <ul><li><svg class="i"><use href="#i-ok"/></svg>Subsidio estatal no reembolsable de $3,000 para el abono inicial de una casa nueva (Decreto Ejecutivo N° 35).</li>
+    <div><h2>Bono Pa' Ti: <em data-cf="bono_monto">$3,000</em> para tu casa nueva</h2>
+      <ul><li><svg class="i"><use href="#i-ok"/></svg>Subsidio estatal no reembolsable de <span data-cf="bono_monto">$3,000</span> para el abono inicial de una casa nueva (Decreto Ejecutivo N° 35).</li>
       <li><svg class="i"><use href="#i-ok"/></svg>Solo para tu primera vivienda con interés preferencial.</li>
-      <li><svg class="i"><use href="#i-ok"/></svg>Aplica para viviendas con valor no mayor de $80,000.</li></ul></div>
-    <div><p style="margin:0 0 14px;color:#b9c7bd;font-weight:600">Casas de nuestro catálogo dentro del tope de $80,000</p><div class="bl" id="bl"></div></div>
+      <li><svg class="i"><use href="#i-ok"/></svg>Aplica para viviendas con valor no mayor de <span data-cf="bono_tope_precio">$80,000</span>.</li></ul></div>
+    <div><p style="margin:0 0 14px;color:#b9c7bd;font-weight:600">Casas de nuestro catálogo dentro del tope de <span data-cf="bono_tope_precio">$80,000</span></p><div class="bl" id="bl"></div></div>
   </div></section>
 
   <section class="sec" id="contacto"><div class="w ct">
@@ -382,14 +384,14 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
  /* videos de Instagram */
   const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]],VNEW=[["aguacatal-vila-1","Recámara"],["aguacatal-vila-2","Baño"],["aguacatal-vila-3","Exterior"]];
   const vila=P.find(p=>p.id==="vila-aguacatal");
-  $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+VNEW.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="../videos/${v}.jpg" src="../videos/${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("");
+  $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+(vila&&vila.vids.length?vila.vids.map(v=>[v,(VNEW.find(x=>v.endsWith("/"+x[0]))||[,""])[1]]):VNEW.map(([v,t])=>["../videos/"+v,t])).map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>${t?`<figcaption>${esc(t)}</figcaption>`:""}</figure>`).join("");
   if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
   $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div class="vt"><small>${esc(z)}</small>${esc(t)}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
   /* cifras */
   const pr=P.filter(p=>p.precio).map(p=>p.precio),lt=P.map(p=>p.lote).filter(Boolean);
   $("#cifras").innerHTML=[[P.length,"casas disponibles"],[zs.length,"zonas de Chiriquí"],[pr.length?fmt(Math.min(...pr)):"—","precio desde"],[lt.length?Math.min(...lt)+" m²":"—","lotes desde"]].map(([b,s])=>`<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
   /* bono */
-  const B=P.filter(p=>p.precio&&p.precio<=80000).sort((a,b)=>a.precio-b.precio);
+  await C4.sitio;const TOPE=+C4.cfg().bono_tope_precio||80000;const B=P.filter(p=>p.precio&&p.precio<=TOPE).sort((a,b)=>a.precio-b.precio);
   $("#bl").innerHTML=B.slice(0,6).map(p=>`<button type="button" data-c4="${esc(p.id)}"><div><b>${esc(p.n)}</b><br><span>${esc(p.zl||p.z)}</span></div><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("")||`<p>Escríbenos y te decimos qué proyectos aceptan el bono.</p>`;
   $("#f-prop").innerHTML+=P.map(p=>`<option value="${esc(p.id)}">${esc(p.n)} · ${esc(p.z)}</option>`).join("");
   document.addEventListener("click",e=>{const c=e.target.closest("[data-c4]");if(c&&c.tagName==="BUTTON"){const p=P.find(x=>x.id===c.dataset.c4);if(p)C4.ficha(p);}});

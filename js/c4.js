@@ -2,7 +2,12 @@
 (function () {
   const API = "https://c4realty-api.c4realty0.workers.dev";
   const BASE = window.C4_BASE || "";
-  const WA = "50762531751";
+  let WA = "50762531751";
+  /* datos de contacto que se editan en el panel (Configuración) */
+  const DEF = { whatsapp: "50762531751", whatsapp_visible: "6253-1751", correo: "c4realty1@gmail.com", instagram: "c4realty1", bono_monto: "3000", bono_tope_precio: "80000" };
+  let CFG = {}; try { CFG = JSON.parse(localStorage.getItem("c4_cfg") || "{}") || {}; } catch (e) { }
+  const cfg = () => { const c = { ...DEF }; for (const k in CFG) if (CFG[k] != null && String(CFG[k]).trim() !== "") c[k] = String(CFG[k]).trim(); c.whatsapp = c.whatsapp.replace(/\D/g, "") || DEF.whatsapp; c.instagram = c.instagram.replace(/^@/, ""); return c; };
+  WA = cfg().whatsapp;
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
@@ -18,10 +23,38 @@
     const q = location.search.replace(/^\?/, ""), dest = BASE + PAG[l] + (q ? "?" + q : "") + location.hash;
     location.replace(dest);
   }
+  let sitioOk; const sitio = new Promise(r => { sitioOk = r; setTimeout(r, 3000); });
   function tema(propio) {
     try { const t = JSON.parse(localStorage.getItem("c4_tema") || "null"); if (t && t.tokens) irDiseno(t.tokens.layout || "azul", propio); } catch (e) { }
-    fetch(API + "/public/sitio").then(r => r.ok ? r.json() : null).then(j => { if (!j || !j.plantilla) return; try { localStorage.setItem("c4_tema", JSON.stringify(j.plantilla)); } catch (e) { } irDiseno(j.plantilla.tokens.layout || "azul", propio); }).catch(() => { });
+    fetch(API + "/public/sitio").then(r => r.ok ? r.json() : null).then(j => {
+      if (j && j.config) { CFG = j.config; WA = cfg().whatsapp; try { localStorage.setItem("c4_cfg", JSON.stringify(CFG)); } catch (e) { } aplicar(); }
+      sitioOk();
+      if (!j || !j.plantilla) return; try { localStorage.setItem("c4_tema", JSON.stringify(j.plantilla)); } catch (e) { } irDiseno(j.plantilla.tokens.layout || "azul", propio);
+    }).catch(() => sitioOk());
+    vigilar();
   }
+  /* pone en la página el WhatsApp, correo, Instagram, título y bono guardados en el panel */
+  const money = v => "$" + Math.round(+v || 0).toLocaleString("en-US");
+  function aplicar() {
+    const c = cfg(), b = document.body; if (!b) return;
+    $$("[data-cf]").forEach(el => { const k = el.dataset.cf; let v = c[k]; if (!v) return; if (/^bono_/.test(k)) v = money(v); if (el.textContent !== v) el.textContent = v; });
+    const cambia = c.whatsapp !== DEF.whatsapp || c.whatsapp_visible !== DEF.whatsapp_visible || c.correo !== DEF.correo || c.instagram !== DEF.instagram;
+    if (!cambia) return;
+    $$("a[href]").forEach(a => { const h = a.getAttribute("href"); const n = h.replace(/wa\.me\/50762531751/g, "wa.me/" + c.whatsapp).replace(/phone=50762531751/g, "phone=" + c.whatsapp).replace(/mailto:c4realty1@gmail\.com/g, "mailto:" + c.correo).replace(/instagram\.com\/c4realty1\b/g, "instagram.com/" + c.instagram); if (n !== h) a.setAttribute("href", n); const l = a.getAttribute("aria-label"); if (l && l.includes("6253-1751")) a.setAttribute("aria-label", l.replace(/6253-1751/g, c.whatsapp_visible)); });
+    const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let t;
+    while ((t = w.nextNode())) { const v = t.nodeValue; if (!/6253-1751|c4realty1@gmail\.com|@c4realty1/.test(v)) continue; const n = v.replace(/6253-1751/g, c.whatsapp_visible).replace(/c4realty1@gmail\.com/g, c.correo).replace(/@c4realty1\b/g, "@" + c.instagram); if (n !== v) t.nodeValue = n; }
+  }
+  function vigilar() {
+    const go = () => { aplicar(); let q = 0; new MutationObserver(() => { clearTimeout(q); q = setTimeout(aplicar, 60); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["href"] }); };
+    if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
+  }
+  /* estadísticas para el panel: vistas de cada casa y clics a WhatsApp */
+  function vista(id, tipo) { if (!id) return; try { fetch(API + "/public/vista", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ propiedad: id, tipo: tipo || "vista" }), keepalive: true }).catch(() => { }); } catch (e) { } }
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest('a[href*="wa.me/"],a[href*="whatsapp.com/send"]'); if (!a) return;
+    const id = a.dataset.c4p || (a.closest("[data-c4p]") || {}).dataset?.c4p || (a.closest("#c4f,#modal") ? window.C4_CUR : null);
+    if (id) vista(id, "whatsapp");
+  }, true);
 
   /* ---------- datos ---------- */
   function mapear(d) {
@@ -141,7 +174,7 @@
   let CUR = null, CI = 0;
   function verFoto(i) { if (!CUR) return; CI = (i + CUR.img.length) % CUR.img.length; $("#c4f-img").src = CUR.img[CI]; $$("#c4f-th button").forEach((b, k) => b.classList.toggle("on", k === CI)); }
   function ficha(p) {
-    montar(); CUR = p; CI = 0;
+    montar(); CUR = p; CI = 0; window.C4_CUR = p.id; vista(p.id);
     const d = desc(p);
     $("#c4f-p").innerHTML = `<div class="c4f-bar"><button type="button" data-x>‹ Volver</button><span style="font-size:.85rem;color:var(--f-mut)">${esc(p.z)}</span></div>
      <div class="c4f-hero"><img id="c4f-img" alt="${esc(p.n)}">${p.img.length > 1 ? `<button type="button" class="c4f-nav p" aria-label="Foto anterior">‹</button><button type="button" class="c4f-nav n" aria-label="Foto siguiente">›</button>` : ""}</div>
@@ -157,7 +190,7 @@
       ${p.vids.length ? `<div class="c4f-sec"><h3>Videos</h3><div class="c4f-vids">${p.vids.map(v => `<video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>`).join("")}</div></div>` : ""}
       ${p.txt ? `<details><summary>Texto completo</summary><p>${esc(p.txt)}</p></details>` : ""}
       <div class="c4f-btns"><a class="c4f-btn wa" href="${esc(waProp(p))}" target="_blank" rel="noopener">Consultar por WhatsApp</a><button type="button" class="c4f-btn" data-cita>Agendar recorrido</button></div>
-      <p style="font-size:.8rem;color:var(--f-mut);margin:0">Confirma precio y disponibilidad por WhatsApp al 6253-1751.</p>
+      <p style="font-size:.8rem;color:var(--f-mut);margin:0">Confirma precio y disponibilidad por WhatsApp al ${esc(cfg().whatsapp_visible)}.</p>
      </div>`;
     verFoto(0);
     $("#c4f-img").onclick = () => galeria(p, CI, true);
@@ -167,7 +200,7 @@
     $("[data-cita]").onclick = () => { cerrar(); const f = document.querySelector("[data-c4-contacto]"); if (f) { const s = f.querySelector("select"); if (s) s.value = p.id; f.scrollIntoView({ behavior: "smooth", block: "center" }); } };
     $("#c4f").classList.add("open"); document.body.style.overflow = "hidden"; $("#c4f-p").scrollTop = 0;
   }
-  function cerrar() { $$("#c4f video").forEach(v => v.pause()); $("#c4f").classList.remove("open"); document.body.style.overflow = ""; }
+  function cerrar() { window.C4_CUR = null; $$("#c4f video").forEach(v => v.pause()); $("#c4f").classList.remove("open"); document.body.style.overflow = ""; }
 
   /* fotos que cambian al pasar el mouse */
   function hover(sel, P) {
@@ -200,11 +233,11 @@
       if (!body.nombre || !body.telefono) { msg.textContent = "Escribe tu nombre y tu teléfono."; return; }
       avisar(body);
       let ok = false; try { const r = await fetch(API + "/public/contacto", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); ok = r.ok; } catch (x) { }
-      msg.textContent = ok ? "Recibido. Te escribimos pronto por WhatsApp." : "No se pudo enviar. Escríbenos al 6253-1751."; if (ok) form.reset();
+      msg.textContent = ok ? "Recibido. Te escribimos pronto por WhatsApp." : "No se pudo enviar. Escríbenos al " + cfg().whatsapp_visible + "."; if (ok) form.reset();
     });
   }
   /* enlace directo ?p=codigo */
   function abrirDesdeUrl(P) { try { const c = new URLSearchParams(location.search).get("p"); const p = c && P.find(x => x.id === c); if (p) ficha(p); } catch (e) { } }
 
-  window.C4 = { avisar, API, WA, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
+  window.C4 = { cfg, sitio, aplicar, vista, avisar, API, get WA() { return WA; }, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
 })();
