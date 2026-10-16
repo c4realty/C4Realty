@@ -832,6 +832,9 @@ function show(pg,noScroll){if(!PAGES.includes(pg))pg="inicio";$$("[data-page]").
   if(!noScroll)window.scrollTo(0,0);try{history.replaceState(null,"","#"+pg);}catch(e){}}
 document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const pg=a.getAttribute("href").slice(1);if(PAGES.includes(pg)){e.preventDefault();closeSheet();show(pg);}});
 show(PAGES.includes(location.hash.slice(1))?location.hash.slice(1):"inicio",true);
+/* enlace directo a una casa: ?p=codigo */
+function c4Abrir(){try{const c=new URLSearchParams(location.search).get("p");if(!c||c4Abrir.ok)return;const p=P.find(x=>x.id===c);if(!p)return;c4Abrir.ok=1;show("catalogo",true);ORDER=P.map(x=>x.id);openSheet(c);}catch(e){}}
+c4Abrir();
 </script>
 
 <script>
@@ -863,7 +866,7 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
   $("#t-venta").textContent=P.filter(p=>p.cat!=="Alquiler").length;$("#t-alq").textContent=new Set(P.map(p=>p.z)).size;
   const pr=P.filter(p=>p.precio).map(p=>p.precio);if(pr.length)$("#t-desde").textContent="$"+Math.floor(Math.min(...pr)/1000)+"k";
   $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
-  render();pub();
+  render();pub();if(typeof c4Abrir==="function")c4Abrir();
 }catch(e){}})();
 (async()=>{if(C4_API.startsWith("__"))return;try{const r=await fetch(C4_API+"/public/sitio");if(!r.ok)return;const j=await r.json();if(j.plantilla){c4Tema(j.plantilla);try{localStorage.setItem("c4_tema",JSON.stringify(j.plantilla));}catch(e){}}}catch(e){}})();
 </script>

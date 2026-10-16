@@ -164,6 +164,18 @@ td.r,th.r{text-align:right}
 .vl-thumbs button{flex:none;width:64px;height:84px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:var(--panel)}
 .vl-thumbs button.on{border-color:var(--accent)}
 .vl-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* hot list y difusión */
+.hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.hlc{display:grid;gap:10px;padding:12px}
+.hl-img{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--panel)}
+.hl-img img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.hl-b{position:absolute;left:8px;top:8px;background:#e8463a;color:#fff;font-weight:800;font-size:.85rem;border-radius:999px;padding:4px 10px}
+.hl-t{display:grid;gap:3px}.hl-p{display:flex;gap:8px;align-items:baseline;font-size:1.15rem;font-weight:800}.hl-p s{font-size:.85rem;font-weight:600}
+.dl{display:grid;gap:6px;max-height:420px;overflow:auto}
+.dli{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer;font-size:.9rem}
+.dli img{width:40px;height:52px;object-fit:cover;border-radius:6px;flex:none}
+.dli input{width:18px;height:18px;flex:none}
 </style>
 </head>
 <body>
@@ -308,6 +320,8 @@ const VISTAS = [
   { id: "propiedades", t: "Propiedades", ico: "⌂", mod: "propiedades", sub: "Lo que está disponible, reservado y vendido" },
   { id: "clientes", t: "Clientes", ico: "☺", mod: "clientes", sub: "Personas que escriben desde la página, WhatsApp o Instagram" },
   { id: "negocios", t: "Negocios", ico: "⇢", mod: "negocios", sub: "Cada cliente avanzando por los pasos de compra" },
+  { id: "hotlist", t: "Hot list", ico: "✦", mod: "propiedades", sub: "Ofertas y casas destacadas, ordenadas por el mayor descuento" },
+  { id: "difusion", t: "Difusión WhatsApp", ico: "✆", mod: "propiedades", sub: "Envía casas y volantes por WhatsApp, a uno o a varios clientes" },
   { id: "volantes", t: "Volantes", ico: "▣", mod: "propiedades", sub: "Haz volantes con el estilo de C4 Realty y descárgalos" },
   { id: "citas", t: "Citas", ico: "◷", mod: "citas", sub: "Recorridos, llamadas, firmas y entregas" },
   { id: "usuarios", t: "Usuarios y permisos", ico: "⚿", mod: "usuarios", sub: "Quién entra al panel y qué puede hacer" },
@@ -633,6 +647,147 @@ RENDER.diseno = async () => {
   $$("[data-act]").forEach(b => b.onclick = async () => { try { await api(`/api/plantillas/${b.dataset.act}/activar`, { method: "POST" }); toast("Plantilla activada"); RENDER.diseno(); } catch (x) { toast(x.message, 1); } });
 };
 
+/* ---------- HOT LIST Y DIFUSIÓN ---------- */
+const SITIO = (() => { try { return new URL("../", location.href).href; } catch { return "https://c4realty.github.io/C4Realty/"; } })();
+const linkProp = p => SITIO + "?p=" + encodeURIComponent(p.codigo);
+const vendibleP = p => ["disponible", "reservada", "en_negociacion"].includes(p.estado);
+const descP = p => p.precio && p.precio_antes && +p.precio_antes > +p.precio ? Math.round((1 - p.precio / p.precio_antes) * 100) : 0;
+const enHot = p => vendibleP(p) && (descP(p) > 0 || +p.destacada === 1);
+const hotList = L => L.filter(enHot).sort((a, b) => descP(b) - descP(a) || (+b.destacada) - (+a.destacada) || (a.orden || 0) - (b.orden || 0));
+const waNum = t => { let d = String(t || "").replace(/\D/g, ""); if (d.length === 7 || d.length === 8) d = "507" + d; return d.length >= 10 ? d : ""; };
+const waUrl = (tel, txt) => { const d = waNum(tel); return (d ? "https://wa.me/" + d : "https://wa.me/") + "?text=" + encodeURIComponent(txt); };
+function datosP(p) {
+  const kv = (() => { try { return JSON.parse(p.caracteristicas || "[]"); } catch { return []; } })();
+  const g = k => (kv.find(x => Array.isArray(x) && x[0] === k) || [])[1];
+  return [g("Recámaras") && g("Recámaras") + " rec", g("Baños") && g("Baños") + (g("Baños") === "1" ? " baño" : " baños"), (g("Lote") || g("Lotes")) && "Lote " + (g("Lote") || g("Lotes"))].filter(Boolean).join(" · ");
+}
+function textoP(p) {
+  const d = descP(p), dat = datosP(p);
+  const pr = p.precio ? (p.precio_desde ? "Desde " : "") + money(p.precio) + (d ? ` (antes ${money(p.precio_antes)}, −${d} %)` : "") : "Precio: consultar";
+  return [`*${p.titulo}${p.zona ? " · " + p.zona : ""}*`, dat, pr, p.etiqueta ? "🔥 " + p.etiqueta : "", "Fotos y detalles: " + linkProp(p)].filter(Boolean).join("\n");
+}
+async function copiar(t) { try { await navigator.clipboard.writeText(t); toast("Texto copiado"); } catch { toast("No se pudo copiar", 1); } }
+
+RENDER.hotlist = async () => {
+  C.propiedades = null; const L = await propsLista(); const H = hotList(L); const ed = can("propiedades", "editar");
+  $("#tools").innerHTML = ed ? `<button class="btn pri" id="hl-new">+ Poner oferta</button>` : "";
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Aquí entran solas las casas con descuento (precio regular más alto que el precio actual) y las que marques como destacadas. Se ordenan por el descuento más alto. En la página salen con el precio regular tachado.</p>
+   ${H.length ? `<div class="hl">${H.map(p => { const d = descP(p); return `<div class="card hlc">
+     <div class="hl-img">${p.imagen ? `<img src="${esc(img(p.imagen))}" alt="" loading="lazy">` : ""}<span class="hl-b">${d ? "−" + d + " %" : "Destacada"}</span></div>
+     <div class="hl-t"><b>${esc(p.titulo)}</b><span class="muted">${esc(p.zona || "")}</span>
+      <div class="hl-p"><span class="num">${p.precio ? money(p.precio) : "Consultar"}</span>${d ? `<s class="faint num">${money(p.precio_antes)}</s>` : ""}</div>
+      ${p.etiqueta ? `<span class="pill">${esc(p.etiqueta)}</span>` : ""}</div>
+     <div class="tools"><a class="btn sm" style="background:#25d366;color:#05230f;border-color:#25d366" href="${esc(waUrl("", textoP(p)))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-cp="${p.id}">Copiar texto</button>${ed ? `<button class="btn sm" data-of="${p.id}">Editar oferta</button><button class="btn sm del" data-qx="${p.id}">Quitar</button>` : ""}</div></div>`; }).join("")}</div>`
+      : `<div class="card"><p>No hay casas en la Hot list todavía.${ed ? " Toca <b>+ Poner oferta</b> para agregar una." : ""}</p></div>`}`;
+  $$("[data-cp]").forEach(b => b.onclick = () => copiar(textoP(L.find(p => String(p.id) === b.dataset.cp))));
+  if (!ed) return;
+  $("#hl-new").onclick = () => ofertaForm(L, null);
+  $$("[data-of]").forEach(b => b.onclick = () => ofertaForm(L, L.find(p => String(p.id) === b.dataset.of)));
+  $$("[data-qx]").forEach(b => b.onclick = async () => {
+    const p = L.find(x => String(x.id) === b.dataset.qx); if (!p) return;
+    const body = { destacada: 0 }; if (descP(p)) { body.precio = p.precio_antes; body.precio_antes = null; } if (/^oferta/i.test(p.etiqueta || "")) body.etiqueta = null;
+    try { await api("/api/propiedades/" + p.id, { method: "PATCH", body }); toast(descP(p) ? "Oferta quitada: vuelve a " + money(p.precio_antes) : "Quitada de la Hot list"); RENDER.hotlist(); } catch (x) { toast(x.message, 1); }
+  });
+};
+function ofertaForm(L, p) {
+  const V = L.filter(vendibleP);
+  abrir(`<div class="hd"><h1>${p ? "Editar oferta" : "Poner oferta"}</h1><button class="btn sm" data-close>Cerrar</button></div>
+   <form id="f-of" class="card" style="display:grid;gap:12px">
+    <div class="f"><label for="of-p">Casa</label><select id="of-p" ${p ? "disabled" : ""}>${V.map(x => `<option value="${x.id}" ${p && x.id === p.id ? "selected" : ""}>${esc(x.titulo)}${x.zona ? " · " + esc(x.zona) : ""} — ${money(x.precio)}</option>`).join("")}</select></div>
+    <div class="grid2">
+     <div class="f"><label for="of-r">Precio regular (sale tachado)</label><input id="of-r" type="number" min="0" step="1"></div>
+     <div class="f"><label for="of-n">Precio de oferta</label><input id="of-n" type="number" min="0" step="1"></div>
+     <div class="f"><label for="of-pc">O descuento en %</label><input id="of-pc" type="number" min="0" max="90" step="1" placeholder="ej. 5"></div>
+     <div class="f"><label for="of-e">Etiqueta en la página</label><input id="of-e" placeholder="ej. Oferta, Por tiempo limitado"></div>
+    </div>
+    <div class="f chk"><input type="checkbox" id="of-d" checked><label for="of-d">Destacar en la Hot list</label></div>
+    <p class="muted" id="of-res" style="font-size:.9rem"></p>
+    <div class="tools"><button class="btn pri">Guardar oferta</button></div></form>`, () => {
+    const cur = () => V.find(x => String(x.id) === $("#of-p").value) || V[0];
+    const fill = () => { const x = cur(); if (!x) return; const reg = descP(x) ? x.precio_antes : x.precio; $("#of-r").value = reg || ""; $("#of-n").value = descP(x) ? x.precio : ""; $("#of-pc").value = ""; $("#of-e").value = x.etiqueta || "Oferta"; $("#of-d").checked = true; res(); };
+    const res = () => { const r = +$("#of-r").value, n = +$("#of-n").value; $("#of-res").textContent = r && n && n < r ? `Queda en ${money(n)} (antes ${money(r)}, −${Math.round((1 - n / r) * 100)} %).` : r && n >= r ? "El precio de oferta tiene que ser menor que el regular." : ""; };
+    $("#of-p").onchange = fill; $("#of-r").oninput = res; $("#of-n").oninput = () => { $("#of-pc").value = ""; res(); };
+    $("#of-pc").oninput = () => { const r = +$("#of-r").value, pc = +$("#of-pc").value; if (r && pc > 0) { $("#of-n").value = Math.round(r * (1 - pc / 100)); } res(); };
+    fill();
+    $("#f-of").onsubmit = async e => {
+      e.preventDefault(); const x = cur(), r = +$("#of-r").value, n = +$("#of-n").value;
+      const body = { etiqueta: $("#of-e").value.trim() || null, destacada: $("#of-d").checked ? 1 : 0 };
+      if (n) { if (!r || n >= r) return toast("El precio de oferta tiene que ser menor que el regular", 1); body.precio = n; body.precio_antes = r; }
+      else if (!body.destacada) return toast("Pon un precio de oferta o marca Destacar", 1);
+      try { await api("/api/propiedades/" + x.id, { method: "PATCH", body }); toast("Oferta guardada"); cerrar(); RENDER.hotlist(); } catch (x2) { toast(x2.message, 1); }
+    };
+  });
+}
+
+/* Difusión por WhatsApp (uno por uno o a varios contactos) */
+const DF = { props: null, cli: null, msg: "", edit: false, enviados: {} };
+RENDER.difusion = async () => {
+  C.propiedades = null; const L = (await propsLista()).filter(vendibleP);
+  let CL = []; if (can("clientes")) { try { CL = (await clientesLista()).filter(c => waNum(c.telefono)); } catch { CL = []; } }
+  if (!DF.props) DF.props = new Set(hotList(L).map(p => p.id));
+  if (!DF.cli) DF.cli = new Set();
+  const msgAuto = () => { const S = L.filter(p => DF.props.has(p.id)); return S.length ? `Hola {nombre}, te comparto ${S.length === 1 ? "esta casa" : "estas casas"} de C4 Realty:\n\n` + S.map(textoP).join("\n\n") + `\n\nEscríbeme y coordinamos tu cotización o recorrido.` : ""; };
+  if (!DF.edit) DF.msg = msgAuto();
+  const persona = (c, t) => t.replace(/\{nombre\}/g, c ? String(c.nombre || "").split(" ")[0] : "").replace(/Hola ,/g, "Hola,");
+  const dest = CL.filter(c => DF.cli.has(c.id));
+  $("#tools").innerHTML = "";
+  $("#body").innerHTML = `<div class="cols">
+   <div class="card" style="display:grid;gap:10px"><h2>1 · Casas a enviar</h2>
+    <div class="tools"><button class="btn sm" data-ps="hot">Hot list</button><button class="btn sm" data-ps="all">Todas</button><button class="btn sm" data-ps="none">Ninguna</button><span class="faint" style="font-size:.85rem">${DF.props.size} elegidas</span></div>
+    <div class="dl">${L.map(p => `<label class="dli"><input type="checkbox" data-pp="${p.id}" ${DF.props.has(p.id) ? "checked" : ""}>${p.imagen ? `<img src="${esc(img(p.imagen))}" alt="" loading="lazy">` : ""}<span><b>${esc(p.titulo)}</b><br><span class="muted">${esc(p.zona || "")} · ${p.precio ? money(p.precio) : "Consultar"}${descP(p) ? " · −" + descP(p) + " %" : ""}</span></span></label>`).join("")}</div>
+    <button class="btn" id="df-zip" type="button">Descargar volantes de estas casas (ZIP)</button></div>
+   <div class="card" style="display:grid;gap:10px"><h2>2 · A quién</h2>
+    ${CL.length ? `<div class="tools"><button class="btn sm" data-cs="all">Todos</button><button class="btn sm" data-cs="none">Ninguno</button><span class="faint" style="font-size:.85rem">${DF.cli.size} de ${CL.length} con WhatsApp</span></div>
+    <div class="dl" style="max-height:220px">${CL.map(c => `<label class="dli"><input type="checkbox" data-cc="${c.id}" ${DF.cli.has(c.id) ? "checked" : ""}><span><b>${esc(c.nombre)}</b> <span class="muted num">${esc(c.telefono)}</span></span></label>`).join("")}</div>`
+      : `<p class="muted" style="font-size:.9rem">No hay clientes con teléfono todavía. Puedes enviarlo igual: WhatsApp te deja elegir el chat, un grupo o tu lista de difusión.</p>`}
+    <h2 style="margin-top:6px">3 · Mensaje</h2>
+    <textarea id="df-msg" rows="10" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px">${esc(DF.msg)}</textarea>
+    <div class="tools"><span class="faint" style="font-size:.82rem">{nombre} se cambia por el nombre de cada cliente.</span>${DF.edit ? `<button class="btn sm" id="df-auto" type="button">Volver al texto automático</button>` : ""}</div>
+    <h2 style="margin-top:6px">4 · Enviar</h2>
+    ${dest.length ? `<p class="muted" style="font-size:.88rem">WhatsApp no permite enviar solo a muchas personas desde una página: toca <b>Enviar</b> en cada uno; se abre su chat con el mensaje listo y solo das Enviar en WhatsApp.</p>
+     <div class="dl" style="max-height:none">${dest.map(c => `<div class="dli"><span style="flex:1"><b>${esc(c.nombre)}</b> <span class="muted num">${esc(c.telefono)}</span></span>${DF.enviados[c.id] ? `<span class="pill" style="color:var(--good)"><i></i>Enviado</span>` : ""}<a class="btn sm" style="background:#25d366;color:#05230f;border-color:#25d366" data-send="${c.id}" href="${esc(waUrl(c.telefono, persona(c, DF.msg)))}" target="_blank" rel="noopener">Enviar</a></div>`).join("")}</div>
+     <button class="btn pri" id="df-next" type="button">${dest.some(c => !DF.enviados[c.id]) ? "Enviar al siguiente" : "Todos enviados ✓"}</button>`
+      : `<div class="tools"><a class="btn pri" style="background:#25d366;color:#05230f;border-color:#25d366" href="${esc(waUrl("", persona(null, DF.msg)))}" target="_blank" rel="noopener">Abrir WhatsApp con el mensaje</a><button class="btn" id="df-cp" type="button">Copiar mensaje</button></div>`}
+   </div></div>`;
+  const re = () => RENDER.difusion();
+  $$("[data-ps]").forEach(b => b.onclick = () => { const v = b.dataset.ps; DF.props = new Set(v === "hot" ? hotList(L).map(p => p.id) : v === "all" ? L.map(p => p.id) : []); DF.edit = false; re(); });
+  $$("[data-pp]").forEach(c => c.onchange = () => { const id = +c.dataset.pp; c.checked ? DF.props.add(id) : DF.props.delete(id); DF.edit = false; re(); });
+  $$("[data-cs]").forEach(b => b.onclick = () => { DF.cli = new Set(b.dataset.cs === "all" ? CL.map(c => c.id) : []); re(); });
+  $$("[data-cc]").forEach(c => c.onchange = () => { const id = +c.dataset.cc; c.checked ? DF.cli.add(id) : DF.cli.delete(id); re(); });
+  $("#df-msg").onchange = e => { DF.msg = e.target.value; DF.edit = true; re(); };
+  if ($("#df-auto")) $("#df-auto").onclick = () => { DF.edit = false; re(); };
+  if ($("#df-cp")) $("#df-cp").onclick = () => copiar(persona(null, DF.msg));
+  const marcar = async id => {
+    DF.enviados[id] = true;
+    const nombres = L.filter(p => DF.props.has(p.id)).map(p => p.titulo + (p.zona ? " · " + p.zona : "")).join(", ");
+    try { await api(`/api/clientes/${id}/interacciones`, { method: "POST", body: { tipo: "whatsapp", detalle: "Difusión por WhatsApp: " + nombres } }); } catch { }
+    setTimeout(re, 300);
+  };
+  $$("[data-send]").forEach(a => a.addEventListener("click", () => marcar(+a.dataset.send)));
+  if ($("#df-next")) $("#df-next").onclick = () => { const c = dest.find(x => !DF.enviados[x.id]); if (!c) return toast("Ya se envió a todos"); window.open(waUrl(c.telefono, persona(c, DF.msg)), "_blank", "noopener"); marcar(c.id); };
+  $("#df-zip").onclick = () => zipVolantes(L.filter(p => DF.props.has(p.id)));
+};
+function cargarJs(src) { return new Promise((ok, no) => { if ([...document.scripts].some(s => s.src === src)) return ok(); const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("No se pudo cargar " + src)); document.head.append(s); }); }
+async function zipVolantes(S) {
+  if (!S.length) return toast("Elige al menos una casa", 1);
+  try {
+    toast("Preparando " + S.length + " volantes…");
+    await cargarJs("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
+    const z = new JSZip(); const slug = t => String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    for (const p of S) { if (!p.imagen) continue; const r = await fetch(img(p.imagen)); if (r.ok) z.file(slug(p.titulo + " " + (p.zona || "")) + ".jpg", await r.blob()); }
+    const b = await z.generateAsync({ type: "blob" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "volantes-c4realty.zip"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (x) { toast(x.message, 1); }
+}
+async function compartirVolante() {
+  const cv = $("#vl-cv"); if (!VL.img) return toast("Primero sube o elige una foto", 1);
+  const blob = await new Promise(r => cv.toBlob(r, "image/png"));
+  const f = new File([blob], "volante-c4realty.png", { type: "image/png" });
+  const txt = [$("#vl-t1").value, $("#vl-t2").value, $("#vl-t3").value].filter(Boolean).join(" ") + "\nC4 Realty · WhatsApp 6253-1751\n" + SITIO;
+  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text: txt }); return; } } catch (x) { if (x.name === "AbortError") return; }
+  try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); toast("Imagen copiada: en WhatsApp pégala con Ctrl+V"); } catch { toast("Descarga el volante y adjúntalo en WhatsApp", 1); }
+  window.open(waUrl("", txt), "_blank", "noopener");
+}
+
 /* ---------- VOLANTES ---------- */
 const VL = { img: null, zoom: 1, ox: 0, oy: 0, fmt: "historia" };
 const VL_FMT = { historia: [1080, 1920, "Historia 9:16 (WhatsApp / Instagram)"], post: [1080, 1350, "Publicación 4:5 (Instagram)"], cuadro: [1080, 1080, "Cuadrado 1:1"] };
@@ -662,7 +817,7 @@ RENDER.volantes = async () => {
         <div class="f"><label for="vl-pos">Dónde van los textos</label><select id="vl-pos"><option value="arriba">Arriba (en el cielo)</option><option value="centro">Al centro</option><option value="abajo">Abajo</option></select></div>
         <div class="f chk" style="align-self:end"><input type="checkbox" id="vl-sombra" checked><label for="vl-sombra">Oscurecer detrás del texto</label></div>
       </div>
-      <div class="tools" style="margin-top:6px"><button class="btn pri" id="vl-down" type="button">Descargar volante (PNG)</button></div>
+      <div class="tools" style="margin-top:6px"><button class="btn pri" id="vl-down" type="button">Descargar volante (PNG)</button><button class="btn" id="vl-wa" type="button" style="background:#25d366;color:#05230f;border-color:#25d366">Enviar por WhatsApp</button></div>
     </div>
     <div class="vl-prev card"><canvas id="vl-cv" width="1080" height="1920" aria-label="Vista previa del volante"></canvas><p class="faint" id="vl-msg" style="font-size:.82rem">Sube una foto para empezar.</p></div>
   </div>`;
@@ -693,6 +848,7 @@ RENDER.volantes = async () => {
   cv.onpointerdown = e => { if (!VL.img) return; cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, ox: VL.ox, oy: VL.oy }; };
   cv.onpointermove = e => { if (!drag) return; const r = cv.getBoundingClientRect(); VL.ox = drag.ox + (e.clientX - drag.x) / r.width; VL.oy = drag.oy + (e.clientY - drag.y) / r.height; draw(); };
   cv.onpointerup = cv.onpointercancel = () => drag = null;
+  $("#vl-wa").onclick = compartirVolante;
   $("#vl-down").onclick = () => {
     if (!VL.img) return toast("Primero sube o elige una foto", 1);
     const nom = ["volante", $("#vl-t2").value, $("#vl-t3").value.replace(/^en\s+/i, "")].filter(Boolean).join("-").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
