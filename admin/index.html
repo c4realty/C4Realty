@@ -7,7 +7,7 @@
 <title>C4 Realty · Administración</title>
 <link rel="icon" href="../img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=Inter+Tight:wght@700&family=Fraunces:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=Inter+Tight:wght@700&family=Fraunces:wght@700&family=Playfair+Display:wght@800;900&family=DM+Serif+Display&display=swap">
 <style>
 :root{
   --bg:#0a1322;--panel:#0f1c33;--card:#132342;--card-2:#1a2f55;
@@ -153,6 +153,17 @@ td.r,th.r{text-align:right}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 16px;z-index:90;font-weight:600;max-width:calc(100% - 32px)}
 .toast.err{border-color:var(--crit)}
 .spin{opacity:.6;pointer-events:none}
+
+/* volantes */
+.vl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:16px;align-items:start}
+@media (max-width:900px){.vl{grid-template-columns:1fr}}
+.vl-form{display:grid;gap:12px}
+.vl-prev{position:sticky;top:12px;display:grid;gap:8px;justify-items:center}
+.vl-prev canvas{width:100%;max-height:78vh;object-fit:contain;border-radius:12px;background:#000;touch-action:none;cursor:grab}
+.vl-thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.vl-thumbs button{flex:none;width:64px;height:84px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:var(--panel)}
+.vl-thumbs button.on{border-color:var(--accent)}
+.vl-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -212,7 +223,8 @@ const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const money = n => n == null || n === "" ? "—" : "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 const fecha = s => { if (!s) return "—"; const d = new Date(s.replace(" ", "T") + (s.length <= 19 ? "Z" : "")); return isNaN(d) ? s : d.toLocaleString("es-PA", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 const dia = s => s ? new Date(s.replace(" ", "T") + "Z").toLocaleDateString("es-PA", { day: "2-digit", month: "short", year: "numeric" }) : "—";
-const img = r => r ? (/^https?:/.test(r) ? r : "../" + r) : "";
+const MEDIA = "https://raw.githubusercontent.com/rapiprestamos-prog/propiedades/c4-subida/";
+const img = r => r ? (/^https?:/.test(r) ? r : /^(img\/p\/|docs\/planos\/|videos\/aguacatal-)/.test(r) ? MEDIA + r : "../" + r) : "";
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { } } };
 
 const EST_P = { borrador: "Borrador", disponible: "Disponible", reservada: "Reservada", en_negociacion: "En negociación", vendida: "Vendida", alquilada: "Alquilada", retirada: "Retirada" };
@@ -296,6 +308,7 @@ const VISTAS = [
   { id: "propiedades", t: "Propiedades", ico: "⌂", mod: "propiedades", sub: "Lo que está disponible, reservado y vendido" },
   { id: "clientes", t: "Clientes", ico: "☺", mod: "clientes", sub: "Personas que escriben desde la página, WhatsApp o Instagram" },
   { id: "negocios", t: "Negocios", ico: "⇢", mod: "negocios", sub: "Cada cliente avanzando por los pasos de compra" },
+  { id: "volantes", t: "Volantes", ico: "▣", mod: "propiedades", sub: "Haz volantes con el estilo de C4 Realty y descárgalos" },
   { id: "citas", t: "Citas", ico: "◷", mod: "citas", sub: "Recorridos, llamadas, firmas y entregas" },
   { id: "usuarios", t: "Usuarios y permisos", ico: "⚿", mod: "usuarios", sub: "Quién entra al panel y qué puede hacer" },
   { id: "diseno", t: "Diseño", ico: "◐", mod: "plantillas", sub: "Elige la plantilla de la página pública" },
@@ -619,6 +632,150 @@ RENDER.diseno = async () => {
     <p class="muted" style="margin-top:14px;font-size:.88rem">El cambio se ve en la página pública la próxima vez que alguien la abra.</p>`;
   $$("[data-act]").forEach(b => b.onclick = async () => { try { await api(`/api/plantillas/${b.dataset.act}/activar`, { method: "POST" }); toast("Plantilla activada"); RENDER.diseno(); } catch (x) { toast(x.message, 1); } });
 };
+
+/* ---------- VOLANTES ---------- */
+const VL = { img: null, zoom: 1, ox: 0, oy: 0, fmt: "historia" };
+const VL_FMT = { historia: [1080, 1920, "Historia 9:16 (WhatsApp / Instagram)"], post: [1080, 1350, "Publicación 4:5 (Instagram)"], cuadro: [1080, 1080, "Cuadrado 1:1"] };
+RENDER.volantes = async () => {
+  let props = [];
+  try { props = await api("/api/propiedades"); } catch (x) { props = []; }
+  const v = k => esc(store.get("c4_vl_" + k) ?? "");
+  $("#body").innerHTML = `<div class="vl">
+    <div class="card vl-form">
+      <h2>1 · La foto</h2>
+      <div class="tools"><label class="btn pri" for="vl-file">Subir foto de mi computadora</label><input id="vl-file" type="file" accept="image/*" class="hide"></div>
+      ${props.length ? `<div class="f"><label for="vl-prop">O elige de una propiedad</label><select id="vl-prop"><option value="">—</option>${props.map(p => `<option value="${p.id}">${esc(p.titulo)}${p.zona ? " · " + esc(p.zona) : ""}</option>`).join("")}</select></div><div class="vl-thumbs" id="vl-thumbs"></div>` : ""}
+      <div class="grid2">
+        <div class="f"><label for="vl-zoom">Acercar</label><input id="vl-zoom" type="range" min="1" max="2.5" step="0.01" value="1"></div>
+        <div class="f"><label for="vl-fmt">Tamaño</label><select id="vl-fmt">${Object.entries(VL_FMT).map(([k, f]) => `<option value="${k}">${f[2]}</option>`).join("")}</select></div>
+      </div>
+      <p class="faint" style="font-size:.82rem">Arrastra la foto en la vista previa para moverla.</p>
+      <h2 style="margin-top:6px">2 · Los textos</h2>
+      <div class="grid2">
+        <div class="f"><label for="vl-t1">Texto blanco</label><input id="vl-t1" value="${v("t1") || "Modelo"}"></div>
+        <div class="f"><label for="vl-t2">Texto dorado</label><input id="vl-t2" value="${v("t2")}" placeholder="Coral"></div>
+        <div class="f" style="grid-column:1/-1"><label for="vl-t3">Segunda línea</label><input id="vl-t3" value="${v("t3")}" placeholder="en Bugaba"></div>
+        <div class="f"><label for="vl-t4">Etiqueta (blanco)</label><input id="vl-t4" value="${v("t4") || "Lote"}"></div>
+        <div class="f"><label for="vl-t5">Etiqueta (dorado)</label><input id="vl-t5" value="${v("t5")}" placeholder="450m2"></div>
+      </div>
+      <div class="grid2">
+        <div class="f"><label for="vl-pos">Dónde van los textos</label><select id="vl-pos"><option value="arriba">Arriba (en el cielo)</option><option value="centro">Al centro</option><option value="abajo">Abajo</option></select></div>
+        <div class="f chk" style="align-self:end"><input type="checkbox" id="vl-sombra" checked><label for="vl-sombra">Oscurecer detrás del texto</label></div>
+      </div>
+      <div class="tools" style="margin-top:6px"><button class="btn pri" id="vl-down" type="button">Descargar volante (PNG)</button></div>
+    </div>
+    <div class="vl-prev card"><canvas id="vl-cv" width="1080" height="1920" aria-label="Vista previa del volante"></canvas><p class="faint" id="vl-msg" style="font-size:.82rem">Sube una foto para empezar.</p></div>
+  </div>`;
+  const draw = () => vlDraw();
+  ["t1", "t2", "t3", "t4", "t5"].forEach(k => $("#vl-" + k).oninput = e => { store.set("c4_vl_" + k, e.target.value); draw(); });
+  $("#vl-pos").onchange = draw; $("#vl-sombra").onchange = draw;
+  $("#vl-zoom").oninput = e => { VL.zoom = +e.target.value; draw(); };
+  $("#vl-fmt").value = VL.fmt; $("#vl-fmt").onchange = e => { VL.fmt = e.target.value; draw(); };
+  $("#vl-file").onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => vlCargar(r.result); r.readAsDataURL(f); };
+  if ($("#vl-prop")) $("#vl-prop").onchange = async e => {
+    const id = e.target.value; $("#vl-thumbs").innerHTML = ""; if (!id) return;
+    const p = props.find(x => String(x.id) === id);
+    if (p) {
+      const m = /^Modelo\s+(.+)$/i.exec((p.titulo || "").split("·")[0].trim());
+      if (m) { $("#vl-t1").value = "Modelo"; $("#vl-t2").value = m[1]; }
+      if (p.zona) $("#vl-t3").value = "en " + p.zona;
+      if (p.lote_m2) { $("#vl-t4").value = "Lote"; $("#vl-t5").value = String(+p.lote_m2) + "m2"; }
+      ["t1", "t2", "t3", "t4", "t5"].forEach(k => store.set("c4_vl_" + k, $("#vl-" + k).value));
+    }
+    try {
+      const M = (await api("/api/medios?propiedad_id=" + id)).filter(x => x.tipo === "foto" || x.tipo === "volante");
+      $("#vl-thumbs").innerHTML = M.length ? M.map(x => `<button type="button" data-src="${esc(x.ruta)}"><img src="${esc(img(x.ruta))}" alt="" loading="lazy"></button>`).join("") : `<p class="faint" style="font-size:.82rem">Esta propiedad no tiene fotos guardadas.</p>`;
+      $$("#vl-thumbs button").forEach(b => b.onclick = () => { $$("#vl-thumbs button").forEach(x => x.classList.toggle("on", x === b)); vlCargar(img(b.dataset.src)); });
+    } catch (x) { toast(x.message, 1); }
+    draw();
+  };
+  const cv = $("#vl-cv"); let drag = null;
+  cv.onpointerdown = e => { if (!VL.img) return; cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, ox: VL.ox, oy: VL.oy }; };
+  cv.onpointermove = e => { if (!drag) return; const r = cv.getBoundingClientRect(); VL.ox = drag.ox + (e.clientX - drag.x) / r.width; VL.oy = drag.oy + (e.clientY - drag.y) / r.height; draw(); };
+  cv.onpointerup = cv.onpointercancel = () => drag = null;
+  $("#vl-down").onclick = () => {
+    if (!VL.img) return toast("Primero sube o elige una foto", 1);
+    const nom = ["volante", $("#vl-t2").value, $("#vl-t3").value.replace(/^en\s+/i, "")].filter(Boolean).join("-").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    cv.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = (nom || "volante") + ".png"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Volante descargado"); }, "image/png");
+  };
+  try { await document.fonts.load('900 120px "Playfair Display"'); await document.fonts.load('800 80px "Playfair Display"'); await document.fonts.load('400 80px "DM Serif Display"'); } catch (x) {}
+  draw();
+};
+function vlCargar(src) {
+  const im = new Image(); if (/^https?:/.test(src)) im.crossOrigin = "anonymous";
+  im.onload = () => { VL.img = im; VL.ox = 0; VL.oy = 0; VL.zoom = 1; if ($("#vl-zoom")) $("#vl-zoom").value = 1; vlDraw(); };
+  im.onerror = () => toast("No se pudo abrir esa imagen", 1);
+  im.src = src;
+}
+function vlDraw() {
+  const cv = $("#vl-cv"); if (!cv) return;
+  const [W, H] = VL_FMT[VL.fmt]; if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const x = cv.getContext("2d"); x.save(); x.clearRect(0, 0, W, H);
+  // fondo
+  const bg = x.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#1f6fd1"); bg.addColorStop(.55, "#6fb3ef"); bg.addColorStop(1, "#2f6a2a"); x.fillStyle = bg; x.fillRect(0, 0, W, H);
+  if (VL.img) {
+    const s = Math.max(W / VL.img.width, H / VL.img.height) * VL.zoom, dw = VL.img.width * s, dh = VL.img.height * s;
+    x.drawImage(VL.img, (W - dw) / 2 + VL.ox * W, (H - dh) / 2 + VL.oy * H, dw, dh);
+  }
+  const msg = $("#vl-msg"); if (msg) msg.textContent = VL.img ? `Tamaño final: ${W} × ${H} px` : "Sube una foto para empezar.";
+  const t1 = $("#vl-t1").value.trim(), t2 = $("#vl-t2").value.trim(), t3 = $("#vl-t3").value.trim(), t4 = $("#vl-t4").value.trim(), t5 = $("#vl-t5").value.trim();
+  const SERIF = '"Playfair Display", Georgia, "Times New Roman", serif', DIG = '"DM Serif Display", Georgia, serif';
+  const runs = (t, font) => t.split(/([0-9]+)/).filter(Boolean).map(r => [r, /^[0-9]+$/.test(r) ? font.replace(/^\d+ /, "400 ").replace(SERIF, DIG) : font]);
+  const ancho = (t, font) => runs(t, font).reduce((a, [r, f]) => { x.font = f; return a + x.measureText(r).width; }, 0);
+  const maxW = W * .9; let fs = W * .15;
+  const tit = [t1, t2].filter(Boolean);
+  x.font = `900 ${fs}px ${SERIF}`;
+  const w1 = () => ancho(tit.join(" "), `900 ${fs}px ${SERIF}`);
+  while (tit.length && w1() > maxW && fs > 40) { fs -= 2; x.font = `900 ${fs}px ${SERIF}`; }
+  let fs2 = fs * .68; x.font = `800 ${fs2}px ${SERIF}`; while (t3 && x.measureText(t3).width > maxW && fs2 > 30) { fs2 -= 2; x.font = `800 ${fs2}px ${SERIF}`; }
+  const pfs = fs * .6, ph = pfs * 1.45;
+  const alto = (tit.length ? fs : 0) + (t3 ? fs2 * 1.05 : 0) + 40 + ((t4 || t5) ? ph + 30 : 0);
+  const pos = $("#vl-pos").value;
+  let y = pos === "arriba" ? H * .095 : pos === "centro" ? (H - alto) / 2 : H - alto - H * .08;
+  if ($("#vl-sombra").checked) {
+    const y0 = Math.max(0, y - 120), y1 = Math.min(H, y + alto + 140), g = x.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, "rgba(0,10,25,0)"); g.addColorStop(.3, "rgba(0,10,25,.32)"); g.addColorStop(.7, "rgba(0,10,25,.32)"); g.addColorStop(1, "rgba(0,10,25,0)");
+    x.fillStyle = g; x.fillRect(0, y0, W, y1 - y0);
+  }
+  const oro = (top, h) => { const g = x.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, "#fff3c4"); g.addColorStop(.38, "#f4d27e"); g.addColorStop(.7, "#dca546"); g.addColorStop(1, "#a8731c"); return g; };
+  const sombra = (b) => { x.shadowColor = "rgba(0,0,0,.9)"; x.shadowBlur = b; x.shadowOffsetX = 0; x.shadowOffsetY = 4; };
+  const sinSombra = () => { x.shadowColor = "transparent"; x.shadowBlur = 0; x.shadowOffsetY = 0; };
+  // piezas de texto en una línea, centradas
+  const linea = (partes, font, base, top, h) => {
+    x.font = font; x.textBaseline = "alphabetic";
+    const sp = x.measureText(" ").width, ws = partes.map(p => ancho(p[0], font));
+    let cx = (W - (ws.reduce((a, b) => a + b, 0) + sp * (partes.length - 1))) / 2;
+    partes.forEach((p, i) => {
+      let rx = cx;
+      runs(p[0], font).forEach(([r, f]) => {
+        x.font = f;
+        for (const b of [56, 22]) { sombra(b); x.fillStyle = p[1] ? oro(top, h) : "#fff"; x.fillText(r, rx, base); }
+        sinSombra(); x.fillStyle = p[1] ? oro(top, h) : "#fff"; x.fillText(r, rx, base);
+        rx += x.measureText(r).width;
+      });
+      x.font = font; cx += ws[i] + sp;
+    });
+  };
+  x.textAlign = "left";
+  if (tit.length) { const parts = []; if (t1) parts.push([t1, 0]); if (t2) parts.push([t2, 1]); linea(parts, `900 ${fs}px ${SERIF}`, y + fs * .8, y, fs * .85); y += fs; }
+  if (t3) { linea([[t3, 0]], `800 ${fs2}px ${SERIF}`, y + fs2 * .82, y, fs2); y += fs2 * 1.05; }
+  // línea dorada
+  y += 18; const lw = Math.min(W * .34, 380), gl = x.createLinearGradient(W / 2 - lw / 2, 0, W / 2 + lw / 2, 0);
+  gl.addColorStop(0, "rgba(232,190,100,0)"); gl.addColorStop(.5, "#f0cf7e"); gl.addColorStop(1, "rgba(232,190,100,0)");
+  x.fillStyle = gl; x.fillRect(W / 2 - lw / 2, y, lw, Math.max(3, W * .0035)); y += 22;
+  // píldora
+  if (t4 || t5) {
+    x.font = `800 ${pfs}px ${SERIF}`;
+    const parts = []; if (t4) parts.push([t4, 0]); if (t5) parts.push([t5, 1]);
+    const sp = x.measureText(" ").width, tw = parts.reduce((a, p) => a + ancho(p[0], `800 ${pfs}px ${SERIF}`), 0) + sp * (parts.length - 1);
+    const pw = Math.min(W * .92, tw + pfs * 1.5), px = (W - pw) / 2, r = ph / 2;
+    const path = () => { x.beginPath(); x.moveTo(px + r, y); x.arcTo(px + pw, y, px + pw, y + ph, r); x.arcTo(px + pw, y + ph, px, y + ph, r); x.arcTo(px, y + ph, px, y, r); x.arcTo(px, y, px + pw, y, r); x.closePath(); };
+    sombra(30); path(); const gp = x.createLinearGradient(0, y, 0, y + ph); gp.addColorStop(0, "#1f3f2a"); gp.addColorStop(1, "#0c2216"); x.fillStyle = gp; x.fill(); sinSombra();
+    path(); x.lineWidth = Math.max(3, W * .005); x.strokeStyle = oro(y, ph); x.stroke();
+    linea(parts, `800 ${pfs}px ${SERIF}`, y + ph / 2 + pfs * .33, y + ph * .2, ph * .6);
+  }
+  x.restore();
+}
 
 /* ---------- CONFIGURACIÓN ---------- */
 RENDER.configuracion = async () => {
