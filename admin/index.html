@@ -646,6 +646,8 @@ RENDER.diseno = async () => {
     <p class="muted" style="font-size:.88rem">${esc(t.descripcion)}</p>
     <div class="swatches">${["fondo", "superficie", "texto", "acento", "linea"].map(c => `<i title="${c}" style="background:${esc(k[c])}"></i>`).join("")}</div>
     <p class="faint" style="font-size:.8rem">Letras: ${esc(k.titulos)} / ${esc(k.cuerpo)}</p>
+    <p style="font-size:.85rem">Estructura: <b>${({ residencial: "Residencial (página distinta)", cinematico: "Cinemático (página distinta)" })[k.layout] || "Azul C4 (la de siempre)"}</b></p>
+    ${k.layout && k.layout !== "azul" ? `<a class="btn sm" href="../d/${esc(k.layout)}.html?vista=1" target="_blank" rel="noopener">Ver cómo se ve</a>` : ""}
     ${ed && !t.activa ? `<button class="btn pri" data-act="${t.id}">Usar esta plantilla</button>` : ""}</div>`; }).join("")}</div>
     <p class="muted" style="margin-top:14px;font-size:.88rem">El cambio se ve en la página pública la próxima vez que alguien la abra.</p>`;
   $$("[data-act]").forEach(b => b.onclick = async () => { try { await api(`/api/plantillas/${b.dataset.act}/activar`, { method: "POST" }); toast("Plantilla activada"); RENDER.diseno(); } catch (x) { toast(x.message, 1); } });

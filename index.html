@@ -362,6 +362,8 @@ function c4Tema(t){if(!t||!t.tokens)return;const k=t.tokens,r=document.documentE
   const id="c4-fuentes";if(!document.getElementById(id)){const l=document.createElement("link");l.id=id;l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family="+[k.titulos,k.cuerpo].map(f=>encodeURIComponent(f).replace(/%20/g,"+")+":wght@400;600;700;800").join("&family=")+"&display=swap";document.head.appendChild(l);}}
 try{c4Tema(JSON.parse(localStorage.getItem("c4_tema")||"null"));}catch(e){}
 </script>
+<script src="js/c4.js"></script>
+<script>C4.tema("azul");</script>
 <style>
 html[data-tema] header.top{background:color-mix(in srgb,var(--bg) 90%,transparent)}
 html[data-tema] .hero::after{background:linear-gradient(90deg,var(--bg) 25%,color-mix(in srgb,var(--bg) 80%,transparent) 60%,color-mix(in srgb,var(--bg) 55%,transparent))}

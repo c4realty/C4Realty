@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C4 Realty · Casas en Chiriquí</title>
+<meta name="description" content="C4 Realty: casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón y Aguacatal. Cotiza tu vivienda.">
+<link rel="icon" href="../img/logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap">
+<script>window.C4_BASE="../";</script>
+<script src="../js/c4.js"></script>
+<script>C4.tema("cinematico");</script>
+<style>
+:root{
+  --night:#0f1d22;--deep:#0a1418;--bone:#ede7db;--brass:#c8a46b;--fog:#93a1a6;--panel:#14262c;
+  --t:"Cormorant Garamond",Georgia,serif;--b:"Jost",system-ui,sans-serif;
+  --f-bg:#0f1d22;--f-fg:#ede7db;--f-mut:#93a1a6;--f-line:#26393f;--f-soft:#14262c;--f-acc:#c8a46b;--f-acc-ink:#1b1408;--f-title:var(--t);--f-body:var(--b);--f-media:#0a1418;--f-tw:600;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--night);color:var(--bone);font:400 16.5px/1.65 var(--b)}
+h1,h2,h3{font-family:var(--t);font-weight:500;line-height:.98;margin:0}
+a{color:inherit}img{display:block;max-width:100%}button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.w{max-width:1280px;margin:0 auto;padding:0 max(18px,env(safe-area-inset-left))}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border:1px solid rgba(237,231,219,.55);border-radius:2px;text-decoration:none;font-weight:500;letter-spacing:.02em;background:transparent;cursor:pointer}
+.btn.gold{background:var(--brass);border-color:var(--brass);color:#1b1408}
+.btn:hover{border-color:var(--bone)}
+/* barra */
+.top{position:fixed;inset:0 0 auto;z-index:40;transition:background .3s}
+.top.sol{background:rgba(10,20,24,.86);backdrop-filter:blur(10px)}
+.top .w{display:flex;justify-content:space-between;align-items:center;height:78px}
+.top img{height:28px;filter:brightness(0) invert(1)}
+.top nav{display:flex;gap:30px;font-size:.95rem}.top nav a{text-decoration:none;opacity:.8}.top nav a:hover{opacity:1}
+@media (max-width:820px){.top nav{display:none}}
+/* portada a pantalla completa */
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--deep)}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 66%;opacity:0;transform:scale(1.12);transition:opacity 1.6s ease}
+.hero img.on{opacity:1;animation:kb 9s ease-out forwards}
+@keyframes kb{from{transform:scale(1.12)}to{transform:scale(1.02)}}
+@media (prefers-reduced-motion:reduce){.hero img.on{animation:none;transform:none}}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,24,.55) 0%,rgba(10,20,24,.05) 35%,rgba(10,20,24,.25) 60%,rgba(10,20,24,.92) 100%)}
+.hcopy{position:absolute;z-index:2;left:0;right:0;bottom:clamp(40px,9vh,90px)}
+.hcopy h1{font-size:clamp(3.4rem,10vw,9.5rem);letter-spacing:-.02em}
+.hcopy p{max-width:44ch;font-size:1.12rem;color:#d8d2c6;margin:20px 0 28px}
+.hcopy .acts{display:flex;gap:12px;flex-wrap:wrap}
+.hidx{position:absolute;z-index:2;right:max(18px,calc((100vw - 1280px)/2 + 18px));bottom:clamp(40px,9vh,90px);text-align:right;display:grid;gap:4px;cursor:pointer;background:none;border:0;color:var(--bone)}
+.hidx b{font-family:var(--t);font-size:1.6rem;font-weight:500}.hidx span{color:var(--fog);font-size:.9rem}
+@media (max-width:760px){.hidx{display:none}}
+@media (max-aspect-ratio:4/5){.hero img{inset:auto 0 0 0;height:165%;object-position:center bottom;transform-origin:center bottom}}
+/* capítulos: una casa por pantalla */
+.cap{display:grid;grid-template-columns:1.35fr 1fr;min-height:92vh;border-top:1px solid #1f3238}
+.cap:nth-child(even){grid-template-columns:1fr 1.35fr}.cap:nth-child(even) .cimg{order:2}
+.cimg{position:relative;overflow:hidden;cursor:pointer;background:var(--deep);min-height:60vh}
+.cimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 84%;transition:transform 1.2s ease,opacity .2s}
+.cimg:hover img{transform:scale(1.03)}
+.cimg .ver{position:absolute;left:22px;bottom:22px;background:rgba(10,20,24,.7);backdrop-filter:blur(6px);padding:9px 16px;font-size:.9rem;border:1px solid rgba(237,231,219,.25)}
+.ctxt{padding:clamp(34px,6vw,90px) clamp(22px,5vw,72px);display:flex;flex-direction:column;justify-content:center;gap:22px}
+.ctxt .n{color:var(--brass);font-family:var(--t);font-size:1.3rem;font-style:italic}
+.ctxt h2{font-size:clamp(2.8rem,6vw,5.2rem)}
+.ctxt .z{color:var(--fog);font-size:1.05rem}
+.ctxt .pr{font-family:var(--t);font-size:2.4rem;font-weight:600}.ctxt .pr s{font-family:var(--b);font-size:1rem;color:var(--fog);font-weight:400;margin-left:10px}
+.ctxt dl{display:grid;grid-template-columns:auto 1fr;gap:8px 22px;margin:0;border-top:1px solid #26393f;padding-top:18px}
+.ctxt dt{color:var(--fog)}.ctxt dd{margin:0}
+.ctxt .acts{display:flex;gap:10px;flex-wrap:wrap}
+.tg{align-self:flex-start;border:1px solid var(--brass);color:var(--brass);padding:5px 12px;font-size:.88rem}
+@media (max-width:860px){.cap,.cap:nth-child(even){grid-template-columns:1fr}.cap:nth-child(even) .cimg{order:0}.cimg{min-height:0;aspect-ratio:1}.cimg img{object-position:center 93%}.cap{min-height:0}}
+/* índice */
+.idx{padding:100px 0}
+.idx h2{font-size:clamp(2.6rem,6vw,4.6rem);margin-bottom:34px}
+.zf{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.zf button{background:none;border:1px solid #2c4249;padding:8px 16px;cursor:pointer;color:var(--fog)}.zf button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;color:var(--fog);font-size:.9rem;padding:10px 12px;border-bottom:1px solid #26393f}
+td{padding:18px 12px;border-bottom:1px solid #1f3238;vertical-align:middle}
+tr.r{cursor:pointer}tr.r:hover td{background:#13252b}
+td.m{font-family:var(--t);font-size:1.6rem}td.p{font-family:var(--t);font-size:1.35rem;font-weight:600;white-space:nowrap}
+td img{width:54px;height:68px;object-fit:cover;object-position:center 64%}
+@media (max-width:700px){th:nth-child(4),td:nth-child(4),th:nth-child(1),td:nth-child(1){display:none}td.m{font-size:1.3rem}}
+/* pasos y contacto */
+.pasos{display:grid;grid-template-columns:repeat(7,1fr);gap:26px;padding:0;margin:0;list-style:none;counter-reset:p}
+.pasos li{border-top:1px solid #2c4249;padding-top:18px}
+.pasos li::before{counter-increment:p;content:counter(p);display:block;font-family:var(--t);font-size:2.6rem;color:var(--brass);line-height:1;margin-bottom:10px}
+.pasos b{display:block;font-weight:500}.pasos span{color:var(--fog);font-size:.93rem}
+@media (max-width:980px){.pasos{grid-template-columns:repeat(2,1fr)}}
+.ct{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding:110px 0}
+.ct h2{font-size:clamp(2.8rem,6vw,5rem)}
+form{display:grid;gap:16px}
+form label{display:grid;gap:6px;color:var(--fog);font-size:.92rem}
+form input,form select{background:transparent;border:0;border-bottom:1px solid #3a5158;padding:12px 2px;color:var(--bone);font-size:1.05rem;border-radius:0}
+form select option{background:var(--night)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+@media (max-width:860px){.ct{grid-template-columns:1fr;gap:30px}}
+footer{border-top:1px solid #1f3238;padding:34px 0;color:var(--fog)}
+footer .w{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}footer img{height:24px;filter:brightness(0) invert(1);opacity:.8}
+.wa-f{position:fixed;right:18px;bottom:18px;z-index:50;width:56px;height:56px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+<header class="top" id="top"><div class="w"><a href="#inicio" aria-label="C4 Realty, inicio"><img src="../img/logo.png" alt="C4 Realty"></a>
+ <nav aria-label="Secciones"><a href="#casas">Casas</a><a href="#indice">Todas</a><a href="#pasos">Cómo comprar</a><a href="#contacto">Contacto</a></nav>
+ <a class="btn" href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp</a></div></header>
+<main>
+ <section class="hero" id="inicio" aria-label="Portada">
+  <div class="hcopy"><div class="w"><h1>Casas en Chiriquí</h1>
+   <p>Cotizar es tu primer paso para obtener tu vivienda. Compara proyectos, precios y planes de pago en un solo lugar.</p>
+   <div class="acts"><a class="btn gold" href="#casas">Ver las casas</a><a class="btn" href="#contacto">Agendar recorrido</a></div></div></div>
+  <button class="hidx" id="hidx" type="button"></button>
+ </section>
+ <section id="casas" aria-label="Casas"></section>
+ <section class="idx w" id="indice"><h2>Todas las casas</h2><div class="zf" id="zf" role="group" aria-label="Filtrar por zona"></div>
+  <table><thead><tr><th scope="col"></th><th scope="col">Modelo</th><th scope="col">Zona</th><th scope="col">Lote</th><th scope="col">Precio</th></tr></thead><tbody id="tb"></tbody></table></section>
+ <section class="w" id="pasos" style="padding-top:20px"><h2 style="font-size:clamp(2.6rem,6vw,4.6rem);margin-bottom:40px">Cómo comprar tu casa</h2>
+  <ol class="pasos">
+   <li><b>Cotización bancaria</b><span>Conoce tu capacidad.</span></li>
+   <li><b>Recorrido</b><span>Visita los proyectos que están dentro de tu capacidad.</span></li>
+   <li><b>Aparta</b><span>Tu lote favorito con el modelo de tu preferencia.</span></li>
+   <li><b>Documentación</b><span>Llena la documentación del banco.</span></li>
+   <li><b>Aprobación</b><span>Aprobación bancaria lista.</span></li>
+   <li><b>Contrato</b><span>Firma del contrato con la constructora.</span></li>
+   <li><b>Abonos y llaves</b><span>Abonos del % indicado hasta la entrega de tus llaves.</span></li>
+  </ol></section>
+ <section class="w ct" id="contacto">
+  <div><h2>Agenda tu recorrido</h2><p style="color:var(--fog);max-width:40ch;margin-top:18px">Te ayudamos desde cero: cotización, recorrido y asesoría gratis. Escríbenos al WhatsApp 6253-1751 o déjanos tus datos.</p></div>
+  <form data-c4-contacto>
+   <label>Nombre<input name="nombre" autocomplete="name" required></label>
+   <label>Teléfono o WhatsApp<input name="telefono" autocomplete="tel" required></label>
+   <label>Salario mensual aprox.<input name="salario" type="number" min="0" step="50"></label>
+   <label>Casa que te interesa<select name="propiedad" id="f-prop"><option value="">Aún no sé, ayúdame a elegir</option></select></label>
+   <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+   <button class="btn gold" style="justify-content:center;margin-top:8px">Enviar</button>
+   <p data-msg role="status" style="margin:0"></p>
+  </form></section>
+</main>
+<footer><div class="w"><img src="../img/logo.png" alt="C4 Realty"><span>WhatsApp 6253-1751 · c4realty1@gmail.com · Instagram @c4realty1</span></div></footer>
+<a class="wa-f" href="https://wa.me/50762531751" target="_blank" rel="noopener" aria-label="WhatsApp 6253-1751"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2 .6 2.8.5a2.4 2.4 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1c0-.1-.2-.2-.5-.3z"/></svg></a>
+<script>
+addEventListener("scroll",()=>document.getElementById("top").classList.toggle("sol",scrollY>40),{passive:true});
+(async()=>{
+ const {$,$$,esc,fmt}=C4;const P=(await C4.cargar()).filter(p=>p.cat!=="Alquiler");
+ /* portada */
+ const hero=$("#inicio");P.forEach((p,i)=>{const im=document.createElement("img");im.src=p.img[0];im.alt="";if(!i)im.className="on";hero.prepend(im);});
+ let hi=0;const L=()=>$$("#inicio > img").reverse();
+ const pon=k=>{const I=L();hi=(k+I.length)%I.length;I.forEach((x,j)=>x.classList.toggle("on",j===hi));const p=P[hi];$("#hidx").innerHTML=p?`<span>${String(hi+1).padStart(2,"0")} / ${String(P.length).padStart(2,"0")}</span><b>${esc(p.n)}</b><span>${esc(p.zl||p.z)}</span>`:"";};
+ pon(0);if(!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>pon(hi+1),7000);
+ $("#hidx").onclick=()=>P[hi]&&C4.ficha(P[hi]);
+ /* una casa por pantalla */
+ $("#casas").innerHTML=P.map((p,i)=>`<article class="cap" aria-label="${esc(p.n)}">
+   <div class="cimg" data-g="${esc(p.id)}" data-c4="${esc(p.id)}"><img src="${esc(p.img[0])}" alt="${esc(p.n)}, ${esc(p.z)}" loading="lazy"><span class="ver">Ver ${p.img.length} fotos${p.plano.length?" y plano":""}</span></div>
+   <div class="ctxt"><span class="n">${esc(p.zl||p.z)}</span><h2>${esc(p.n)}</h2>
+    ${C4.desc(p)?`<span class="tg">−${C4.desc(p)} % · ${esc(p.tag||"Oferta")}</span>`:p.tag?`<span class="tg">${esc(p.tag)}</span>`:""}
+    <div class="pr">${esc(C4.precioTxt(p))}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</div>
+    ${p.kv.length?`<dl>${p.kv.slice(0,4).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`:""}
+    <div class="acts"><button class="btn gold" type="button" data-f="${esc(p.id)}">Ver la casa</button><a class="btn" href="${esc(C4.waProp(p))}" target="_blank" rel="noopener">Consultar</a></div></div></article>`).join("");
+ /* índice */
+ const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();let z="";
+ const tabla=()=>{$("#tb").innerHTML=P.filter(p=>!z||p.z===z).map(p=>`<tr class="r" data-f="${esc(p.id)}" tabindex="0"><td><img src="${esc(p.img[0])}" alt="" loading="lazy"></td><td class="m">${esc(p.n)}</td><td>${esc(p.zl||p.z)}</td><td>${p.lote?esc(p.lote)+" m²":""}</td><td class="p">${esc(C4.precioTxt(p))}</td></tr>`).join("");$$("#zf button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.z===z)));};
+ $("#zf").innerHTML=`<button type="button" data-z="">Todas</button>`+zs.map(x=>`<button type="button" data-z="${esc(x)}">${esc(x)}</button>`).join("");
+ $$("#zf button").forEach(b=>b.onclick=()=>{z=b.dataset.z;tabla();});tabla();
+ document.addEventListener("click",e=>{const g=e.target.closest("[data-g]");if(g){const p=P.find(x=>x.id===g.dataset.g);if(p)C4.galeria(p,0,true);return;}const f=e.target.closest("[data-f]");if(f){const p=P.find(x=>x.id===f.dataset.f);if(p)C4.ficha(p);}});
+ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr.r")){const p=P.find(x=>x.id===e.target.dataset.f);if(p)C4.ficha(p);}});
+ C4.hover(".cimg[data-c4]",P);
+ $("#f-prop").innerHTML+=P.map(p=>`<option value="${esc(p.id)}">${esc(p.n)} · ${esc(p.z)}</option>`).join("");
+ C4.contacto($("[data-c4-contacto]"),P);C4.abrirDesdeUrl(P);
+})();
+</script>
+</body>
+</html>
