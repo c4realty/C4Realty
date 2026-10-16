@@ -684,8 +684,8 @@ RENDER.volantes = async () => {
     }
     try {
       const M = (await api("/api/medios?propiedad_id=" + id)).filter(x => x.tipo === "foto" || x.tipo === "volante");
-      $("#vl-thumbs").innerHTML = M.length ? M.map(x => `<button type="button" data-src="${esc(x.ruta)}"><img src="${esc(img(x.ruta))}" alt="" loading="lazy"></button>`).join("") : `<p class="faint" style="font-size:.82rem">Esta propiedad no tiene fotos guardadas.</p>`;
-      $$("#vl-thumbs button").forEach(b => b.onclick = () => { $$("#vl-thumbs button").forEach(x => x.classList.toggle("on", x === b)); vlCargar(img(b.dataset.src)); });
+      $("#vl-thumbs").innerHTML = M.length ? M.map(x => `<button type="button" data-src="${esc(x.ruta)}"><img src="../${esc(x.ruta)}" alt="" loading="lazy"></button>`).join("") : `<p class="faint" style="font-size:.82rem">Esta propiedad no tiene fotos guardadas.</p>`;
+      $$("#vl-thumbs button").forEach(b => b.onclick = () => { $$("#vl-thumbs button").forEach(x => x.classList.toggle("on", x === b)); vlCargar("../" + b.dataset.src); });
     } catch (x) { toast(x.message, 1); }
     draw();
   };
@@ -702,7 +702,7 @@ RENDER.volantes = async () => {
   draw();
 };
 function vlCargar(src) {
-  const im = new Image(); if (/^https?:/.test(src)) im.crossOrigin = "anonymous";
+  const im = new Image();
   im.onload = () => { VL.img = im; VL.ox = 0; VL.oy = 0; VL.zoom = 1; if ($("#vl-zoom")) $("#vl-zoom").value = 1; vlDraw(); };
   im.onerror = () => toast("No se pudo abrir esa imagen", 1);
   im.src = src;
