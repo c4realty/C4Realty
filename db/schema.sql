@@ -377,7 +377,8 @@ BEGIN UPDATE clientes SET ultimo_contacto = NEW.creado_en WHERE id = NEW.cliente
 -- ---------------------------------------------------------------------
 -- Lo que ve la página pública
 CREATE VIEW IF NOT EXISTS v_catalogo_publico AS
-SELECT p.*, (SELECT ruta FROM medios m WHERE m.propiedad_id = p.id ORDER BY m.es_principal DESC, m.orden LIMIT 1) AS imagen
+SELECT p.*, (SELECT ruta FROM medios m WHERE m.propiedad_id = p.id ORDER BY m.es_principal DESC, m.orden LIMIT 1) AS imagen,
+  (SELECT json_group_array(json_object('t', tipo, 'r', ruta, 'o', orden)) FROM (SELECT tipo, ruta, orden FROM medios m WHERE m.propiedad_id = p.id ORDER BY orden)) AS medios_json
 FROM propiedades p
 WHERE p.publicada = 1 AND p.estado IN ('disponible','reservada','en_negociacion');
 

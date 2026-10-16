@@ -818,10 +818,14 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
     J(d.pagos).forEach(x=>{x=String(x).trim();const m=/^(.+?):\s*\$\s*([\d,]+(?:\.\d+)?)$/.exec(x);if(m)vr.push([m[1],+m[2].replace(/,/g,"")]);else if(/^importante\s*:/i.test(x))av=x.replace(/^importante\s*:\s*/i,"");else if(x)pg.push(x);});
     let kv=J(d.caracteristicas).map(x=>Array.isArray(x)?x.map(String):[String(x),""]);
     if(!kv.length)kv=[["Recámaras",d.recamaras],["Baños",d.banos],["Estacionamiento",d.estacionamiento],["Lote",d.lote_m2?(+d.lote_m2)+" m²":""]].filter(x=>x[1]);
-    const im=b.img&&b.img.length?b.img:[c4Ruta(d.imagen)||"img/logo.png"];
+    let M=[];try{M=JSON.parse(d.medios_json||"[]");}catch(e){}M.sort((x,y)=>(x.o||0)-(y.o||0));
+    const fo=M.filter(x=>x.t==="volante"||x.t==="foto").map(x=>c4Ruta(x.r));
+    const pl=M.filter(x=>x.t==="plano").map(x=>[((b.plano||[]).find(z=>z[1]===c4Ruta(x.r))||[])[0]||"Plano "+(x.r.split("/").pop().replace(/\.pdf$/i,"").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase())),c4Ruta(x.r)]);
+    const vi=M.filter(x=>x.t==="video").map((x,k)=>[c4Ruta(x.r).replace(/\.mp4$/i,""),(b.vids&&b.vids[k]&&b.vids[k][1])||"Video "+(k+1)]);
+    const im=fo.length?fo:b.img&&b.img.length?b.img:[c4Ruta(d.imagen)||"img/logo.png"];
     return {...b,id:d.codigo,cat:CATM[d.categoria]||"Casa",n:d.titulo,z:d.zona||"",zl:d.zona_detalle||undefined,precio:d.precio,antes:d.precio_antes||undefined,desde:!!d.precio_desde,ptxt:d.precio_texto||undefined,renta:d.renta_mensual,
       tag:d.estado==="reservada"?"Reservada":d.estado==="en_negociacion"?"En negociación":(d.etiqueta||undefined),f:(d.fecha_publicacion||String(d.creado_en||"").slice(0,10)||b.f||"2026-10-15"),
-      kv,pts:J(d.incluye).map(String),pagos:pg,vr:vr.length?vr:undefined,aviso:av||undefined,txt:d.descripcion||undefined,img:im};});
+      kv,pts:J(d.incluye).map(String),pagos:pg,vr:vr.length?vr:undefined,aviso:av||undefined,txt:d.descripcion||undefined,img:im,plano:M.length?(pl.length?pl:undefined):b.plano,vids:M.length?(vi.length?vi:undefined):b.vids};});
   P.splice(0,P.length,...N);QP.splice(0,QP.length,...P.filter(p=>p.cat==="Casa"));
   const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();$("#q-zona").innerHTML=`<option value="">Todas las zonas</option>`+zs.map(z=>`<option>${z}</option>`).join("");
   $("#c-prop").innerHTML=`<option value="">Aún no sé, ayúdame a elegir</option>`+QP.map(p=>`<option value="${p.id}">${p.n}${p.z?" · "+p.z:""}${p.precio?" · "+(p.desde?"desde ":"")+fmt(p.precio):""}</option>`).join("");
