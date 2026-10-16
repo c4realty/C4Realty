@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" href="img/logo.png">
 <title>C4 Realty</title>
-<meta name="description" content="C4 Realty: casas, terrenos, fincas y alquileres en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón y Aguacatal. Cotiza tu vivienda.">
+<meta name="description" content="C4 Realty: casas, terrenos y fincas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón y Aguacatal. Cotiza tu vivienda.">
 <meta property="og:title" content="C4 Realty · Casas en Chiriquí">
 <meta property="og:description" content="Cotizar es tu primer paso para obtener tu vivienda.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap">
@@ -60,6 +60,7 @@ body.registered .welcome{display:flex}
 .nav ul a.on{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent);padding-bottom:4px}
 @media (max-width:980px){.welcome{display:none!important}.nav{height:auto;flex-wrap:wrap;padding-block:10px;row-gap:8px}.nav ul{order:3;width:100%;overflow-x:auto;gap:18px;padding-bottom:6px;white-space:nowrap}}
 [data-page][hidden]{display:none!important}
+[data-oculto]{display:none!important}
 .pubbox{display:grid;gap:10px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:14px}
 .pubhead{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}
 .pubhead img{width:72px;height:72px;object-fit:cover;border-radius:10px}
@@ -80,8 +81,8 @@ body.registered .welcome{display:flex}
 .field{display:grid;gap:6px;min-width:0}
 .field label,.flabel{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .field select,.field input{border:1px solid var(--line);background:var(--bg-2);border-radius:10px;padding:11px 12px;width:100%}
-.types{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-@media (max-width:480px){.types{grid-template-columns:repeat(3,1fr)}}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:480px){.types{grid-template-columns:repeat(2,1fr)}}
 .types button{border:1px solid var(--line);background:var(--bg-2);border-radius:12px;padding:11px 4px;cursor:pointer;font-weight:700;font-size:.84rem;display:grid;gap:3px;justify-items:center;color:var(--muted)}
 .types button span{font-size:1.2rem}
 .types button.on{border-color:var(--accent);color:var(--fg);background:rgba(242,184,75,.1)}
@@ -399,7 +400,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   <div class="hero-bg" id="hero-bg"></div>
   <div class="wrap">
     <div>
-      <div class="eyebrow">Casas · Terrenos · Fincas · Alquileres en Chiriquí</div>
+      <div class="eyebrow">Casas · Terrenos · Fincas en Chiriquí</div>
       <h1 style="margin-top:10px" data-cf="hero_titulo">Cotizar es tu primer paso para obtener tu vivienda</h1>
       <p class="lead">Somos especialistas en casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón, Aguacatal y más: compara proyectos, precios y planes de pago en un solo lugar.</p>
       <div class="hero-ctas">
@@ -419,7 +420,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
         <button type="button" data-type="Casa"><span>⌂</span>Casas</button>
         <button type="button" data-type="Terreno"><span>▱</span>Terrenos</button>
         <button type="button" data-type="Finca"><span>❧</span>Fincas</button>
-        <button type="button" data-type="Alquiler"><span>⚿</span>Alquiler</button>
+        <button type="button" data-type="Alquiler" hidden data-oculto="alquiler"><span>⚿</span>Alquiler</button>
       </div>
       <div class="field"><label for="q-zona">Zona</label><select id="q-zona"><option value="">Todas las zonas</option></select></div>
       <div class="field"><span class="flabel">Rango de precio (venta)</span>
@@ -447,7 +448,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       <button class="chip" data-chip="Casa">Casas</button>
       <button class="chip" data-chip="Terreno">Terrenos</button>
       <button class="chip" data-chip="Finca">Fincas</button>
-      <button class="chip" data-chip="Alquiler">Alquileres</button>
+      <button class="chip" data-chip="Alquiler" hidden data-oculto="alquiler">Alquileres</button>
       <span class="count" id="cat-count"></span>
     </div>
     <div class="grid" id="grid"></div>
@@ -618,7 +619,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
     <input id="r-nombre" placeholder="Nombre y apellido" autocomplete="name">
     <input id="r-email" type="email" placeholder="Correo electrónico" autocomplete="email">
     <input id="r-tel" placeholder="Teléfono o WhatsApp" autocomplete="tel">
-    <select id="r-interes"><option value="">¿Qué te interesa?</option><option>Casa</option><option>Terreno</option><option>Finca</option><option>Alquiler</option></select>
+    <select id="r-interes"><option value="">¿Qué te interesa?</option><option>Casa</option><option>Terreno</option><option>Finca</option><option hidden disabled data-oculto="alquiler">Alquiler</option></select>
     <button class="btn btn-accent" type="submit">Enviar mis datos</button>
     <button class="btn btn-ghost" type="button" id="reg-cancel">Ahora no</button>
     <div class="err" id="reg-err"></div>
@@ -662,7 +663,8 @@ const ZONAS=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();
 $("#q-zona").innerHTML+=ZONAS.map(z=>`<option>${z}</option>`).join("");
 
 const st={type:"",zona:"",min:0,max:0};
-function list(){return P.filter(p=>(!st.type||p.cat===st.type)&&(!st.zona||p.z===st.zona)&&(!(st.min||st.max)||(p.cat!=="Alquiler"&&p.precio!=null&&p.precio>=st.min&&(!st.max||p.precio<=st.max))));}
+const MOSTRAR_ALQUILERES=false;/* alquileres ocultos en la página (no se borran): poner true para mostrarlos */
+function list(){return P.filter(p=>(MOSTRAR_ALQUILERES||p.cat!=="Alquiler")&&(!st.type||p.cat===st.type)&&(!st.zona||p.z===st.zona)&&(!(st.min||st.max)||(p.cat!=="Alquiler"&&p.precio!=null&&p.precio>=st.min&&(!st.max||p.precio<=st.max))));}
 const cardHTML=p=>`
   <article class="card">
     <div class="photo" data-gal="${p.id}"><span class="ph-play">▶ Ver fotos</span><img class="ph-a" src="${IMG[p.img[0]]}" alt="${p.n}" loading="lazy"><div class="tags"><span class="tag ${p.cat==="Alquiler"?"rent":""}">${p.cat==="Alquiler"?"Alquiler":p.cat}</span>${p.tag?`<span class="tag hot">${p.tag}</span>`:""}</div></div>
