@@ -176,6 +176,10 @@ td.r,th.r{text-align:right}
 .dli{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer;font-size:.9rem}
 .dli img{width:40px;height:52px;object-fit:cover;border-radius:6px;flex:none}
 .dli input{width:18px;height:18px;flex:none}
+
+.btn.wa{background:#25d366;color:#05230f;border-color:#25d366}
+.wa-aviso{position:fixed;right:16px;bottom:16px;z-index:200;max-width:min(440px,calc(100vw - 32px));background:var(--card);border:2px solid #25d366;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 14px 40px rgba(0,0,0,.45);font-size:.9rem;line-height:1.5}
+.ext{font-size:.85rem;color:var(--muted)}.ext summary{cursor:pointer;color:var(--sky)}.ext ol{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}.ext a{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -647,6 +651,71 @@ RENDER.diseno = async () => {
   $$("[data-act]").forEach(b => b.onclick = async () => { try { await api(`/api/plantillas/${b.dataset.act}/activar`, { method: "POST" }); toast("Plantilla activada"); RENDER.diseno(); } catch (x) { toast(x.message, 1); } });
 };
 
+/* ---------- ENVIAR POR WHATSAPP CON IMAGEN ---------- */
+const esMovil = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const extWA = () => document.documentElement.dataset.c4WaExt === "1";
+function waAviso(html, color) {
+  let d = $("#wa-aviso"); if (!d) { d = document.createElement("div"); d.id = "wa-aviso"; d.className = "wa-aviso"; document.body.append(d); }
+  d.style.borderColor = color || "#25d366";
+  d.innerHTML = `<div>${html}</div><button type="button" class="btn sm" aria-label="Cerrar">✕</button>`; d.querySelector("button").onclick = () => d.remove();
+  clearTimeout(waAviso.t); waAviso.t = setTimeout(() => d.remove(), 20000);
+}
+const aDataUrl = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+async function aPng(blob) {
+  if (blob.type === "image/png") return blob;
+  const u = URL.createObjectURL(blob);
+  try { const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = u; }); const k = document.createElement("canvas"); k.width = im.naturalWidth; k.height = im.naturalHeight; k.getContext("2d").drawImage(im, 0, 0); return await new Promise(r => k.toBlob(r, "image/png")); }
+  finally { URL.revokeObjectURL(u); }
+}
+function bajarBlob(b, n) { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = n; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
+async function enviarWA({ blob, texto, tel, nombre }) {
+  nombre = nombre || "c4realty.jpg";
+  const num = waNum(tel), enc = encodeURIComponent(texto || "");
+  const file = new File([blob], nombre, { type: blob.type || "image/jpeg" });
+  // 1) Con la extensión (computadora): la imagen y el texto se ponen solos en WhatsApp Web
+  if (extWA() && !esMovil()) {
+    const img64 = await aDataUrl(blob);
+    const ok = await new Promise(res => { const on = e => { if (e.source === window && e.data && e.data.tipo === "C4_WA_LISTO") { window.removeEventListener("message", on); res(true); } }; window.addEventListener("message", on); window.postMessage({ tipo: "C4_WA_ENVIAR", img: img64, texto, directo: !!num }, "*"); setTimeout(() => res(false), 3000); });
+    if (ok) { window.open(num ? "https://web.whatsapp.com/send?phone=" + num : "https://web.whatsapp.com/", "_blank", "noopener"); waAviso(num ? `<b>WhatsApp Web se abrió en el chat del cliente.</b> La imagen y el texto se ponen solos: revisa y toca <b>Enviar</b>.` : `<b>Abre el chat en WhatsApp Web</b>: la imagen y el texto se ponen solos. Revisa y toca <b>Enviar</b>.`); return true; }
+  }
+  // 2) Menú Compartir del celular (o de Windows si no hay un cliente elegido)
+  if (navigator.canShare && navigator.canShare({ files: [file] }) && (esMovil() || !num)) {
+    if (!esMovil()) { try { await navigator.clipboard.writeText(texto || ""); } catch { } waAviso(`<b>Se abrió «Compartir» de Windows</b> con la imagen: elige <b>WhatsApp</b>, el chat y <b>Enviar</b>. El texto quedó copiado: si no aparece, pégalo con <b>Ctrl+V</b>.<br>¿No sale WhatsApp? Instala WhatsApp para Windows o la extensión de abajo.`); }
+    try { await navigator.share({ files: [file], text: texto }); return true; } catch (e) { if (e && e.name === "AbortError") return false; }
+  }
+  // 3) Sin extensión: copia la imagen y abre WhatsApp Web con el texto
+  let ok = false; try { window.focus(); const png = await aPng(blob); await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]); ok = true; } catch { }
+  if (!ok) bajarBlob(blob, nombre);
+  window.open("https://web.whatsapp.com/send?" + (num ? "phone=" + num + "&" : "") + "text=" + enc, "_blank", "noopener");
+  waAviso(ok ? `<b>✓ Imagen copiada.</b> En WhatsApp Web ${num ? "se abrió el chat del cliente con el texto" : "elige el chat"}: presiona <b>Ctrl+V</b> para poner la imagen y toca <b>Enviar</b>.` : `Tu navegador no dejó copiar la imagen, así que se descargó: adjúntala en el chat con el clip 📎.`, ok ? null : "#c98500");
+  return true;
+}
+async function blobDe(url) { const r = await fetch(url); if (!r.ok) throw new Error("No se pudo abrir la imagen"); return await r.blob(); }
+/* Imagen con varias casas (cuando se envían varias a la vez) */
+async function collage(S) {
+  const L = S.filter(p => p.imagen).slice(0, 6); if (L.length === 1) return blobDe(img(L[0].imagen));
+  const W = 1080, cols = 2, rows = Math.ceil(L.length / cols), head = 150, gap = 18, tw = (W - gap * 3) / 2, th = tw * 1.25, H = head + rows * (th + gap) + gap + 70;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
+  x.fillStyle = "#0b1526"; x.fillRect(0, 0, W, H);
+  try { const lg = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = "../img/logo.png"; }); const lh = 64, lw = lg.width * lh / lg.height; x.drawImage(lg, (W - lw) / 2, 34, lw, lh); } catch { x.fillStyle = "#fff"; x.font = "800 56px sans-serif"; x.textAlign = "center"; x.fillText("C4 REALTY", W / 2, 90); }
+  x.fillStyle = "#f2b84b"; x.fillRect(W / 2 - 90, 120, 180, 4);
+  for (let i = 0; i < L.length; i++) {
+    const p = L[i], cx = gap + (i % cols) * (tw + gap), cy = head + Math.floor(i / cols) * (th + gap);
+    const im = await new Promise(ok => { const k = new Image(); k.onload = () => ok(k); k.onerror = () => ok(null); k.src = img(p.imagen); });
+    x.save(); x.beginPath(); x.roundRect(cx, cy, tw, th, 18); x.clip();
+    if (im) { const s = Math.max(tw / im.width, th / im.height); x.drawImage(im, cx + (tw - im.width * s) / 2, cy, im.width * s, im.height * s); }
+    const g = x.createLinearGradient(0, cy + th - 130, 0, cy + th); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.85)"); x.fillStyle = g; x.fillRect(cx, cy + th - 130, tw, 130);
+    x.fillStyle = "#fff"; x.textAlign = "left"; x.font = "700 30px 'Plus Jakarta Sans', sans-serif"; x.fillText((p.zona || "").slice(0, 26), cx + 20, cy + th - 58);
+    x.fillStyle = "#f2b84b"; x.font = "800 40px 'Plus Jakarta Sans', sans-serif"; x.fillText(p.precio ? (p.precio_desde ? "Desde " : "") + money(p.precio) : "Consultar", cx + 20, cy + th - 16);
+    const d = descP(p); if (d) { x.fillStyle = "#e8463a"; x.beginPath(); x.roundRect(cx + tw - 120, cy + 16, 104, 48, 24); x.fill(); x.fillStyle = "#fff"; x.font = "800 28px sans-serif"; x.textAlign = "center"; x.fillText("−" + d + " %", cx + tw - 68, cy + 50); }
+    x.restore();
+  }
+  x.fillStyle = "#cfd8e6"; x.textAlign = "center"; x.font = "600 30px 'Plus Jakarta Sans', sans-serif"; x.fillText("WhatsApp 6253-1751 · c4realty.github.io/C4Realty", W / 2, H - 28);
+  return await new Promise(r => cv.toBlob(r, "image/jpeg", .9));
+}
+const extHTML = () => extWA() ? `<span class="pill" style="color:var(--good)"><i></i>Extensión de WhatsApp Web activa</span>`
+  : `<details class="ext"><summary>Instalar la extensión para WhatsApp Web (para que la imagen se ponga sola)</summary><ol><li><a href="extension-whatsapp-c4realty.zip" download>Descarga la extensión</a> y extrae el zip.</li><li>En Chrome o Edge abre <b>chrome://extensions</b> (en Edge: edge://extensions).</li><li>Activa <b>Modo de desarrollador</b> y toca <b>Cargar descomprimida</b>.</li><li>Elige la carpeta <b>C4Realty-WhatsApp</b> y recarga este panel.</li></ol></details>`;
+
 /* ---------- HOT LIST Y DIFUSIÓN ---------- */
 const SITIO = (() => { try { return new URL("../", location.href).href; } catch { return "https://c4realty.github.io/C4Realty/"; } })();
 const linkProp = p => SITIO + "?p=" + encodeURIComponent(p.codigo);
@@ -671,15 +740,16 @@ async function copiar(t) { try { await navigator.clipboard.writeText(t); toast("
 RENDER.hotlist = async () => {
   C.propiedades = null; const L = await propsLista(); const H = hotList(L); const ed = can("propiedades", "editar");
   $("#tools").innerHTML = ed ? `<button class="btn pri" id="hl-new">+ Poner oferta</button>` : "";
-  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Aquí entran solas las casas con descuento (precio regular más alto que el precio actual) y las que marques como destacadas. Se ordenan por el descuento más alto. En la página salen con el precio regular tachado.</p>
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Aquí entran solas las casas con descuento (precio regular más alto que el precio actual) y las que marques como destacadas. Se ordenan por el descuento más alto. En la página salen con el precio regular tachado. <b>WhatsApp</b> envía el volante con el texto y el enlace.</p><div style="margin-bottom:12px">${extHTML()}</div>
    ${H.length ? `<div class="hl">${H.map(p => { const d = descP(p); return `<div class="card hlc">
      <div class="hl-img">${p.imagen ? `<img src="${esc(img(p.imagen))}" alt="" loading="lazy">` : ""}<span class="hl-b">${d ? "−" + d + " %" : "Destacada"}</span></div>
      <div class="hl-t"><b>${esc(p.titulo)}</b><span class="muted">${esc(p.zona || "")}</span>
       <div class="hl-p"><span class="num">${p.precio ? money(p.precio) : "Consultar"}</span>${d ? `<s class="faint num">${money(p.precio_antes)}</s>` : ""}</div>
       ${p.etiqueta ? `<span class="pill">${esc(p.etiqueta)}</span>` : ""}</div>
-     <div class="tools"><a class="btn sm" style="background:#25d366;color:#05230f;border-color:#25d366" href="${esc(waUrl("", textoP(p)))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-cp="${p.id}">Copiar texto</button>${ed ? `<button class="btn sm" data-of="${p.id}">Editar oferta</button><button class="btn sm del" data-qx="${p.id}">Quitar</button>` : ""}</div></div>`; }).join("")}</div>`
+     <div class="tools"><button class="btn sm wa" data-wa="${p.id}">WhatsApp</button><button class="btn sm" data-cp="${p.id}">Copiar texto</button>${ed ? `<button class="btn sm" data-of="${p.id}">Editar oferta</button><button class="btn sm del" data-qx="${p.id}">Quitar</button>` : ""}</div></div>`; }).join("")}</div>`
       : `<div class="card"><p>No hay casas en la Hot list todavía.${ed ? " Toca <b>+ Poner oferta</b> para agregar una." : ""}</p></div>`}`;
   $$("[data-cp]").forEach(b => b.onclick = () => copiar(textoP(L.find(p => String(p.id) === b.dataset.cp))));
+  $$("[data-wa]").forEach(b => b.onclick = async () => { const p = L.find(x => String(x.id) === b.dataset.wa); if (!p) return; b.disabled = true; try { await enviarWA({ blob: await blobDe(img(p.imagen)), texto: textoP(p), nombre: (p.codigo || "casa") + ".jpg" }); } catch (x) { toast(x.message, 1); } b.disabled = false; });
   if (!ed) return;
   $("#hl-new").onclick = () => ofertaForm(L, null);
   $$("[data-of]").forEach(b => b.onclick = () => ofertaForm(L, L.find(p => String(p.id) === b.dataset.of)));
@@ -744,10 +814,10 @@ RENDER.difusion = async () => {
     <textarea id="df-msg" rows="10" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px">${esc(DF.msg)}</textarea>
     <div class="tools"><span class="faint" style="font-size:.82rem">{nombre} se cambia por el nombre de cada cliente.</span>${DF.edit ? `<button class="btn sm" id="df-auto" type="button">Volver al texto automático</button>` : ""}</div>
     <h2 style="margin-top:6px">4 · Enviar</h2>
-    ${dest.length ? `<p class="muted" style="font-size:.88rem">WhatsApp no permite enviar solo a muchas personas desde una página: toca <b>Enviar</b> en cada uno; se abre su chat con el mensaje listo y solo das Enviar en WhatsApp.</p>
-     <div class="dl" style="max-height:none">${dest.map(c => `<div class="dli"><span style="flex:1"><b>${esc(c.nombre)}</b> <span class="muted num">${esc(c.telefono)}</span></span>${DF.enviados[c.id] ? `<span class="pill" style="color:var(--good)"><i></i>Enviado</span>` : ""}<a class="btn sm" style="background:#25d366;color:#05230f;border-color:#25d366" data-send="${c.id}" href="${esc(waUrl(c.telefono, persona(c, DF.msg)))}" target="_blank" rel="noopener">Enviar</a></div>`).join("")}</div>
+    ${dest.length ? `<p class="muted" style="font-size:.88rem">WhatsApp no permite enviar solo a muchas personas desde una página: toca <b>Enviar</b> en cada uno: se abre su chat con ${DF.props.size > 1 ? "una imagen con las casas" : "el volante"} y el mensaje, y solo das Enviar en WhatsApp.</p>${extHTML()}
+     <div class="dl" style="max-height:none">${dest.map(c => `<div class="dli"><span style="flex:1"><b>${esc(c.nombre)}</b> <span class="muted num">${esc(c.telefono)}</span></span>${DF.enviados[c.id] ? `<span class="pill" style="color:var(--good)"><i></i>Enviado</span>` : ""}<button class="btn sm wa" data-send="${c.id}" type="button">Enviar</button></div>`).join("")}</div>
      <button class="btn pri" id="df-next" type="button">${dest.some(c => !DF.enviados[c.id]) ? "Enviar al siguiente" : "Todos enviados ✓"}</button>`
-      : `<div class="tools"><a class="btn pri" style="background:#25d366;color:#05230f;border-color:#25d366" href="${esc(waUrl("", persona(null, DF.msg)))}" target="_blank" rel="noopener">Abrir WhatsApp con el mensaje</a><button class="btn" id="df-cp" type="button">Copiar mensaje</button></div>`}
+      : `<div class="tools"><button class="btn pri wa" id="df-wa0" type="button">Enviar por WhatsApp con la imagen</button><a class="btn" href="${esc(waUrl("", persona(null, DF.msg)))}" target="_blank" rel="noopener">Solo texto</a><button class="btn" id="df-cp" type="button">Copiar mensaje</button></div>${extHTML()}`}
    </div></div>`;
   const re = () => RENDER.difusion();
   $$("[data-ps]").forEach(b => b.onclick = () => { const v = b.dataset.ps; DF.props = new Set(v === "hot" ? hotList(L).map(p => p.id) : v === "all" ? L.map(p => p.id) : []); DF.edit = false; re(); });
@@ -763,8 +833,11 @@ RENDER.difusion = async () => {
     try { await api(`/api/clientes/${id}/interacciones`, { method: "POST", body: { tipo: "whatsapp", detalle: "Difusión por WhatsApp: " + nombres } }); } catch { }
     setTimeout(re, 300);
   };
-  $$("[data-send]").forEach(a => a.addEventListener("click", () => marcar(+a.dataset.send)));
-  if ($("#df-next")) $("#df-next").onclick = () => { const c = dest.find(x => !DF.enviados[x.id]); if (!c) return toast("Ya se envió a todos"); window.open(waUrl(c.telefono, persona(c, DF.msg)), "_blank", "noopener"); marcar(c.id); };
+  const imagen = async () => { const S = L.filter(p => DF.props.has(p.id)); if (!S.length) throw new Error("Elige al menos una casa"); const k = S.map(p => p.id).join(","); if (DF.bk !== k) { DF.blob = await collage(S); DF.bk = k; } return DF.blob; };
+  const mandar = async (c, b) => { if (b) b.disabled = true; try { await enviarWA({ blob: await imagen(), texto: persona(c, DF.msg), tel: c && c.telefono, nombre: "casas-c4realty.jpg" }); if (c) marcar(c.id); } catch (x) { toast(x.message, 1); } if (b) b.disabled = false; };
+  $$("[data-send]").forEach(b => b.onclick = () => mandar(dest.find(c => String(c.id) === b.dataset.send), b));
+  if ($("#df-wa0")) $("#df-wa0").onclick = e => mandar(null, e.currentTarget);
+  if ($("#df-next")) $("#df-next").onclick = e => { const c = dest.find(x => !DF.enviados[x.id]); if (!c) return toast("Ya se envió a todos"); mandar(c, e.currentTarget); };
   $("#df-zip").onclick = () => zipVolantes(L.filter(p => DF.props.has(p.id)));
 };
 function cargarJs(src) { return new Promise((ok, no) => { if ([...document.scripts].some(s => s.src === src)) return ok(); const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("No se pudo cargar " + src)); document.head.append(s); }); }
@@ -781,11 +854,8 @@ async function zipVolantes(S) {
 async function compartirVolante() {
   const cv = $("#vl-cv"); if (!VL.img) return toast("Primero sube o elige una foto", 1);
   const blob = await new Promise(r => cv.toBlob(r, "image/png"));
-  const f = new File([blob], "volante-c4realty.png", { type: "image/png" });
-  const txt = [$("#vl-t1").value, $("#vl-t2").value, $("#vl-t3").value].filter(Boolean).join(" ") + "\nC4 Realty · WhatsApp 6253-1751\n" + SITIO;
-  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text: txt }); return; } } catch (x) { if (x.name === "AbortError") return; }
-  try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); toast("Imagen copiada: en WhatsApp pégala con Ctrl+V"); } catch { toast("Descarga el volante y adjúntalo en WhatsApp", 1); }
-  window.open(waUrl("", txt), "_blank", "noopener");
+  const txt = [[$("#vl-t1").value, $("#vl-t2").value].filter(Boolean).join(" "), $("#vl-t3").value, [$("#vl-t4").value, $("#vl-t5").value].filter(Boolean).join(" ")].filter(Boolean).join("\n") + "\nC4 Realty · WhatsApp 6253-1751\n" + SITIO;
+  await enviarWA({ blob, texto: txt, nombre: "volante-c4realty.png" });
 }
 
 /* ---------- VOLANTES ---------- */
@@ -817,7 +887,7 @@ RENDER.volantes = async () => {
         <div class="f"><label for="vl-pos">Dónde van los textos</label><select id="vl-pos"><option value="arriba">Arriba (en el cielo)</option><option value="centro">Al centro</option><option value="abajo">Abajo</option></select></div>
         <div class="f chk" style="align-self:end"><input type="checkbox" id="vl-sombra" checked><label for="vl-sombra">Oscurecer detrás del texto</label></div>
       </div>
-      <div class="tools" style="margin-top:6px"><button class="btn pri" id="vl-down" type="button">Descargar volante (PNG)</button><button class="btn" id="vl-wa" type="button" style="background:#25d366;color:#05230f;border-color:#25d366">Enviar por WhatsApp</button></div>
+      <div class="tools" style="margin-top:6px"><button class="btn pri" id="vl-down" type="button">Descargar volante (PNG)</button><button class="btn wa" id="vl-wa" type="button">Enviar por WhatsApp con la imagen</button></div><div>${extHTML()}</div>
     </div>
     <div class="vl-prev card"><canvas id="vl-cv" width="1080" height="1920" aria-label="Vista previa del volante"></canvas><p class="faint" id="vl-msg" style="font-size:.82rem">Sube una foto para empezar.</p></div>
   </div>`;
