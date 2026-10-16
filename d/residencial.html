@@ -128,6 +128,24 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .zt div{position:absolute;inset:auto 0 0 0;padding:60px 20px 18px;background:linear-gradient(transparent,rgba(12,24,17,.9))}
 .zt b{display:block;font-family:var(--t);font-size:1.45rem;font-weight:800}.zt span{font-size:.92rem;color:#d8e2da}
 @media (max-width:980px){.zg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* videos */
+.vids-s{background:var(--mist)}
+.vfeat{background:var(--pine);color:#e6ede7;border-radius:32px;padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,2fr);gap:34px;align-items:center}
+.vfeat .vb{display:inline-block;background:var(--brass);color:#fff;border-radius:999px;padding:4px 12px;font-weight:700;font-size:.8rem;margin-bottom:14px}
+.vfeat h3{font-size:clamp(1.9rem,3vw,2.6rem);font-weight:900;color:#fff}.vfeat h3 em{font-style:normal;color:var(--brass2)}
+.vfeat p{color:#c7d4c9;margin:12px 0 22px}
+.vreels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.reel{position:relative;margin:0;border-radius:18px;overflow:hidden;aspect-ratio:9/16;background:#000}
+.reel video,.reel img{width:100%;height:100%;object-fit:cover;display:block}
+.reel figcaption{position:absolute;left:0;right:0;bottom:0;padding:30px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;font-weight:700;font-size:.9rem}
+.vh{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:46px 0 18px}.vh h3{font-size:1.6rem;font-weight:800}
+.videos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.vcard{display:grid;gap:8px;align-content:start}
+.vcard video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:18px;background:#000;display:block}
+.vcard .vt{font-weight:700;line-height:1.3}.vcard .vt small{display:block;color:var(--brass);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase}
+.vcard a{font-size:.85rem;color:var(--pine);font-weight:600}
+@media (max-width:980px){.vfeat{grid-template-columns:1fr}.videos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.vreels,.videos{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:58%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -18px;padding:0 18px 4px}.vreels::-webkit-scrollbar,.videos::-webkit-scrollbar{display:none}.reel,.vcard{scroll-snap-align:start}.vfeat .vreels{margin:0 -22px;padding:0 22px 4px}}
 /* cifras */
 .cifras{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:28px;border:1px solid var(--line)}
 .cifras div{padding:30px 26px;border-left:1px solid var(--line)}.cifras div:first-child{border-left:0}
@@ -211,7 +229,7 @@ footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;te
 </svg>
 <div class="util"><div class="w"><span><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></span><span class="r"><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">Instagram @c4realty1</a></span></div></div>
 <header class="top" id="top"><div class="w"><a href="#inicio" aria-label="C4 Realty, inicio"><img src="../img/logo.png" alt="C4 Realty"></a>
-  <nav aria-label="Secciones"><a href="#casas">Casas</a><a href="#ofertas">Ofertas</a><a href="#zonas">Zonas</a><a href="#bono">Bono Pa' Ti</a><a href="#pasos">Cómo comprar</a><a href="#contacto">Contacto</a></nav>
+  <nav aria-label="Secciones"><a href="#casas">Casas</a><a href="#ofertas">Ofertas</a><a href="#zonas">Zonas</a><a href="#videos">Videos</a><a href="#bono">Bono Pa' Ti</a><a href="#pasos">Cómo comprar</a><a href="#contacto">Contacto</a></nav>
   <a class="btn pri" href="#contacto">Cotizar gratis</a></div></header>
 
 <main id="inicio">
@@ -261,6 +279,14 @@ footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;te
     <div class="sh2"><h2>Explora por zona</h2><p>Casas en los proyectos más buscados de Chiriquí.</p></div>
     <div class="zg" id="zg"></div></div></section>
 
+  <section class="sec vids-s" id="videos"><div class="w">
+    <div class="sh2"><h2>Recorre los proyectos en video</h2><p>Dale play y recorre cada proyecto sin salir de la página. Más videos en nuestro Instagram.</p></div>
+    <div class="vfeat">
+      <div><span class="vb">Nuevo</span><h3>Modelo <em>Vila</em> en Aguacatal</h3><p>Lote de 200 m². Mira la casa por dentro.</p><button class="btn gold" type="button" id="vnew-open">Ver la casa</button></div>
+      <div class="vreels" id="vnew"></div>
+    </div>
+    <div class="vh"><h3>Más recorridos</h3><a class="btn out" href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener"><svg class="i"><use href="#i-ig"/></svg> Síguenos en Instagram</a></div>
+    <div class="videos" id="vids"></div></div></section>
   <section class="w" aria-label="El catálogo en cifras"><div class="cifras" id="cifras"></div></section>
 
   <section class="sec" id="pasos"><div class="w">
@@ -308,7 +334,7 @@ footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;te
   <div class="fg">
     <div><img src="../img/logo.png" alt="C4 Realty"><p style="margin:0;max-width:34ch">Especialistas en casas en Chiriquí. No vendemos una casa, vendemos hogares.</p></div>
     <div><h4>Zonas</h4><ul id="fz"></ul></div>
-    <div><h4>Navegación</h4><ul><li><a href="#casas">Casas</a></li><li><a href="#ofertas">Ofertas</a></li><li><a href="#bono">Bono Pa' Ti</a></li><li><a href="#pasos">Cómo comprar</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+    <div><h4>Navegación</h4><ul><li><a href="#casas">Casas</a></li><li><a href="#ofertas">Ofertas</a></li><li><a href="#bono">Bono Pa' Ti</a></li><li><a href="#videos">Videos</a></li><li><a href="#pasos">Cómo comprar</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
     <div><h4>Contacto</h4><ul><li><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a></li><li><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></li><li><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">@c4realty1</a></li></ul></div>
   </div>
   <div class="fb"><span>© <span id="yr"></span> C4 Realty · Chiriquí, Panamá</span><span>Precios y promociones sujetos a confirmación.</span></div>
@@ -353,6 +379,12 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
   $("#zg").innerHTML=zs.map(z=>{const L=P.filter(p=>p.z===z),pr=L.filter(p=>p.precio).map(p=>p.precio);return `<button class="zt" type="button" data-z2="${esc(z)}"><img src="${esc(L[0].img[0])}" alt="" loading="lazy"><div><b>${esc(z)}</b><span>${L.length} ${L.length===1?"casa":"casas"}${pr.length?" · desde "+fmt(Math.min(...pr)):""}</span></div></button>`;}).join("");
   $$("[data-z2]").forEach(b=>b.onclick=()=>verZona(b.dataset.z2));
   $("#fz").innerHTML=zs.map(z=>`<li><button type="button" data-z3="${esc(z)}">${esc(z)}</button></li>`).join("");$$("[data-z3]").forEach(b=>b.onclick=()=>verZona(b.dataset.z3));
+ /* videos de Instagram */
+  const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]],VNEW=[["aguacatal-vila-1","Recámara"],["aguacatal-vila-2","Baño"],["aguacatal-vila-3","Exterior"]];
+  const vila=P.find(p=>p.id==="vila-aguacatal");
+  $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+VNEW.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="../videos/${v}.jpg" src="../videos/${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("");
+  if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
+  $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div class="vt"><small>${esc(z)}</small>${esc(t)}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
   /* cifras */
   const pr=P.filter(p=>p.precio).map(p=>p.precio),lt=P.map(p=>p.lote).filter(Boolean);
   $("#cifras").innerHTML=[[P.length,"casas disponibles"],[zs.length,"zonas de Chiriquí"],[pr.length?fmt(Math.min(...pr)):"—","precio desde"],[lt.length?Math.min(...lt)+" m²":"—","lotes desde"]].map(([b,s])=>`<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
