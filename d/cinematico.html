@@ -26,32 +26,38 @@ a{color:inherit}img{display:block;max-width:100%}button,input,select{font:inheri
 .btn.gold{background:var(--brass);border-color:var(--brass);color:#1b1408}
 .btn:hover{border-color:var(--bone)}
 /* barra */
-.top{position:fixed;inset:0 0 auto;z-index:40;transition:background .3s}
+.top{position:fixed;inset:0 0 auto;z-index:40;transition:background .3s;background:linear-gradient(180deg,rgba(10,20,24,.92),rgba(10,20,24,.6))}
 .top.sol{background:rgba(10,20,24,.86);backdrop-filter:blur(10px)}
 .top .w{display:flex;justify-content:space-between;align-items:center;height:78px}
 .top img{height:28px;filter:brightness(0) invert(1)}
 .top nav{display:flex;gap:30px;font-size:.95rem}.top nav a{text-decoration:none;opacity:.8}.top nav a:hover{opacity:1}
 @media (max-width:820px){.top nav{display:none}}
 /* portada a pantalla completa */
-.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--deep)}
-.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 66%;opacity:0;transform:scale(1.12);transition:opacity 1.6s ease}
-.hero img.on{opacity:1;animation:kb 9s ease-out forwards}
-@keyframes kb{from{transform:scale(1.12)}to{transform:scale(1.02)}}
-@media (prefers-reduced-motion:reduce){.hero img.on{animation:none;transform:none}}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,24,.55) 0%,rgba(10,20,24,.05) 35%,rgba(10,20,24,.25) 60%,rgba(10,20,24,.92) 100%)}
-.hcopy{position:absolute;z-index:2;left:0;right:0;bottom:clamp(40px,9vh,90px)}
-.hcopy h1{font-size:clamp(3.4rem,10vw,9.5rem);letter-spacing:-.02em}
-.hcopy p{max-width:44ch;font-size:1.12rem;color:#d8d2c6;margin:20px 0 28px}
+.hero{position:relative;min-height:100svh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);background:var(--deep);overflow:hidden}
+.hcopy{align-self:end;padding:120px clamp(20px,5vw,80px) clamp(44px,9vh,96px) max(18px,calc((100vw - 1280px)/2 + 18px));position:relative;z-index:2}
+.hcopy h1{font-size:clamp(3.4rem,7.4vw,8.4rem);letter-spacing:-.02em}
+.hcopy p{max-width:40ch;font-size:1.12rem;color:#d8d2c6;margin:22px 0 30px}
 .hcopy .acts{display:flex;gap:12px;flex-wrap:wrap}
-.hidx{position:absolute;z-index:2;right:max(18px,calc((100vw - 1280px)/2 + 18px));bottom:clamp(40px,9vh,90px);text-align:right;display:grid;gap:4px;cursor:pointer;background:none;border:0;color:var(--bone)}
-.hidx b{font-family:var(--t);font-size:1.6rem;font-weight:500}.hidx span{color:var(--fog);font-size:.9rem}
-@media (max-width:760px){.hidx{display:none}}
-@media (max-aspect-ratio:4/5){.hero img{inset:auto 0 0 0;height:165%;object-position:center bottom;transform-origin:center bottom}}
+.hcopy .cnt{margin-top:46px;display:flex;gap:34px;color:var(--fog);border-top:1px solid #26393f;padding-top:18px}
+.hcopy .cnt b{display:block;font-family:var(--t);font-size:2.2rem;font-weight:500;color:var(--bone);line-height:1}
+/* columnas de fotos que suben despacio */
+.cols{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 14px;height:100svh;min-height:560px;-webkit-mask:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent)}
+.col{overflow:hidden}
+.col .tira{display:grid;gap:14px;animation:sube var(--d,70s) linear infinite}
+.col:nth-child(2) .tira{animation-direction:reverse}
+@keyframes sube{to{transform:translateY(-50%)}}
+.cols:hover .tira{animation-play-state:paused}
+.tile{display:block;width:100%;aspect-ratio:9/16;padding:0;border:0;cursor:pointer;background:#0f1d22;overflow:hidden;position:relative}
+.tile img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .8s ease}
+.tile:hover img{transform:scale(1.04)}
+.tile span{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 10px;background:linear-gradient(transparent,rgba(10,20,24,.85));font-family:var(--t);font-size:1.15rem;text-align:left;color:var(--bone)}
+@media (prefers-reduced-motion:reduce){.col .tira{animation:none}}
+@media (max-width:900px){.hero{grid-template-columns:1fr}.cols{grid-row:1;height:58svh;min-height:0;grid-template-columns:repeat(2,1fr)}.cols .col:nth-child(3){display:none}.hcopy{padding:24px 18px 46px}}
 /* capítulos: una casa por pantalla */
-.cap{display:grid;grid-template-columns:1.35fr 1fr;min-height:92vh;border-top:1px solid #1f3238}
-.cap:nth-child(even){grid-template-columns:1fr 1.35fr}.cap:nth-child(even) .cimg{order:2}
-.cimg{position:relative;overflow:hidden;cursor:pointer;background:var(--deep);min-height:60vh}
-.cimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 84%;transition:transform 1.2s ease,opacity .2s}
+.cap{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(20px,4vw,60px);padding:5vh max(18px,calc((100vw - 1280px)/2 + 18px));border-top:1px solid #1f3238}
+.cap:nth-child(even){grid-template-columns:minmax(0,1fr) auto}.cap:nth-child(even) .cimg{order:2}
+.cimg{position:relative;overflow:hidden;cursor:pointer;background:var(--deep);aspect-ratio:9/16;height:min(86vh,900px);box-shadow:0 30px 60px rgba(0,0,0,.35)}
+.cimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform 1.2s ease,opacity .2s}
 .cimg:hover img{transform:scale(1.03)}
 .cimg .ver{position:absolute;left:22px;bottom:22px;background:rgba(10,20,24,.7);backdrop-filter:blur(6px);padding:9px 16px;font-size:.9rem;border:1px solid rgba(237,231,219,.25)}
 .ctxt{padding:clamp(34px,6vw,90px) clamp(22px,5vw,72px);display:flex;flex-direction:column;justify-content:center;gap:22px}
@@ -63,7 +69,7 @@ a{color:inherit}img{display:block;max-width:100%}button,input,select{font:inheri
 .ctxt dt{color:var(--fog)}.ctxt dd{margin:0}
 .ctxt .acts{display:flex;gap:10px;flex-wrap:wrap}
 .tg{align-self:flex-start;border:1px solid var(--brass);color:var(--brass);padding:5px 12px;font-size:.88rem}
-@media (max-width:860px){.cap,.cap:nth-child(even){grid-template-columns:1fr}.cap:nth-child(even) .cimg{order:0}.cimg{min-height:0;aspect-ratio:1}.cimg img{object-position:center 93%}.cap{min-height:0}}
+@media (max-width:860px){.cap,.cap:nth-child(even){grid-template-columns:1fr}.cap:nth-child(even) .cimg{order:0}.cimg{height:auto;width:100%;aspect-ratio:1}.cimg img{object-position:center 93%}.cap{min-height:0;padding:0;gap:0}}
 /* índice */
 .idx{padding:100px 0}
 .idx h2{font-size:clamp(2.6rem,6vw,4.6rem);margin-bottom:34px}
@@ -101,10 +107,11 @@ footer .w{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;ali
  <a class="btn" href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp</a></div></header>
 <main>
  <section class="hero" id="inicio" aria-label="Portada">
-  <div class="hcopy"><div class="w"><h1>Casas en Chiriquí</h1>
+  <div class="hcopy"><h1>Casas en Chiriquí</h1>
    <p>Cotizar es tu primer paso para obtener tu vivienda. Compara proyectos, precios y planes de pago en un solo lugar.</p>
-   <div class="acts"><a class="btn gold" href="#casas">Ver las casas</a><a class="btn" href="#contacto">Agendar recorrido</a></div></div></div>
-  <button class="hidx" id="hidx" type="button"></button>
+   <div class="acts"><a class="btn gold" href="#casas">Ver las casas</a><a class="btn" href="#contacto">Agendar recorrido</a></div>
+   <div class="cnt" id="cnt"></div></div>
+  <div class="cols" id="cols" aria-label="Fotos de las casas"></div>
  </section>
  <section id="casas" aria-label="Casas"></section>
  <section class="idx w" id="indice"><h2>Todas las casas</h2><div class="zf" id="zf" role="group" aria-label="Filtrar por zona"></div>
@@ -137,12 +144,12 @@ footer .w{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;ali
 addEventListener("scroll",()=>document.getElementById("top").classList.toggle("sol",scrollY>40),{passive:true});
 (async()=>{
  const {$,$$,esc,fmt}=C4;const P=(await C4.cargar()).filter(p=>p.cat!=="Alquiler");
- /* portada */
- const hero=$("#inicio");P.forEach((p,i)=>{const im=document.createElement("img");im.src=p.img[0];im.alt="";if(!i)im.className="on";hero.prepend(im);});
- let hi=0;const L=()=>$$("#inicio > img").reverse();
- const pon=k=>{const I=L();hi=(k+I.length)%I.length;I.forEach((x,j)=>x.classList.toggle("on",j===hi));const p=P[hi];$("#hidx").innerHTML=p?`<span>${String(hi+1).padStart(2,"0")} / ${String(P.length).padStart(2,"0")}</span><b>${esc(p.n)}</b><span>${esc(p.zl||p.z)}</span>`:"";};
- pon(0);if(!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>pon(hi+1),7000);
- $("#hidx").onclick=()=>P[hi]&&C4.ficha(P[hi]);
+ /* portada: tres columnas de fotos */
+ const tile=(p,h)=>`<button class="tile" type="button" data-f="${esc(p.id)}"${h?' tabindex="-1" aria-hidden="true"':""}><img src="${esc(p.img[0])}" alt="${h?"":esc(p.n)+", "+esc(p.z)}" loading="lazy"><span>${esc(p.n)} · ${esc(p.z)}</span></button>`;
+ const grupos=[[],[],[]];P.forEach((p,i)=>grupos[i%3].push(p));
+ $("#cols").innerHTML=grupos.map((g,k)=>{const L=g.length?g:P;const rot=L.slice(k).concat(L.slice(0,k));return `<div class="col"><div class="tira" style="--d:${50+k*12}s">${rot.map(p=>tile(p)).join("")}${rot.map(p=>tile(p,1)).join("")}</div></div>`;}).join("");
+ const pr=P.filter(p=>p.precio).map(p=>p.precio);
+ $("#cnt").innerHTML=`<div><b>${P.length}</b>casas</div><div><b>${new Set(P.map(p=>p.z)).size}</b>zonas</div>${pr.length?`<div><b>${fmt(Math.min(...pr))}</b>desde</div>`:""}`;
  /* una casa por pantalla */
  $("#casas").innerHTML=P.map((p,i)=>`<article class="cap" aria-label="${esc(p.n)}">
    <div class="cimg" data-g="${esc(p.id)}" data-c4="${esc(p.id)}"><img src="${esc(p.img[0])}" alt="${esc(p.n)}, ${esc(p.z)}" loading="lazy"><span class="ver">Ver ${p.img.length} fotos${p.plano.length?" y plano":""}</span></div>
