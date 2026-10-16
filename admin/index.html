@@ -443,7 +443,7 @@ async function fichaPropiedad(id) {
   const pag = (() => { try { return JSON.parse(p.pagos || "[]"); } catch { return []; } })();
   abrir(`
     <div class="hd"><div><h1>${id ? esc(p.titulo) : "Nueva propiedad"}</h1>${id ? `<div style="margin-top:6px">${pillP(p.estado)} ${p.aplica_bono ? `<span class="pill">Aplica bono</span>` : ""}</div>` : ""}</div><button class="btn sm" data-close>Cerrar</button></div>
-    ${id && p.medios?.length ? `<div class="gal">${p.medios.map(m => m.tipo === "plano" ? `<a class="btn" href="${esc(img(m.ruta))}" target="_blank" rel="noopener">📐 Ver plano (PDF)</a>` : m.tipo === "video" ? `<video src="${esc(img(m.ruta))}" poster="${esc(img(m.portada))}" controls preload="none" playsinline></video>` : `<img src="${esc(img(m.ruta))}" alt="" loading="lazy">`).join("")}</div>` : ""}
+    ${id && p.medios?.length ? `<div class="gal">${p.medios.map(m => m.tipo === "plano" ? `<a class="btn" href="${esc(img(m.ruta.replace(/\.pdf$/i, ".jpg")))}" target="_blank" rel="noopener">📐 Ver plano</a>` : m.tipo === "video" ? `<video src="${esc(img(m.ruta))}" poster="${esc(img(m.portada))}" controls preload="none" playsinline></video>` : `<img src="${esc(img(m.ruta))}" alt="" loading="lazy">`).join("")}</div>` : ""}
     <form id="f-p" class="card"><div class="grid2">${campos.map(c => campo(c, p[c.k])).join("")}</div>
       <div class="grid3" style="margin-top:12px">
         <div class="f"><label>Características (una por línea: nombre: valor)</label><textarea name="caracteristicas">${esc(kv.map(x => Array.isArray(x) ? x.join(": ") : x).join("\n"))}</textarea></div>
