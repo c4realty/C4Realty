@@ -301,6 +301,36 @@ footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px s
 .vbadge{display:inline-block;background:var(--accent);color:var(--accent-ink);font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
 .vreels{display:grid;grid-template-columns:repeat(4,minmax(0,250px));gap:16px}
 @media (max-width:620px){.vreels{grid-template-columns:repeat(2,1fr);gap:10px}.vfeat{padding:14px}.reel{border-radius:12px}.reel figcaption{font-size:.78rem;padding:20px 8px 8px}}
+
+/* ficha: flechas sobre la foto y carrusel a pantalla completa */
+.panel .hero-img{position:relative}
+.panel .hero-img img{cursor:zoom-in}
+.hi-nav{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.88);color:#14171c;font-size:1.6rem;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);display:grid;place-items:center;padding:0 0 3px}
+.hi-nav.prev{left:12px}.hi-nav.next{right:12px}
+.hi-tip{position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.6);color:#fff;font-size:.78rem;font-weight:600;border-radius:999px;padding:5px 10px;pointer-events:none}
+.photo[data-open]{cursor:pointer}
+.lb{position:fixed;inset:0;z-index:90;background:rgba(5,9,16,.97);display:none;grid-template-rows:auto 1fr auto;color:#fff}
+.lb.open{display:grid}
+.lb-top{display:flex;align-items:center;gap:12px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,0px))}
+.lb-cap{flex:1;min-width:0;display:grid;line-height:1.25}
+.lb-cap b{font-family:var(--font-display);font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-cap span{font-size:.8rem;color:#aab6c8}
+.lb-pdf{background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:.85rem;text-decoration:none;border-radius:10px;padding:8px 12px;white-space:nowrap}
+#lb-x{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:1.1rem;cursor:pointer}
+.lb-stage{position:relative;overflow:hidden;display:grid;place-items:center;touch-action:pan-y;min-height:0}
+.lb-stage img{position:absolute;inset:0;margin:auto;max-width:100%;max-height:100%;object-fit:contain;user-select:none;cursor:zoom-in;transition:opacity .2s}
+.lb-stage.z{overflow:auto;display:block;touch-action:auto}
+.lb-stage.z img{position:static;margin:0;max-width:none;max-height:none;width:220%;cursor:grab}
+.lb-nav{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(15,20,30,.6);color:#fff;font-size:2rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0 0 4px;backdrop-filter:blur(4px)}
+.lb-nav:hover{background:rgba(15,20,30,.85)}
+.lb-nav.prev{left:14px}.lb-nav.next{right:14px}
+.lb-hint{position:fixed;left:50%;transform:translateX(-50%);bottom:104px;font-size:.78rem;background:rgba(0,0,0,.55);border-radius:999px;padding:5px 12px;pointer-events:none;opacity:.85}
+.lb-thumbs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));justify-content:safe center}
+.lb-thumbs button{flex:none;position:relative;width:56px;height:72px;border-radius:8px;overflow:hidden;border:2px solid transparent;padding:0;background:#111;cursor:pointer;opacity:.6}
+.lb-thumbs button.on{border-color:var(--accent);opacity:1}
+.lb-thumbs img{width:100%;height:100%;object-fit:cover}
+.lb-thumbs i{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);font-style:normal;font-size:.62rem;font-weight:700;padding:2px 0}
+@media (max-width:620px){.lb-nav{width:42px;height:42px;font-size:1.6rem}.lb-nav.prev{left:6px}.lb-nav.next{right:6px}.lb-hint{bottom:96px}}
 </style>
 <script>
 /* Plantilla de diseño elegida en el panel (se guarda para aplicarla sin parpadeo) */
@@ -535,7 +565,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   <div class="scrim" id="m-scrim"></div>
   <div class="panel" id="panel">
     <div class="pbar"><button type="button" id="m-close">‹ Volver al catálogo</button><div class="pnav"><button type="button" id="m-prev" aria-label="Propiedad anterior">‹</button><button type="button" id="m-next" aria-label="Propiedad siguiente">›</button></div></div>
-    <div class="hero-img"><img id="m-img" alt=""></div>
+    <div class="hero-img"><img id="m-img" alt=""><button type="button" class="hi-nav prev" id="m-ip" aria-label="Foto anterior">‹</button><button type="button" class="hi-nav next" id="m-in" aria-label="Foto siguiente">›</button><span class="hi-tip" id="m-tip">⤢ Toca para ver en grande</span></div>
     <div class="strip" id="m-thumbs"></div>
     <div class="pbody">
       <div><h2 id="m-title"></h2><div class="ploc" id="m-loc"></div></div>
@@ -554,6 +584,14 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   </div>
 </div>
 
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Fotos de la propiedad">
+  <div class="lb-top"><div class="lb-cap"><b id="lb-cap"></b><span id="lb-n"></span></div><a id="lb-pdf" class="lb-pdf" target="_blank" rel="noopener">Descargar PDF</a><button type="button" id="lb-x" aria-label="Cerrar">✕</button></div>
+  <div class="lb-stage" id="lb-stage"><img id="lb-img" alt="" draggable="false"></div>
+  <button type="button" class="lb-nav prev" id="lb-prev" aria-label="Anterior">‹</button><button type="button" class="lb-nav next" id="lb-next" aria-label="Siguiente">›</button>
+  <div class="lb-hint" id="lb-hint">Toca la imagen para acercar</div>
+  <div class="lb-thumbs" id="lb-th"></div>
+</div>
 <div class="gate" id="gate">
   <form id="reg-form" novalidate>
     <h3>Recibe tu cotización</h3>
@@ -608,7 +646,7 @@ const st={type:"",zona:"",min:0,max:0};
 function list(){return P.filter(p=>(!st.type||p.cat===st.type)&&(!st.zona||p.z===st.zona)&&(!(st.min||st.max)||(p.cat!=="Alquiler"&&p.precio!=null&&p.precio>=st.min&&(!st.max||p.precio<=st.max))));}
 const cardHTML=p=>`
   <article class="card">
-    <div class="photo"><img src="${IMG[p.img[0]]}" alt="${p.n}" loading="lazy"><div class="tags"><span class="tag ${p.cat==="Alquiler"?"rent":""}">${p.cat==="Alquiler"?"Alquiler":p.cat}</span>${p.tag?`<span class="tag hot">${p.tag}</span>`:""}</div></div>
+    <div class="photo" data-open="${p.id}"><img src="${IMG[p.img[0]]}" alt="${p.n}" loading="lazy"><div class="tags"><span class="tag ${p.cat==="Alquiler"?"rent":""}">${p.cat==="Alquiler"?"Alquiler":p.cat}</span>${p.tag?`<span class="tag hot">${p.tag}</span>`:""}</div></div>
     <div class="body">
       <div class="where">⌖ ${zonaTxt(p)}</div>
       <h3>${p.n}</h3>
@@ -654,7 +692,8 @@ $("#logout").addEventListener("click",()=>{try{localStorage.removeItem(RK);}catc
 /* ficha */
 let cur=null,ORDER=[];
 const CATC={Casa:"#2f6fd6",Terreno:"#b7791f",Finca:"#2f855a",Alquiler:"#1fa855"};
-function setImg(i){$("#m-img").src=IMG[cur.img[i]];$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
+let curI=0;
+function setImg(i){i=(i+cur.img.length)%cur.img.length;curI=i;$("#m-img").src=IMG[cur.img[i]];$("#m-ip").style.display=$("#m-in").style.display=cur.img.length>1?"":"none";$("#m-img").alt=cur.n;$$("#m-thumbs button").forEach((b,k)=>b.classList.toggle("on",k===i));}
 function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;
   $$("#modal video").forEach(v=>v.pause());
   $("#m-thumbs").innerHTML=p.img.length>1?p.img.map((f,i)=>`<button type="button" data-i="${i}" aria-label="Foto ${i+1}"><img src="${IMG[f]}" alt=""></button>`).join(""):"";
@@ -668,7 +707,7 @@ function openSheet(id){const p=P.find(x=>x.id===id);if(!p)return;cur=p;
   $("#m-vr").innerHTML=(p.vr||[]).map(([k,v])=>`<div><span>${k}</span><b>${fmt(v)}</b></div>`).join("");$("#m-vr").style.display=p.vr?"":"none";
   $("#m-pagos").innerHTML=p.pagos.map(x=>`<li>${x}</li>`).join("");
   $("#m-aviso").innerHTML=p.aviso?`<b>Importante:</b> ${p.aviso}`:"";$("#m-aviso").style.display=p.aviso?"":"none";
-  $("#m-plano").innerHTML=(p.plano||[]).map(([t,u])=>`<a class="pbtn" href="${u}" target="_blank" rel="noopener">📐 Ver ${t} (PDF)</a>`).join("");$("#m-plano-sec").style.display=p.plano?"":"none";
+  $("#m-plano").innerHTML=(p.plano||[]).map(([t,u],k)=>`<button type="button" class="pbtn" data-plano="${k}">📐 Ver ${t}</button>`).join("");$$("#m-plano [data-plano]").forEach(b=>b.onclick=()=>lbOpen(cur,cur.img.length+ +b.dataset.plano));$("#m-plano-sec").style.display=p.plano?"":"none";
   $("#m-quote-wrap").style.display=p.cat==="Casa"&&p.precio?"":"none";
   const V=p.vids||[];$("#m-vid-sec").style.display=V.length?"":"none";
   $("#m-vid").innerHTML=V.length?`<div class="mvids">${V.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${v}.jpg" src="${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("")}</div>`:"";
@@ -683,7 +722,7 @@ function closeSheet(){$$("#modal video").forEach(v=>v.pause());$("#modal").class
 $("#m-close").addEventListener("click",closeSheet);$("#m-scrim").addEventListener("click",closeSheet);
 $("#m-prev").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>0)openSheet(ORDER[k-1]);});
 $("#m-next").addEventListener("click",()=>{const k=ORDER.indexOf(cur.id);if(k>=0&&k<ORDER.length-1)openSheet(ORDER[k+1]);});
-document.addEventListener("keydown",e=>{if(!$("#modal").classList.contains("open"))return;if(e.key==="Escape")closeSheet();if(e.key==="ArrowRight")$("#m-next").click();if(e.key==="ArrowLeft")$("#m-prev").click();});
+document.addEventListener("keydown",e=>{if(!$("#modal").classList.contains("open")||$("#lb").classList.contains("open"))return;if(e.key==="Escape")closeSheet();if(e.key==="ArrowRight")$("#m-next").click();if(e.key==="ArrowLeft")$("#m-prev").click();});
 document.addEventListener("click",e=>{if(!e.target.closest(".grid"))return;const o=e.target.closest("[data-open]");if(o){openSheet(o.dataset.open);return;}const q=e.target.closest("[data-quote]");if(q){setQ(q.dataset.quote);show("cotizar");}});
 $("#m-quote").addEventListener("click",()=>{closeSheet();setQ(cur.id);show("cotizar");});
 
@@ -732,6 +771,30 @@ $$(".privlink").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();$("
 $("#priv-ok").addEventListener("click",()=>$("#priv").classList.remove("open"));
 $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
 render();
+/* carrusel a pantalla completa */
+let LB=[],LBi=0;
+function lbSlides(p){return p.img.map((x,i)=>({src:IMG[x],cap:p.n+(p.z?" · "+p.z:"")})).concat((p.plano||[]).map(([t,u])=>({src:u.replace(/\.pdf$/i,".jpg"),cap:t,pdf:u,plano:1})));}
+function lbZoom(on,ev){const st=$("#lb-stage"),r0=$("#lb-img").getBoundingClientRect();st.classList.toggle("z",!!on);$("#lb-hint").textContent=on?"Toca otra vez para alejar":"Toca la imagen para acercar";
+  if(on&&ev){const im=$("#lb-img"),r=r0;const go=()=>{st.scrollLeft=(ev.clientX-r.left)/r.width*im.offsetWidth-st.clientWidth/2;st.scrollTop=(ev.clientY-r.top)/r.height*im.offsetHeight-st.clientHeight/2;};if(im.complete)setTimeout(go,30);else im.onload=go;}}
+function lbGo(k){if(!LB.length)return;LBi=(k+LB.length)%LB.length;const x=LB[LBi];lbZoom(false);$("#lb-img").src=x.src;$("#lb-img").alt=x.cap;
+  $("#lb-cap").textContent=x.cap;$("#lb-n").textContent=(x.plano?"Plano · ":"Foto ")+(LBi+1)+" de "+LB.length;
+  const a=$("#lb-pdf");a.style.display=x.pdf?"":"none";if(x.pdf)a.href=x.pdf;
+  $("#lb-prev").style.display=$("#lb-next").style.display=LB.length>1?"":"none";
+  $$("#lb-th button").forEach((b,j)=>b.classList.toggle("on",j===LBi));const t=$$("#lb-th button")[LBi];if(t)t.scrollIntoView({block:"nearest",inline:"center"});}
+function lbOpen(p,i){LB=lbSlides(p);$("#lb-th").innerHTML=LB.map((x,k)=>`<button type="button" data-k="${k}" aria-label="Imagen ${k+1}"><img src="${x.src}" alt="" loading="lazy">${x.plano?"<i>PLANO</i>":""}</button>`).join("");
+  $$("#lb-th button").forEach(b=>b.onclick=()=>lbGo(+b.dataset.k));$("#lb").classList.add("open");lbGo(i||0);}
+function lbClose(){$("#lb").classList.remove("open");lbZoom(false);}
+$("#lb-x").onclick=lbClose;$("#lb-prev").onclick=()=>lbGo(LBi-1);$("#lb-next").onclick=()=>lbGo(LBi+1);
+$("#m-img").addEventListener("click",()=>lbOpen(cur,curI));$("#m-ip").onclick=()=>setImg(curI-1);$("#m-in").onclick=()=>setImg(curI+1);
+(()=>{const st=$("#lb-stage");let x0=null,y0=0,mv=false;
+  let pan=null;
+  st.addEventListener("pointerdown",e=>{mv=false;if(st.classList.contains("z")){if(e.pointerType==="mouse"){pan={x:e.clientX,y:e.clientY,l:st.scrollLeft,t:st.scrollTop};e.preventDefault();}return;}x0=e.clientX;y0=e.clientY;});
+  st.addEventListener("pointermove",e=>{if(pan){const dx=e.clientX-pan.x,dy=e.clientY-pan.y;if(Math.abs(dx)+Math.abs(dy)>6)mv=true;st.scrollLeft=pan.l-dx;st.scrollTop=pan.t-dy;return;}if(x0!==null&&Math.abs(e.clientX-x0)>12)mv=true;});
+  window.addEventListener("pointerup",()=>{pan=null;});
+  st.addEventListener("pointerup",e=>{if(x0===null)return;const dx=e.clientX-x0,dy=e.clientY-y0;x0=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){lbGo(LBi+(dx<0?1:-1));}});
+  $("#lb-img").addEventListener("click",e=>{if(mv){mv=false;return;}lbZoom(!st.classList.contains("z"),e);});
+  st.addEventListener("click",e=>{if(e.target===st&&!st.classList.contains("z"))lbClose();});})();
+document.addEventListener("keydown",e=>{if(!$("#lb").classList.contains("open"))return;if(e.key==="Escape")lbClose();if(e.key==="ArrowRight")lbGo(LBi+1);if(e.key==="ArrowLeft")lbGo(LBi-1);});
 /* navegación por secciones */
 const PAGES=["inicio","catalogo","cotizar","bono","videos","contacto"];
 function show(pg,noScroll){if(!PAGES.includes(pg))pg="inicio";$$("[data-page]").forEach(s=>s.hidden=s.dataset.page!==pg);
@@ -744,6 +807,30 @@ show(PAGES.includes(location.hash.slice(1))?location.hash.slice(1):"inicio",true
 <script>
 /* Conexión con la base de datos: plantilla activa y formulario de contacto */
 async function c4Contacto(d){if(C4_API.startsWith("__"))return false;try{const r=await fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});return r.ok;}catch(e){return false;}}
+/* Catálogo desde la base de datos: lo que se edita en el panel se ve aquí */
+const C4_MEDIA="https://raw.githubusercontent.com/rapiprestamos-prog/propiedades/c4-subida/";
+function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|videos\/aguacatal-)/.test(r)?C4_MEDIA+r:r;}
+(async()=>{if(C4_API.startsWith("__"))return;try{
+  const r=await fetch(C4_API+"/public/catalogo");if(!r.ok)return;const L=await r.json();if(!Array.isArray(L)||!L.length)return;
+  const J=s=>{try{const v=JSON.parse(s||"[]");return Array.isArray(v)?v:[];}catch(e){return[];}};
+  const CATM={casa:"Casa",apartamento:"Casa",terreno:"Terreno",local:"Terreno",finca:"Finca",alquiler:"Alquiler"};
+  const N=L.map(d=>{const b=P.find(p=>p.id===d.codigo)||{};const vr=[],pg=[];let av="";
+    J(d.pagos).forEach(x=>{x=String(x).trim();const m=/^(.+?):\s*\$\s*([\d,]+(?:\.\d+)?)$/.exec(x);if(m)vr.push([m[1],+m[2].replace(/,/g,"")]);else if(/^importante\s*:/i.test(x))av=x.replace(/^importante\s*:\s*/i,"");else if(x)pg.push(x);});
+    let kv=J(d.caracteristicas).map(x=>Array.isArray(x)?x.map(String):[String(x),""]);
+    if(!kv.length)kv=[["Recámaras",d.recamaras],["Baños",d.banos],["Estacionamiento",d.estacionamiento],["Lote",d.lote_m2?(+d.lote_m2)+" m²":""]].filter(x=>x[1]);
+    const im=b.img&&b.img.length?b.img:[c4Ruta(d.imagen)||"img/logo.png"];
+    return {...b,id:d.codigo,cat:CATM[d.categoria]||"Casa",n:d.titulo,z:d.zona||"",zl:d.zona_detalle||undefined,precio:d.precio,antes:d.precio_antes||undefined,desde:!!d.precio_desde,ptxt:d.precio_texto||undefined,renta:d.renta_mensual,
+      tag:d.estado==="reservada"?"Reservada":d.estado==="en_negociacion"?"En negociación":(d.etiqueta||undefined),f:(d.fecha_publicacion||String(d.creado_en||"").slice(0,10)||b.f||"2026-10-15"),
+      kv,pts:J(d.incluye).map(String),pagos:pg,vr:vr.length?vr:undefined,aviso:av||undefined,txt:d.descripcion||undefined,img:im};});
+  P.splice(0,P.length,...N);QP.splice(0,QP.length,...P.filter(p=>p.cat==="Casa"));
+  const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();$("#q-zona").innerHTML=`<option value="">Todas las zonas</option>`+zs.map(z=>`<option>${z}</option>`).join("");
+  $("#c-prop").innerHTML=`<option value="">Aún no sé, ayúdame a elegir</option>`+QP.map(p=>`<option value="${p.id}">${p.n}${p.z?" · "+p.z:""}${p.precio?" · "+(p.desde?"desde ":"")+fmt(p.precio):""}</option>`).join("");
+  $("#l-prop").innerHTML=`<option value="">Elige una opción</option>`+P.map(p=>`<option value="${p.id}">${p.n} (${p.z||p.cat})</option>`).join("");
+  $("#t-venta").textContent=P.filter(p=>p.cat!=="Alquiler").length;$("#t-alq").textContent=new Set(P.map(p=>p.z)).size;
+  const pr=P.filter(p=>p.precio).map(p=>p.precio);if(pr.length)$("#t-desde").textContent="$"+Math.floor(Math.min(...pr)/1000)+"k";
+  $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
+  render();pub();
+}catch(e){}})();
 (async()=>{if(C4_API.startsWith("__"))return;try{const r=await fetch(C4_API+"/public/sitio");if(!r.ok)return;const j=await r.json();if(j.plantilla){c4Tema(j.plantilla);try{localStorage.setItem("c4_tema",JSON.stringify(j.plantilla));}catch(e){}}}catch(e){}})();
 </script>
 </body>
