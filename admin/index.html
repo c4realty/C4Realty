@@ -130,6 +130,23 @@ td.r,th.r{text-align:right}
 .kcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px;cursor:pointer}
 .kcard:hover{border-color:var(--sky)}
 .kcard small{color:var(--muted)}
+.kcol h3 .kn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--card);color:var(--ink,#fff);font-size:.72rem;margin-right:6px}
+.ktot{font-size:.76rem;color:var(--muted);padding:0 4px;margin-top:-4px}
+.kmov{display:flex;align-items:center;gap:8px;margin-top:2px}
+.kmov button{flex:none;width:30px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:inherit;cursor:pointer;font-size:.8rem}
+.kmov button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.kmov button:disabled{opacity:.3;cursor:default}
+.kprog{flex:1;height:6px;border-radius:99px;background:var(--panel);overflow:hidden}.kprog i{display:block;height:100%;background:var(--accent);border-radius:99px}
+/* flechas de etapa */
+.pasos{display:flex;flex-wrap:wrap;gap:4px 2px;margin-top:6px}
+.paso{border:0;padding:10px 18px 10px 24px;background:var(--panel);color:var(--muted);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%)}
+.paso:first-child{padding-left:16px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}
+.paso.hecho{background:color-mix(in srgb,#25d366 20%,var(--panel));color:#86e3a9}
+.paso.actual{background:var(--accent);color:#14110a}
+.paso:hover:not(.actual):not(:disabled){filter:brightness(1.25)}
+.paso:disabled{cursor:default}
+.pasos-pie{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.btn.perd{border-color:#ff6b5e66;color:#ff8a80}.btn.perd.pri{background:#ff6b5e;color:#fff;border-color:#ff6b5e}
 
 /* panel lateral */
 .drawer{position:fixed;inset:0;z-index:60;display:none}
@@ -262,6 +279,7 @@ const EST_P = { borrador: "Borrador", disponible: "Disponible", reservada: "Rese
 const CAT = { casa: "Casa", terreno: "Terreno", finca: "Finca", alquiler: "Alquiler", local: "Local", apartamento: "Apartamento" };
 const EST_C = { nuevo: "Nuevo", contactado: "Contactado", en_proceso: "En proceso", cliente: "Cliente", perdido: "Perdido", descartado: "Descartado" };
 const ORIG = { web_cotizar: "Página · Cotizar", web_contacto: "Página · Contacto", web: "Página", whatsapp: "WhatsApp", instagram: "Instagram", referido: "Referido", visita: "Visita", otro: "Otro" };
+const PASOS = ["cotizacion", "recorrido", "apartado", "documentacion", "aprobacion", "contrato", "abonos", "entregado"];
 const ETAPAS = { cotizacion: "Cotización", recorrido: "Recorrido", apartado: "Apartado", documentacion: "Documentación", aprobacion: "Aprobación", contrato: "Contrato", abonos: "Abonos", entregado: "Entregado", perdido: "Perdido" };
 const CITA_T = { recorrido: "Recorrido", llamada: "Llamada", firma: "Firma", entrega: "Entrega", reunion: "Reunión" };
 const CITA_E = { programada: "Programada", realizada: "Realizada", cancelada: "Cancelada", no_asistio: "No asistió" };
@@ -618,13 +636,20 @@ async function fichaCliente(id) {
 /* ---------- NEGOCIOS ---------- */
 RENDER.negocios = async () => {
   const N = await api("/api/negocios");
-  $("#tools").innerHTML = `<label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vc"> Ver cerrados</label>${can("negocios", "crear") ? `<button class="btn pri" id="nuevo">+ Nuevo negocio</button>` : ""}`;
+  $("#tools").innerHTML = `<label class="muted" style="display:flex;gap:6px;align-items:center;white-space:nowrap"><input type="checkbox" id="vc" style="width:auto"> Ver cerrados</label>${can("negocios", "crear") ? `<button class="btn pri" id="nuevo">+ Nuevo negocio</button>` : ""}`;
   const pinta = () => {
     const vc = $("#vc").checked;
     const et = Object.keys(ETAPAS).filter(k => vc || !["entregado", "perdido"].includes(k));
-    $("#body").innerHTML = N.length ? `<div class="kanban">${et.map(k => { const L = N.filter(n => n.etapa === k); return `<div class="kcol"><h3><span>${ETAPAS[k]}</span><span>${L.length}</span></h3>${L.map(n => `<div class="kcard" data-id="${n.id}"><b>${esc(n.cliente)}</b><small>${esc(n.propiedad || "Sin propiedad")}</small><small class="num">${money(n.monto)}${n.banco ? " · " + esc(n.banco) : ""}${n.usa_bono ? " · bono" : ""}</small></div>`).join("")}</div>`; }).join("")}</div>`
+    const ed = can("negocios", "editar");
+    $("#body").innerHTML = N.length ? `<div class="kanban">${et.map(k => { const L = N.filter(n => n.etapa === k), i = PASOS.indexOf(k), tot = L.reduce((a, n) => a + (+n.monto || 0), 0);
+      return `<div class="kcol"><h3><span>${i >= 0 ? `<span class="kn">${i + 1}</span>` : ""}${ETAPAS[k]}</span><span>${L.length}</span></h3>${tot ? `<div class="ktot num">${money(tot)}</div>` : ""}${L.map(n => `<div class="kcard" data-id="${n.id}"><b>${esc(n.cliente)}</b><small>${esc(n.propiedad || "Sin propiedad")}</small><small class="num">${money(n.monto)}${n.banco ? " · " + esc(n.banco) : ""}${n.usa_bono ? " · bono" : ""}</small>${i >= 0 ? `<div class="kmov"><button data-mv="-1" title="Etapa anterior" aria-label="Etapa anterior" ${!ed || i === 0 ? "disabled" : ""}>◀</button><span class="kprog" title="Paso ${i + 1} de ${PASOS.length}"><i style="width:${Math.round((i + 1) / PASOS.length * 100)}%"></i></span><button data-mv="1" title="Siguiente etapa" aria-label="Siguiente etapa" ${!ed || i === PASOS.length - 1 ? "disabled" : ""}>▶</button></div>` : ""}</div>`).join("")}</div>`; }).join("")}</div>`
       : `<div class="card"><h2>Sin negocios todavía</h2><p class="muted" style="margin-top:6px">Un negocio es un cliente interesado en una propiedad. Ábrelo desde la ficha del cliente o con "Nuevo negocio". Cuando llega a <b>Apartado</b>, la propiedad pasa sola a Reservada; cuando llega a <b>Entregado</b>, a Vendida.</p></div>`;
     $$(".kcard").forEach(k => k.onclick = () => fichaNegocio(k.dataset.id));
+    $$(".kcard [data-mv]").forEach(b => b.onclick = async e => {
+      e.stopPropagation(); const card = b.closest(".kcard"), n = N.find(x => String(x.id) === card.dataset.id), to = PASOS[PASOS.indexOf(n.etapa) + +b.dataset.mv];
+      if (!to) return; b.disabled = true;
+      try { await api("/api/negocios/" + n.id, { method: "PATCH", body: { etapa: to } }); n.etapa = to; C.propiedades = null; toast(esc(n.cliente) + " → " + ETAPAS[to]); pinta(); } catch (x) { toast(x.message, 1); b.disabled = false; }
+    });
   };
   $("#vc").onchange = pinta; pinta();
   if ($("#nuevo")) $("#nuevo").onclick = () => fichaNegocio(null);
@@ -641,7 +666,10 @@ async function fichaNegocio(id, pre = {}) {
   ];
   const ed = id ? can("negocios", "editar") : can("negocios", "crear");
   abrir(`<div class="hd"><h1>${id ? esc(n.cliente) + (n.propiedad ? " · " + esc(n.propiedad) : "") : "Nuevo negocio"}</h1><button class="btn sm" data-close>Cerrar</button></div>
-    ${id ? `<div class="card"><h2>Etapa</h2><div class="tools" style="margin-top:4px">${Object.entries(ETAPAS).map(([k, t]) => `<button class="btn sm ${k === n.etapa ? "pri" : ""}" data-et="${k}" ${ed ? "" : "disabled"}>${t}</button>`).join("")}</div><p class="muted" style="font-size:.82rem;margin-top:8px">Apartado → la propiedad queda Reservada. Entregado → queda Vendida.</p></div>` : ""}
+    ${id ? (() => { const i = PASOS.indexOf(n.etapa); return `<div class="card"><h2>¿En qué paso va?</h2>
+      <div class="pasos">${PASOS.map((k, j) => `<button class="paso ${j < i ? "hecho" : j === i ? "actual" : ""}" data-et="${k}" ${ed ? "" : "disabled"}>${j < i ? "✓ " : ""}${ETAPAS[k]}</button>`).join("")}</div>
+      <div class="pasos-pie">${ed && i > 0 ? `<button class="btn sm" data-et="${PASOS[i - 1]}">◀ Volver a ${ETAPAS[PASOS[i - 1]]}</button>` : ""}${ed && i >= 0 && i < PASOS.length - 1 ? `<button class="btn sm pri" data-et="${PASOS[i + 1]}">Pasar a ${ETAPAS[PASOS[i + 1]]} ▶</button>` : ""}${ed && n.etapa === "perdido" ? `<button class="btn sm pri" data-et="cotizacion">Reactivar</button>` : ""}<span style="flex:1"></span><button class="btn sm perd ${n.etapa === "perdido" ? "pri" : ""}" data-et="perdido" ${ed ? "" : "disabled"}>${n.etapa === "perdido" ? "Perdido" : "Marcar como perdido"}</button></div>
+      <p class="muted" style="font-size:.82rem;margin-top:10px">Apartado → la propiedad queda Reservada. Entregado → queda Vendida.</p></div>`; })() : ""}
     <form id="f-n" class="card"><div class="grid2">${campos.map(c => campo(c, n[c.k])).join("")}</div>${ed ? `<div class="tools" style="margin-top:14px"><button class="btn pri">Guardar</button>${id && can("negocios", "borrar") ? `<button type="button" class="btn del" id="n-del">Borrar</button>` : ""}${id ? `<button type="button" class="btn" id="n-cli">Ver cliente</button>` : ""}</div>` : ""}</form>`, () => {
     const f = $("#f-n"); if (!ed) $$("input,select,textarea", f).forEach(x => x.disabled = true);
     const guardar = async body => { try { await api(id ? "/api/negocios/" + id : "/api/negocios", { method: id ? "PATCH" : "POST", body }); toast("Guardado"); C.propiedades = null; cerrar(); if (RENDER[VISTA]) RENDER[VISTA](); } catch (x) { toast(x.message, 1); } };
