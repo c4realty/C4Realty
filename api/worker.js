@@ -418,7 +418,7 @@ async function verBitacora(env, u) {
 }
 
 // ---------------------------------------------------------------- público (página web)
-async function publico(req, env, partes) {
+async function publico(req, env, partes, ctx) {
   const r = partes[1];
   if (req.method === 'GET' && r === 'catalogo') {
     const { results } = await env.DB.prepare('SELECT * FROM v_catalogo_publico ORDER BY destacada DESC, orden').all();
@@ -451,6 +451,8 @@ async function publico(req, env, partes) {
     if (Array.isArray(b.documentos)) for (const d of b.documentos.slice(0, 20)) {
       await env.DB.prepare(`INSERT INTO cliente_documentos (cliente_id,documento,lo_tiene) VALUES (?,?,1) ON CONFLICT(cliente_id,documento) DO UPDATE SET lo_tiene=1, actualizado=datetime('now')`).bind(c.id, String(d).slice(0, 200)).run();
     }
+    // HubSpot al instante: se envía apenas llega el formulario (el envío cada minuto queda de respaldo)
+    if (env.HUBSPOT_TOKEN && ctx) ctx.waitUntil(sincronizarHubSpot(env).catch(() => { }));
     return json({ ok: true }, 201);
   }
   if (req.method === 'POST' && r === 'vista') {
@@ -533,13 +535,13 @@ async function sincronizarHubSpot(env) {
 }
 
 // ---------------------------------------------------------------- enrutador
-async function rutas(req, env) {
+async function rutas(req, env, ctx) {
   const url = new URL(req.url);
   const partes = url.pathname.replace(/^\/+|\/+$/g, '').split('/');
   const m = req.method;
 
   if (!partes[0]) return json({ servicio: 'C4 Realty API', ok: true });
-  if (partes[0] === 'public') return publico(req, env, partes);
+  if (partes[0] === 'public') return publico(req, env, partes, ctx);
   if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'login') return login(req, env);
   if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'activar') return activar(req, env);
 
@@ -574,9 +576,9 @@ async function rutas(req, env) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
-    try { return await rutas(req, env); }
+    try { return await rutas(req, env, ctx); }
     catch (e) {
       if (e instanceof HttpError) return err(e.message, e.status);
       const msg = String(e?.message || e);
