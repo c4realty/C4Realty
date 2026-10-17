@@ -549,7 +549,7 @@ async function publico(req, env, partes, ctx) {
   }
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
-    const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','bono_monto','bono_tope_precio')`).all()).results;
+    const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio')`).all()).results;
     return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])) });
   }
   if (req.method === 'POST' && r === 'contacto') {

@@ -54,6 +54,8 @@ INSERT INTO configuracion (clave,valor,descripcion) VALUES
  ('correo','c4realty1@gmail.com','Correo de contacto'),
  ('instagram','c4realty1','Usuario de Instagram'),
  ('hero_titulo','Cotizar es tu primer paso para obtener tu vivienda','Título de la portada'),
+ ('hero_etiqueta','Casas · Terrenos · Fincas en Chiriquí','Línea pequeña amarilla encima del título de la portada'),
+ ('hero_texto','Somos especialistas en casas en Chiriquí. Boquete, Algarrobos, San Pablo Viejo, Bágala, Montilla, Bugaba, Boquerón, Aguacatal y más: compara proyectos, precios y planes de pago en un solo lugar.','Párrafo debajo del título de la portada'),
  ('hubspot_portal_id','','ID de portal de HubSpot (pendiente)'),
  ('hubspot_form_registro','','ID del formulario de registro en HubSpot'),
  ('hubspot_form_cotizacion','','ID del formulario de cotización en HubSpot'),
