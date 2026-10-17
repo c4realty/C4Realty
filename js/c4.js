@@ -16,7 +16,7 @@
   const CAT = { casa: "Casa", apartamento: "Casa", terreno: "Terreno", local: "Terreno", finca: "Finca", alquiler: "Alquiler" };
 
   /* ---------- diseño activo: cada diseño vive en su página ---------- */
-  const PAG = { azul: "index.html", residencial: "d/residencial.html", cinematico: "d/cinematico.html" };
+  const PAG = { azul: "index.html", residencial: "d/residencial.html", cinematico: "d/cinematico.html", institucional: "d/institucional.html" };
   function irDiseno(layout, propio) {
     if (/[?&]vista=/.test(location.search)) return;
     const l = PAG[layout] ? layout : "azul"; if (l === propio) return;

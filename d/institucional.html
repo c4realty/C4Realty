@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C4 Realty · Casas en Chiriquí</title>
+<meta name="description" content="C4 Realty: especialistas en casas en Chiriquí. Cotización, recorrido y asesoría gratis.">
+<link rel="icon" href="../img/logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Lato:wght@400;700&display=swap">
+<script>window.C4_BASE="../";</script>
+<script src="../js/c4.js"></script>
+<script>C4.tema("institucional");</script>
+<style>
+:root{
+  --navy:#050b33;--navy2:#0c1550;--gold:#f2a900;--gold2:#ffc533;--gray:#ececec;--ink:#14183a;--mut:#5b607a;--line:#dfe1ea;
+  --t:"Montserrat",system-ui,sans-serif;--b:"Lato",system-ui,sans-serif;
+  --f-bg:#fff;--f-fg:#14183a;--f-mut:#5b607a;--f-line:#dfe1ea;--f-soft:#f4f5f9;--f-acc:#050b33;--f-acc-ink:#fff;--f-title:var(--t);--f-body:var(--b);--f-media:#050b33;--f-card:#050b33;--f-card-ink:#fff;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth;overflow-x:clip}
+body{margin:0;background:#fff;color:var(--ink);font:400 16px/1.6 var(--b);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--t);margin:0;line-height:1.15}
+a{color:inherit}img{display:block;max-width:100%}button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.w{max-width:1200px;margin:0 auto;padding:0 max(18px,env(safe-area-inset-left))}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bo{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--gold);padding:9px 18px;font-family:var(--t);font-weight:700;font-size:.9rem;text-decoration:none;background:transparent;cursor:pointer;color:inherit;transition:background .2s,color .2s;white-space:nowrap}
+.bo:hover{background:var(--gold);color:var(--navy)}
+.bf{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--navy);color:#fff;border:0;padding:12px 22px;font-family:var(--t);font-weight:700;cursor:pointer;text-decoration:none}
+.bf:hover{background:var(--navy2)}
+/* encabezado */
+.top{background:var(--navy);color:#fff}
+.top .w{display:flex;align-items:center;justify-content:space-between;gap:18px;height:72px}
+.top img{height:30px;filter:brightness(0) invert(1)}
+.top .r{display:flex;align-items:center;gap:18px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--gold);border-radius:999px;padding:6px 14px;font-family:var(--t);font-weight:600;font-size:.88rem;text-decoration:none}
+.pill:hover{background:var(--gold);color:var(--navy)}
+.soc{display:flex;gap:14px}.soc a{display:grid;place-items:center;opacity:.9}.soc a:hover{color:var(--gold2)}.soc svg{width:20px;height:20px}
+.nav{background:var(--gray);position:sticky;top:0;z-index:40;box-shadow:0 1px 0 #d6d8e0}
+.nav .w{display:flex;justify-content:center;gap:clamp(14px,2.6vw,34px);height:50px;align-items:center;overflow-x:auto;scrollbar-width:none}.nav .w::-webkit-scrollbar{display:none}
+.nav a{font-family:var(--t);font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap;padding:14px 0;border-bottom:3px solid transparent}
+.nav a:hover{border-color:var(--gold)}
+@media (max-width:820px){.nav .w{justify-content:flex-start}.top .soc{display:none}}
+/* portada en 3 paneles */
+.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:0;max-width:1440px;margin:0 auto}
+.hp{position:relative;min-height:clamp(320px,38vw,470px);overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:26px 24px 30px;isolation:isolate}
+.hp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 86%;z-index:-2;transition:transform 1s ease}
+.hp:hover img{transform:scale(1.04)}
+.hp::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(5,11,51,.05) 30%,rgba(5,11,51,.88))}
+.hp::after{content:"";position:absolute;left:30px;bottom:-1px;border:12px solid transparent;border-bottom-color:#fff}
+.hp small{font-family:var(--t);font-weight:700;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase;font-size:.74rem}
+.hp h2{font-size:clamp(1.25rem,2vw,1.6rem);font-weight:700;margin:6px 0 16px}
+.hp .bo{align-self:flex-start;border-color:#fff;color:#fff}.hp .bo:hover{background:#fff;color:var(--navy)}
+@media (max-width:820px){.hero{grid-template-columns:1fr}.hp{min-height:280px}.hp img{object-position:center 72%}}
+/* mensajes importantes */
+.msg{padding:26px 0}
+.msg .w{display:flex;align-items:center;gap:28px}
+.msg b{font-family:var(--t);font-weight:700;color:var(--navy);white-space:nowrap;padding-bottom:6px;border-bottom:3px solid var(--gold)}
+.tick{flex:1;overflow:hidden;position:relative;height:1.6em}
+.tick span{position:absolute;inset:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+.tick span.on{opacity:1;transform:none}
+@media (max-width:700px){.msg .w{flex-direction:column;align-items:flex-start;gap:12px}.tick{width:100%;height:4.9em;flex:none}.tick span{white-space:normal}}
+/* buscadores */
+.bus{display:grid;grid-template-columns:1fr 1fr;margin-bottom:0}
+.bt{padding:clamp(28px,4vw,48px);display:grid;gap:14px;justify-items:center;text-align:center;align-content:center;min-height:230px}
+.bt.a{background:linear-gradient(135deg,#e8f6ff,#5fb8ff 120%)}
+.bt.b{background:radial-gradient(circle at 50% 50%,#ffe23a,#f5a300 85%)}
+.bt h3{font-size:clamp(1.3rem,2.4vw,1.75rem);font-weight:800;color:var(--navy)}
+.bt h3 em{font-style:normal;color:#1565c0}
+.bt .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(420px,100%)}
+.bt select{width:100%;padding:11px 12px;border:1px solid rgba(5,11,51,.2);background:#fff;font-size:.95rem}
+.bt .bf{width:min(420px,100%)}
+@media (max-width:820px){.bus{grid-template-columns:1fr}}
+/* secciones */
+.sec{padding:80px 0}.sec.g{background:var(--gray)}
+.st{text-align:center;margin-bottom:44px}
+.st h2{font-size:clamp(1.7rem,3.2vw,2.3rem);font-weight:700;color:var(--navy)}
+.st h2::after{content:"";display:block;width:110px;height:2px;background:var(--gold);margin:16px auto 0}
+.st p{color:var(--mut);max-width:60ch;margin:14px auto 0}
+/* tarjetas tipo curso */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+#ofl{grid-template-columns:repeat(auto-fit,minmax(260px,370px));justify-content:center}
+@media (max-width:980px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:620px){.cards{grid-template-columns:1fr}}
+.card{background:var(--navy);color:#fff;display:flex;flex-direction:column;cursor:pointer;border:0;padding:0;text-align:left;box-shadow:0 12px 30px -16px rgba(5,11,51,.6);transition:transform .25s}
+.card:hover{transform:translateY(-4px)}
+.ch{position:relative;aspect-ratio:16/11;overflow:hidden}
+.ch img{width:100%;height:100%;object-fit:cover;object-position:center 62%;transition:opacity .2s}
+.ch::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,11,51,.85))}
+.ch div{position:absolute;left:18px;right:18px;bottom:14px;z-index:1}
+.ch h3{font-size:1.15rem;font-weight:700}.ch h3::after{content:"";display:block;width:56px;height:2px;background:var(--gold);margin-top:10px}
+.ch .d{position:absolute;z-index:1;top:12px;left:12px;background:#d63a2f;color:#fff;font-family:var(--t);font-weight:800;font-size:.8rem;padding:4px 10px}
+.ch .t{position:absolute;z-index:1;top:12px;right:12px;background:var(--gold);color:var(--navy);font-family:var(--t);font-weight:700;font-size:.72rem;padding:4px 10px}
+.cb{padding:18px;display:grid;gap:8px;flex:1;align-content:start}
+.cb .z{color:#b9bfd9;font-size:.92rem}
+.cb .p{font-family:var(--t);font-weight:800;font-size:1.45rem;color:#fff}.cb .p small{font-family:var(--b);font-weight:400;font-size:.8rem;color:#b9bfd9;margin-right:4px}.cb .p s{font-family:var(--b);font-weight:400;font-size:.9rem;color:#9aa0c0;margin-left:8px}
+.cb .k{color:#d7dbef;font-size:.9rem}
+.cf{padding:6px 18px 22px;text-align:center}.cf .bo{color:#fff}
+.tool{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:-18px 0 30px}
+.tool button{border:1px solid var(--line);background:#fff;padding:8px 14px;font-family:var(--t);font-weight:600;font-size:.86rem;cursor:pointer}
+.tool button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cnt{text-align:center;color:var(--mut);margin:-14px 0 24px;font-size:.92rem}
+/* quiénes somos */
+.qs{position:relative;color:#fff;padding:70px 0;isolation:isolate;overflow:hidden}
+.qs img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 45%;z-index:-2}
+.qs::before{content:"";position:absolute;inset:0;background:rgba(3,6,25,.82);z-index:-1}
+.qs h2{font-size:clamp(1.7rem,3vw,2.2rem);font-weight:700}.qs h2::after{content:"";display:block;width:110px;height:2px;background:var(--gold);margin:14px 0 0}
+.qs p{max-width:80ch;margin:20px 0 22px;color:#dfe2f2}
+.qs .bo{color:var(--gold2)}
+.qs ul{list-style:none;padding:0;margin:0 0 24px;display:flex;flex-wrap:wrap;gap:10px 28px;font-family:var(--t);font-weight:600}
+.qs li{display:flex;gap:8px;align-items:center}.qs li svg{color:var(--gold2)}
+/* beneficios */
+.ben{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}
+@media (max-width:820px){.ben{grid-template-columns:1fr}}
+.bn{display:grid;gap:12px;justify-items:start}
+.bn .ic{width:64px;height:64px;display:grid;place-items:center;color:var(--navy);background:#fff6df;border-radius:50%}
+.bn .ic svg{width:30px;height:30px}.bn .ic svg .g{stroke:var(--gold)}
+.bn h3{font-size:1.15rem;font-weight:700;color:var(--navy)}.bn h3::after{content:"";display:block;width:56px;height:2px;background:var(--gold);margin-top:10px}
+.bn p{margin:0;color:var(--mut)}
+.bn .bo{width:100%;max-width:240px;color:var(--navy)}
+/* pasos */
+.pas{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;counter-reset:p;list-style:none;padding:0;margin:0}
+.pas li{background:#fff;border-top:3px solid var(--gold);padding:18px 14px;display:grid;gap:6px;align-content:start;box-shadow:0 8px 20px -14px rgba(5,11,51,.4)}
+.pas li::before{counter-increment:p;content:counter(p);font-family:var(--t);font-weight:800;font-size:1.6rem;color:var(--navy)}
+.pas b{font-family:var(--t);font-size:.95rem;color:var(--navy)}.pas span{color:var(--mut);font-size:.88rem}
+@media (max-width:1000px){.pas{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* bono */
+.bono{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.bono h2{font-size:clamp(1.8rem,3.4vw,2.5rem);color:var(--navy);font-weight:800}.bono h2 em{font-style:normal;color:var(--gold)}
+.bono ul{padding-left:20px;margin:18px 0 0;display:grid;gap:8px;color:#30355a}
+.bl{display:grid;gap:0;background:#fff;border:1px solid var(--line)}
+.bl button{display:flex;justify-content:space-between;gap:12px;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);padding:14px 18px;cursor:pointer;text-align:left}
+.bl button:hover{background:#fafbff}.bl b{font-family:var(--t);font-size:.98rem;color:var(--navy)}.bl small{display:block;color:var(--mut)}.bl .p{font-family:var(--t);font-weight:800;color:var(--navy);white-space:nowrap}
+@media (max-width:820px){.bono{grid-template-columns:1fr}}
+/* videos */
+.vids{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.vc{background:var(--navy);color:#fff;display:flex;flex-direction:column}
+.vc video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#000;display:block}
+.vc div{padding:12px 14px 16px;display:grid;gap:4px}.vc small{color:var(--gold2);font-family:var(--t);font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}.vc b{font-family:var(--t);font-size:.95rem}.vc a{color:#b9bfd9;font-size:.82rem}
+@media (max-width:900px){.vids{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:62%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.vids::-webkit-scrollbar{display:none}.vc{scroll-snap-align:start}}
+/* bancos */
+.banks{border-top:1px solid var(--line);padding:34px 0}
+.banks ul{list-style:none;margin:0;padding:0;display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px 40px}
+.banks li{font-family:var(--t);font-weight:800;font-size:1.2rem;color:#8a8fa8}
+/* contacto */
+.ct{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+.ct h2{font-size:clamp(1.7rem,3vw,2.2rem);color:var(--navy)}.ct h2::after{content:"";display:block;width:110px;height:2px;background:var(--gold);margin-top:14px}
+.ct ul{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
+.ct li{display:flex;gap:12px;align-items:center}.ct li svg{color:var(--gold);width:22px;height:22px}.ct li a{font-weight:700;text-decoration:none}
+form.f{background:var(--gray);padding:28px;display:grid;gap:12px}
+form.f label{display:grid;gap:5px;font-family:var(--t);font-weight:600;font-size:.85rem;color:var(--navy)}
+form.f input,form.f select{width:100%;min-width:0;border:1px solid #cfd2de;background:#fff;padding:12px;font-size:1rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hp2{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+@media (max-width:820px){.ct{grid-template-columns:1fr}.two{grid-template-columns:1fr}.ct>*{min-width:0}}
+/* pie */
+footer{background:var(--navy);color:#c3c7df;padding:56px 0 24px}
+.fg{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:30px}
+footer h4{font-family:var(--t);color:#fff;font-size:.95rem;margin-bottom:14px}footer h4::after{content:"";display:block;width:40px;height:2px;background:var(--gold);margin-top:8px}
+footer ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}footer a{text-decoration:none}footer a:hover{color:var(--gold2)}
+footer img{height:28px;filter:brightness(0) invert(1);margin-bottom:14px}
+footer button{background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}footer button:hover{color:var(--gold2)}
+.fb{border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.85rem}
+@media (max-width:820px){.fg{grid-template-columns:1fr 1fr}}
+.wa-f{position:fixed;right:18px;bottom:18px;z-index:50;width:56px;height:56px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="i-ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8"/></symbol>
+ <symbol id="i-wa" viewBox="0 0 24 24"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2.2 2.3 4 4.5 4.5l1-1.2 2 .9c-.2 1.2-1.2 1.8-2.3 1.8A6.3 6.3 0 0 1 8 9.3c0-1.1.6-2.1 1.8-2.3l.9 2z"/></symbol>
+ <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.6 2.5L16 9.5"/></symbol>
+ <symbol id="i-tel" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+ <symbol id="i-mail" viewBox="0 0 24 24"><path d="M3 6h18v12H3z"/><path d="m3 7 9 6 9-6"/></symbol>
+ <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/><path class="g" d="M16 15v4"/></symbol>
+ <symbol id="i-ruta" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle class="g" cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></symbol>
+ <symbol id="i-ase" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path class="g" d="M16 4.5a3.5 3.5 0 0 1 0 7M18 13.5a6.5 6.5 0 0 1 3.5 6.5"/></symbol>
+</svg>
+<header class="top"><div class="w">
+  <a href="#inicio" aria-label="C4 Realty, inicio"><img src="../img/logo.png" alt="C4 Realty"></a>
+  <div class="r">
+    <a class="pill" href="../admin/"><svg class="i"><use href="#i-user"/></svg>Iniciar sesión</a>
+    <div class="soc"><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="i"><use href="#i-ig"/></svg></a><a href="https://wa.me/50762531751" target="_blank" rel="noopener" aria-label="WhatsApp 6253-1751"><svg class="i"><use href="#i-wa"/></svg></a></div>
+  </div>
+</div></header>
+<nav class="nav" aria-label="Secciones"><div class="w"><a href="#inicio">Inicio</a><a href="#casas">Casas</a><a href="#ofertas">Ofertas</a><a href="#bono">Bono Pa' Ti</a><a href="#nosotros">Nosotros</a><a href="#pasos">Cómo comprar</a><a href="#videos">Videos</a><a href="#contacto">Contacto</a></div></nav>
+
+<main id="inicio">
+  <section class="hero" id="hero" aria-label="Destacados"></section>
+
+  <section class="msg" aria-label="Mensajes importantes"><div class="w"><b>Mensajes importantes</b><div class="tick" id="tick">
+    <span>Precios y promociones vigentes de octubre de 2026. Confirma disponibilidad por WhatsApp al 6253-1751.</span>
+    <span>Bono Pa' Ti: subsidio de <span data-cf="bono_monto">$3,000</span> para el abono inicial de tu primera casa nueva (Decreto Ejecutivo N° 35).</span>
+    <span>Envíanos tus documentos y en 5 minutos iniciamos tu precalificación con el banco.</span>
+    <span>Cotización gratis · Recorrido gratis · Asesoría gratuita.</span>
+  </div></div></section>
+
+  <section class="bus" aria-label="Buscadores">
+    <form class="bt a" id="b1"><h3>C4 Realty | <em>Encuentra tu casa aquí</em></h3>
+      <div class="row" style="grid-template-columns:1fr"><select id="b-zona" aria-label="Zona"><option value="">Todas las zonas</option></select></div>
+      <button class="bf" type="submit">Buscar</button></form>
+    <form class="bt b" id="b2"><h3>Buscador por presupuesto</h3>
+      <div class="row"><select id="b-pre" aria-label="Presupuesto"><option value="">Cualquier precio</option><option value="0-70000">Hasta $70,000</option><option value="70000-80000">$70,000 – $80,000</option><option value="80000-0">Más de $80,000</option></select>
+      <select id="b-rec" aria-label="Recámaras"><option value="">Recámaras</option><option value="2">2 recámaras</option><option value="3">3 recámaras</option></select></div>
+      <button class="bf" type="submit">Buscar</button></form>
+  </section>
+
+  <section class="sec g" id="ofertas" hidden><div class="w"><div class="st"><h2>Ofertas destacadas</h2><p>Precios de lanzamiento y rebajas por tiempo limitado.</p></div><div class="cards" id="ofl"></div></div></section>
+
+  <section class="sec" id="casas"><div class="w"><div class="st"><h2 id="cat-t">Casas disponibles</h2><p>Fotos reales, precio por modelo, financiamiento y plano de cada casa.</p></div>
+    <div class="tool" id="chips" role="group" aria-label="Filtrar por zona"></div><div class="cnt" id="cnt" role="status"></div>
+    <div class="cards" id="grid"></div></div></section>
+
+  <section class="qs" id="nosotros"><img id="qs-img" alt=""><div class="w">
+    <h2>Quiénes somos</h2>
+    <p>Somos especialistas en casas en Chiriquí, con 10 años recorriendo el mercado. No vendemos una casa, vendemos hogares: te ayudamos desde cero, desde la cotización bancaria hasta la entrega de tus llaves.</p>
+    <ul><li><svg class="i"><use href="#i-ok"/></svg>Cotización gratis</li><li><svg class="i"><use href="#i-ok"/></svg>Recorrido gratis</li><li><svg class="i"><use href="#i-ok"/></svg>Asesoría gratuita</li></ul>
+    <a class="bo" href="#contacto">Más información</a></div></section>
+
+  <section class="sec"><div class="w"><div class="st"><h2>Beneficios</h2></div>
+    <div class="ben">
+      <div class="bn"><div class="ic"><svg class="i"><use href="#i-calc"/></svg></div><h3>Precalificación rápida</h3><p>Envíanos tus documentos y en 5 minutos iniciamos tu precalificación con el banco. Así sabrás qué proyectos sí puedes comprar.</p><a class="bo" href="#contacto">Cotizar</a></div>
+      <div class="bn"><div class="ic"><svg class="i"><use href="#i-ruta"/></svg></div><h3>Recorrido sin costo</h3><p>Visita los proyectos que están dentro de tu capacidad.</p><a class="bo" href="#contacto">Agendar recorrido</a></div>
+      <div class="bn"><div class="ic"><svg class="i"><use href="#i-ase"/></svg></div><h3>Asesoría gratuita</h3><p>En cada uno de los pasos te guiamos hasta la entrega de tus llaves.</p><a class="bo" href="https://wa.me/50762531751" target="_blank" rel="noopener">Escríbenos</a></div>
+    </div></div></section>
+
+  <section class="sec g" id="bono"><div class="w bono">
+    <div><h2>Bono Pa' Ti: <em data-cf="bono_monto">$3,000</em> para tu casa nueva</h2>
+      <ul><li>Subsidio estatal no reembolsable para el abono inicial de una casa nueva (Decreto Ejecutivo N° 35).</li><li>Solo para tu primera vivienda con interés preferencial.</li><li>Aplica para viviendas con valor no mayor de <span data-cf="bono_tope_precio">$80,000</span>.</li></ul></div>
+    <div><p style="margin:0 0 8px;font-family:var(--t);font-weight:700;color:var(--navy)">Casas dentro del tope de <span data-cf="bono_tope_precio">$80,000</span></p><div class="bl" id="bl"></div></div>
+  </div></section>
+
+  <section class="sec" id="pasos"><div class="w"><div class="st"><h2>Cómo comprar tu casa</h2><p>En cada uno de estos pasos te guiamos hasta la entrega de tus llaves.</p></div>
+    <ol class="pas">
+      <li><b>Cotización bancaria</b><span>Conoce tu capacidad.</span></li>
+      <li><b>Recorrido</b><span>Visita los proyectos que están dentro de tu capacidad.</span></li>
+      <li><b>Aparta</b><span>Tu lote favorito con el modelo de tu preferencia.</span></li>
+      <li><b>Documentación</b><span>Llena la documentación del banco.</span></li>
+      <li><b>Aprobación</b><span>Aprobación bancaria lista.</span></li>
+      <li><b>Contrato</b><span>Firma del contrato con la constructora.</span></li>
+      <li><b>Abonos y llaves</b><span>Abonos del % indicado hasta la entrega de tus llaves.</span></li>
+    </ol></div></section>
+
+  <section class="sec g" id="videos"><div class="w"><div class="st"><h2>Recorre los proyectos en video</h2><p>Dale play sin salir de la página. Más videos en nuestro <a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">Instagram @c4realty1</a>.</p></div><div class="vids" id="vids"></div></div></section>
+
+  <section class="banks" aria-label="Bancos"><div class="w"><ul><li>Banco General</li><li>Global Bank</li><li>Caja de Ahorros</li><li>Banco Nacional</li></ul></div></section>
+
+  <section class="sec g" id="contacto"><div class="w ct">
+    <div><h2>Contáctenos</h2><p style="color:var(--mut);margin:16px 0 0">Déjanos tus datos y te escribimos por WhatsApp con tu cotización.</p>
+      <ul><li><svg class="i"><use href="#i-tel"/></svg><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a></li><li><svg class="i"><use href="#i-mail"/></svg><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></li><li><svg class="i"><use href="#i-ig"/></svg><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">@c4realty1</a></li></ul></div>
+    <form class="f" data-c4-contacto>
+      <div class="two"><label>Nombre<input name="nombre" autocomplete="name" required></label><label>Teléfono o WhatsApp<input name="telefono" autocomplete="tel" inputmode="tel" required></label></div>
+      <div class="two"><label>Correo (opcional)<input name="email" type="email" autocomplete="email"></label><label>Salario mensual aprox.<input name="salario" type="number" min="0" step="50" inputmode="numeric"></label></div>
+      <label>Casa que te interesa<select name="propiedad" id="f-prop"><option value="">Aún no sé, ayúdame a elegir</option></select></label>
+      <input class="hp2" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="bf" style="width:100%">Enviar mis datos</button>
+      <p data-msg role="status" style="margin:0;font-weight:700;color:var(--navy)"></p>
+    </form></div></section>
+</main>
+<footer><div class="w">
+  <div class="fg">
+    <div><img src="../img/logo.png" alt="C4 Realty"><p style="margin:0;max-width:32ch">Especialistas en casas en Chiriquí. No vendemos una casa, vendemos hogares.</p></div>
+    <div><h4>Zonas</h4><ul id="fz"></ul></div>
+    <div><h4>Navegación</h4><ul><li><a href="#casas">Casas</a></li><li><a href="#ofertas">Ofertas</a></li><li><a href="#bono">Bono Pa' Ti</a></li><li><a href="#pasos">Cómo comprar</a></li><li><a href="../admin/">Iniciar sesión</a></li></ul></div>
+    <div><h4>Contacto</h4><ul><li><a href="https://wa.me/50762531751" target="_blank" rel="noopener">WhatsApp 6253-1751</a></li><li><a href="mailto:c4realty1@gmail.com">c4realty1@gmail.com</a></li><li><a href="https://www.instagram.com/c4realty1/" target="_blank" rel="noopener">Instagram @c4realty1</a></li></ul></div>
+  </div>
+  <div class="fb"><span>© <span id="yr"></span> C4 Realty · Chiriquí, Panamá</span><span>Precios y promociones sujetos a confirmación.</span></div>
+</div></footer>
+<a class="wa-f" href="https://wa.me/50762531751" target="_blank" rel="noopener" aria-label="WhatsApp 6253-1751"><svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2 .6 2.8.5a2.4 2.4 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1c0-.1-.2-.2-.5-.3z"/></svg></a>
+<script>
+document.getElementById("yr").textContent=new Date().getFullYear();
+/* mensajes importantes que rotan */
+(()=>{const s=[...document.querySelectorAll("#tick>span")];let i=0;s[0].classList.add("on");if(s.length>1&&!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>{s[i].classList.remove("on");i=(i+1)%s.length;s[i].classList.add("on");},4500);})();
+(async()=>{
+  const {$,$$,esc,fmt}=C4;const P=(await C4.cargar()).filter(p=>p.cat!=="Alquiler");
+  const g=(p,k)=>(p.kv.find(x=>x[0]===k)||[])[1];
+  const card=p=>{const d=C4.desc(p),r=g(p,"Recámaras"),b=g(p,"Baños"),l=g(p,"Lote")||g(p,"Lotes");
+    return `<button class="card" type="button" data-c4="${esc(p.id)}"><div class="ch"><img src="${esc(p.img[0])}" alt="${esc(p.n)}, ${esc(p.z)}" loading="lazy">${d?`<span class="d">−${d} %</span>`:""}${p.tag?`<span class="t">${esc(p.tag)}</span>`:""}<div><h3>${esc(p.n)}</h3></div></div>
+     <div class="cb"><span class="z">${esc(p.zl||p.z)}, Chiriquí</span><span class="p">${p.desde?"<small>Desde</small>":""}${p.precio==null?"Consultar":fmt(p.precio)}${p.antes?`<s>${fmt(p.antes)}</s>`:""}</span><span class="k">${[r&&r+" rec.",b&&b+(b==="1"?" baño":" baños"),l&&"Lote "+l].filter(Boolean).map(esc).join(" · ")}</span></div>
+     <div class="cf"><span class="bo">Ver ficha</span></div></button>`;};
+  /* portada: tres paneles con datos reales */
+  const O=P.filter(p=>C4.desc(p)>0).sort((a,b)=>C4.desc(b)-C4.desc(a));
+  const TOPE=()=>+C4.cfg().bono_tope_precio||80000;
+  const conImg=P.filter(p=>p.img.length);
+  const pick=k=>conImg[k%conImg.length];
+  const h1=O[0]||pick(0),h2=P.find(p=>p.precio&&p.precio<=TOPE()&&p!==h1)||pick(1),h3=P.find(p=>p.vids&&p.vids.length)||pick(2);
+  $("#hero").innerHTML=[
+    [h1,O.length?"Ofertas":"Destacada",O.length?`${esc(h1.n)} en ${esc(h1.z)}: ${esc(C4.precioTxt(h1))}`:esc(h1.n),"#ofertas","Ver ofertas"],
+    [h2,"Bono Pa' Ti",`<span data-cf="bono_monto">$3,000</span> para el abono de tu casa nueva`,"#bono","Ver casas que aplican"],
+    [h3,"Cotiza gratis","Cotización, recorrido y asesoría sin costo","#contacto","Cotizar ahora"]
+  ].map(([p,s,t,h,b])=>`<a class="hp" href="${h}" style="text-decoration:none"><img src="${esc(p.img[0])}" alt=""><small>${s}</small><h2>${t}</h2><span class="bo">${b}</span></a>`).join("");
+  {const q=P.find(p=>p.img.length>2)||pick(3);$("#qs-img").src=q.img[2]||q.img[0];}
+  /* buscadores y catálogo */
+  const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();
+  $("#b-zona").innerHTML+=zs.map(z=>`<option>${esc(z)}</option>`).join("");
+  const F={z:"",pre:"",rec:""};
+  const pasa=p=>{if(F.z&&p.z!==F.z)return false;if(F.pre){const[a,b]=F.pre.split("-").map(Number);if(p.precio==null||p.precio<a||(b&&p.precio>b))return false;}if(F.rec&&!String(g(p,"Recámaras")||"").includes(F.rec))return false;return true;};
+  const pintar=()=>{const L=P.filter(pasa);$("#cat-t").textContent=F.z?"Casas en "+F.z:"Casas disponibles";$("#cnt").textContent=L.length+(L.length===1?" casa":" casas");
+    $("#grid").innerHTML=L.length?L.map(card).join(""):`<p style="grid-column:1/-1;text-align:center;color:var(--mut)">No hay casas con esa búsqueda. Escríbenos y te ayudamos a encontrarla.</p>`;
+    $$("#chips button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.z===F.z)));};
+  $("#chips").innerHTML=`<button type="button" data-z="">Todas</button>`+zs.map(z=>`<button type="button" data-z="${esc(z)}">${esc(z)}</button>`).join("");
+  $$("#chips button").forEach(b=>b.onclick=()=>{F.z=b.dataset.z;pintar();});
+  const ir=()=>{pintar();$("#casas").scrollIntoView({behavior:"smooth"});};
+  $("#b1").onsubmit=e=>{e.preventDefault();F.z=$("#b-zona").value;ir();};
+  $("#b2").onsubmit=e=>{e.preventDefault();F.pre=$("#b-pre").value;F.rec=$("#b-rec").value;ir();};
+  pintar();
+  if(O.length){$("#ofertas").hidden=false;$("#ofl").innerHTML=O.map(card).join("");}
+  $("#fz").innerHTML=zs.map(z=>`<li><button type="button" data-z3="${esc(z)}">${esc(z)}</button></li>`).join("");$$("[data-z3]").forEach(b=>b.onclick=()=>{F.z=b.dataset.z3;ir();});
+  /* videos de Instagram */
+  const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]];
+  $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vc"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div><small>${esc(z)}</small><b>${esc(t)}</b><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div></div>`).join("");
+  /* bono */
+  await C4.sitio;
+  $("#bl").innerHTML=P.filter(p=>p.precio&&p.precio<=TOPE()).sort((a,b)=>a.precio-b.precio).slice(0,6).map(p=>`<button type="button" data-c4="${esc(p.id)}"><span><b>${esc(p.n)}</b><small>${esc(p.zl||p.z)}</small></span><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("");
+  $("#f-prop").innerHTML+=P.map(p=>`<option value="${esc(p.id)}">${esc(p.n)} · ${esc(p.z)}</option>`).join("");
+  document.addEventListener("click",e=>{const c=e.target.closest("[data-c4]");if(c&&c.tagName==="BUTTON"){const p=P.find(x=>x.id===c.dataset.c4);if(p)C4.ficha(p);}});
+  C4.hover(".card[data-c4]",P);C4.contacto($("[data-c4-contacto]"),P);C4.abrirDesdeUrl(P);
+})();
+</script>
+</body>
+</html>
