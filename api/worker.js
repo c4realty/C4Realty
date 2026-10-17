@@ -329,8 +329,11 @@ async function borrar(env, nombre, u, req, id) {
   const antes = await env.DB.prepare(`SELECT * FROM ${nombre} WHERE id=?`).bind(id).first();
   if (!antes) fail('No existe', 404);
   if (t.own && propios(u, t.mod) && antes[t.own] !== u.id) fail('No tienes permiso para esto', 403);
+  // al borrar una propiedad también se borran sus fotos guardadas (para no gastar espacio)
+  const rutas = nombre === 'propiedades' ? (await env.DB.prepare('SELECT ruta FROM medios WHERE propiedad_id=?').bind(id).all()).results.map(x => x.ruta) : [];
   await env.DB.prepare(`DELETE FROM ${nombre} WHERE id=?`).bind(id).run();
   if (nombre === 'medios') await borrarArchivoDeRuta(env, antes.ruta);
+  for (const r of rutas) await borrarArchivoDeRuta(env, r);
   await bitacora(env, u.id, 'borrar', nombre, id, antes, null, req);
   return json({ ok: true });
 }
