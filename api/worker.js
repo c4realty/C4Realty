@@ -517,16 +517,21 @@ async function publico(req, env, partes, ctx) {
     if (!nombre || (!tel && !email)) fail('Escribe tu nombre y un teléfono o correo');
     const origen = ['web_cotizar', 'web_contacto', 'web'].includes(b.origen) ? b.origen : 'web';
     const tipo = ['asalariado', 'independiente', 'jubilado', 'otro'].includes(b.tipo_ingreso) ? b.tipo_ingreso : null;
-    let c = await env.DB.prepare('SELECT id FROM clientes WHERE (telefono IS NOT NULL AND telefono=?) OR (email IS NOT NULL AND email=?) LIMIT 1').bind(tel, email).first();
+    let c = await env.DB.prepare('SELECT id,telefono,email FROM clientes WHERE (telefono IS NOT NULL AND telefono=?) OR (email IS NOT NULL AND email=?) LIMIT 1').bind(tel, email).first();
     if (!c) {
       const ins = await env.DB.prepare('INSERT INTO clientes (nombre,telefono,email,tipo_ingreso,origen) VALUES (?,?,?,?,?)').bind(nombre, tel, email, tipo, origen).run();
       c = { id: ins.meta.last_row_id };
+    } else if ((!c.email && email) || (!c.telefono && tel)) {
+      // cliente que ya existía: se completan el correo o el teléfono que le faltaban (eso también pasa a HubSpot)
+      await env.DB.prepare('UPDATE clientes SET email=COALESCE(email,?), telefono=COALESCE(telefono,?) WHERE id=?').bind(email, tel, c.id).run();
     }
     let pid = null;
     if (b.propiedad) { const p = await env.DB.prepare('SELECT id FROM propiedades WHERE codigo=?').bind(String(b.propiedad)).first(); pid = p?.id || null; }
     const datos = { ...b }; delete datos.sitio_web;
-    await env.DB.prepare(`INSERT INTO interacciones (cliente_id,propiedad_id,tipo,detalle,datos) VALUES (?,?,'formulario',?,?)`)
+    const it = await env.DB.prepare(`INSERT INTO interacciones (cliente_id,propiedad_id,tipo,detalle,datos) VALUES (?,?,'formulario',?,?)`)
       .bind(c.id, pid, String(b.mensaje || (origen === 'web_cotizar' ? 'Solicitud de cotización' : 'Mensaje desde la página')).slice(0, 2000), JSON.stringify(datos).slice(0, 8000)).run();
+    // cada formulario llega a HubSpot como una nota en la ficha del contacto (aunque el contacto ya exista)
+    await env.DB.prepare(`INSERT INTO hubspot_sync (entidad,entidad_id,accion) VALUES ('interaccion',?,'crear')`).bind(it.meta.last_row_id).run();
     if (Array.isArray(b.documentos)) for (const d of b.documentos.slice(0, 20)) {
       await env.DB.prepare(`INSERT INTO cliente_documentos (cliente_id,documento,lo_tiene) VALUES (?,?,1) ON CONFLICT(cliente_id,documento) DO UPDATE SET lo_tiene=1, actualizado=datetime('now')`).bind(c.id, String(d).slice(0, 200)).run();
     }
@@ -599,6 +604,32 @@ async function syncNegocio(env, id) {
   return 'enviado';
 }
 
+const esc = v => String(v ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+async function syncInteraccion(env, id) {
+  const it = await env.DB.prepare(`SELECT i.*, c.hubspot_id AS contacto, c.email AS email_ficha, c.telefono AS tel_ficha, p.titulo AS propiedad FROM interacciones i JOIN clientes c ON c.id=i.cliente_id LEFT JOIN propiedades p ON p.id=i.propiedad_id WHERE i.id=?`).bind(id).first();
+  if (!it) return 'enviado';
+  if (!it.contacto) return 'pendiente'; // primero tiene que subir el cliente
+  let d = {}; try { d = JSON.parse(it.datos || '{}'); } catch { }
+  const fuente = { web_cotizar: 'Formulario Cotizar', web_contacto: 'Formulario de Contacto' }[d.origen] || 'Formulario de la página';
+  const L = [];
+  if (d.nombre) L.push(['Nombre', d.nombre]);
+  if (d.telefono) L.push(['Teléfono', d.telefono]);
+  if (d.email) L.push(['Correo', d.email]);
+  if (d.interes || it.propiedad) L.push(['Le interesa', d.interes || it.propiedad]);
+  if (d.tipo_ingreso) L.push(['Tipo de ingreso', d.tipo_ingreso]);
+  if (d.ingreso_mensual) L.push(['Ingreso mensual', '$' + d.ingreso_mensual]);
+  if (Array.isArray(d.documentos) && d.documentos.length) L.push(['Documentos que dice tener', d.documentos.join('; ')]);
+  if (d.mensaje && !/^Solicitud de cotización$/.test(d.mensaje)) L.push(['Mensaje', d.mensaje]);
+  const html = `<p><b>${esc(fuente)}</b> (página web)</p>` + L.map(([k, v]) => `<p><b>${esc(k)}:</b> ${esc(v)}</p>`).join('');
+  const ts = new Date(String(it.creado_en).replace(' ', 'T') + 'Z');
+  const r = await hs(env, 'POST', '/crm/v3/objects/notes', {
+    properties: { hs_timestamp: isNaN(ts) ? new Date().toISOString() : ts.toISOString(), hs_note_body: html },
+    associations: [{ to: { id: it.contacto }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] }],
+  });
+  if (!r.ok) throw new Error('HubSpot ' + r.status + ': ' + (r.text || '').slice(0, 300));
+  return 'enviado';
+}
+
 async function sincronizarHubSpot(env) {
   if (!env.HUBSPOT_TOKEN) return { omitido: 'Sin HUBSPOT_TOKEN' };
   const { results } = await env.DB.prepare(`SELECT * FROM hubspot_sync WHERE estado IN ('pendiente','error') AND intentos < 5 ORDER BY id LIMIT 25`).all();
@@ -610,6 +641,7 @@ async function sincronizarHubSpot(env) {
       if (!hecho.has(k)) {
         if (s.entidad === 'cliente') est = await syncCliente(env, s.entidad_id);
         else if (s.entidad === 'negocio') est = await syncNegocio(env, s.entidad_id);
+        else if (s.entidad === 'interaccion') est = await syncInteraccion(env, s.entidad_id);
       }
       if (est === 'enviado') { hecho.add(k); enviados++; await env.DB.prepare(`UPDATE hubspot_sync SET estado='enviado', enviado_en=datetime('now') WHERE id=?`).bind(s.id).run(); }
     } catch (e) {
