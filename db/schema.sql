@@ -438,3 +438,6 @@ CREATE TABLE IF NOT EXISTS subidas (
   usados      INTEGER NOT NULL DEFAULT 0,
   expira      TEXT NOT NULL
 );
+
+-- Enlaces para ver un documento del cliente desde el mensaje de WhatsApp (vencen a los 30 días)
+CREATE TABLE IF NOT EXISTS doc_enlaces (token_hash TEXT PRIMARY KEY, archivo_id INTEGER NOT NULL REFERENCES archivos(id) ON DELETE CASCADE, expira TEXT NOT NULL);

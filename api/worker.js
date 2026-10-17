@@ -535,7 +535,17 @@ async function publico(req, env, partes, ctx) {
     if (sb.usados >= 12) fail('Ya subiste el máximo de 12 documentos', 403);
     const a = await guardarArchivo(env, req, { privado: 1, cliente_id: sb.cliente_id, maxMB: 8, mimeOk: MIME_DOC });
     await env.DB.prepare('UPDATE subidas SET usados=usados+1 WHERE token=?').bind(sb.token).run();
-    return json({ ok: true, nombre: a.nombre, tamano: a.tamano }, 201);
+    // enlace para verlo desde el mensaje de WhatsApp: clave imposible de adivinar, vence a los 30 días
+    const t = randHex(20);
+    await env.DB.prepare(`INSERT INTO doc_enlaces (token_hash,archivo_id,expira) VALUES (?,?,datetime('now','+30 days'))`).bind(await sha256(t), a.id).run();
+    return json({ ok: true, nombre: a.nombre, tamano: a.tamano, enlace: `${API_URL}/public/doc/${t}` }, 201);
+  }
+  if (req.method === 'GET' && r === 'doc' && partes[2]) {
+    const e = await env.DB.prepare(`SELECT a.clave FROM doc_enlaces d JOIN archivos a ON a.id=d.archivo_id WHERE d.token_hash=? AND d.expira > datetime('now')`).bind(await sha256(String(partes[2]).replace(/\..*$/, ''))).first();
+    if (!e) return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:16px system-ui;padding:24px;background:#0f1a30;color:#fff">Este enlace ya venció o no existe. El documento sigue guardado en el panel de C4 Realty (Clientes → el cliente → Documentos que subió).</body>', { status: 404, headers: { ...CORS, 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' } });
+    const res = await servirArchivo(env, e.clave, false);
+    const h = new Headers(res.headers); h.set('X-Robots-Tag', 'noindex, nofollow');
+    return new Response(res.body, { status: res.status, headers: h });
   }
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();

@@ -846,7 +846,7 @@ function buildWA(){const p=QP.find(x=>x.id===$("#c-prop").value);const D=DOCS[ti
   const L=["Hola C4 Realty, quiero cotizar mi casa.",nom?`Nombre: ${nom}`:"",tel?`Mi WhatsApp: ${tel}`:"",`Ingreso: ${tipo==="asal"?"Asalariado":"Independiente"}${sal?` · $${(+sal).toLocaleString("en-US")} mensual`:""}`,
    p?`Me interesa: ${p.n}${p.z?` (${p.z})`:""}${p.precio?` · ${p.desde?"desde ":""}${fmt(p.precio)}`:""}`:"Aún no elijo casa; ¿qué opciones tengo?",
    ok.length?`Ya tengo: ${ok.join("; ")}`:"",no.length?`Me falta: ${no.join("; ")}`:"",
-   window.C4_DOCS_OK&&C4_DOCS_OK.length?`Subí ${C4_DOCS_OK.length===1?"1 documento":C4_DOCS_OK.length+" documentos"} en la página: ${C4_DOCS_OK.join(", ")}`:""].filter(Boolean);
+   window.C4_DOCS_OK&&C4_DOCS_OK.length?`Subí ${C4_DOCS_OK.length===1?"1 documento":C4_DOCS_OK.length+" documentos"} (toca para verlos):\n${C4_DOCS_OK.map(d=>`📎 ${d.n}: ${d.u||"(en el panel)"}`).join("\n")}`:""].filter(Boolean);
   $("#c-wa").href="https://wa.me/"+(window.C4?C4.WA:"50762531751")+"?text="+encodeURIComponent(L.join("\n"));}
 /* documentos: se guardan en la ficha del cliente (privados) y luego se abre WhatsApp */
 const CF=[];window.C4_DOCS_OK=[];
@@ -870,7 +870,7 @@ $("#c-wa").addEventListener("click",async e=>{
   const w=window.open("about:blank","_blank");const pr=$("#c-prog");pr.hidden=false;const bar=pr.querySelector("i");msg.textContent="Subiendo tus documentos…";$("#c-wa").setAttribute("aria-disabled","true");
   try{const r=await fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...datos,subir_documentos:true})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.subida)throw new Error(j.error||"No se pudo conectar");
     let k=0;for(const f of pend){bar.style.width=(k/pend.length*100)+"%";msg.textContent=`Subiendo ${k+1} de ${pend.length}…`;
-      try{const b=await cfPrep(f.file);const u=await fetch(C4_API+"/public/documento",{method:"POST",headers:{"Content-Type":"text/plain","X-Subida":j.subida,"X-Mime":b.type||"application/pdf","X-Nombre":encodeURIComponent(f.file.name)},body:await cfB64(b)});if(!u.ok){const ej=await u.json().catch(()=>({}));throw new Error(ej.error||"error");}f.st="ok";C4_DOCS_OK.push(f.file.name);}catch(x){f.st="err";toast(f.file.name+": "+(x.message||"no se pudo subir"));}
+      try{const b=await cfPrep(f.file);const u=await fetch(C4_API+"/public/documento",{method:"POST",headers:{"Content-Type":"text/plain","X-Subida":j.subida,"X-Mime":b.type||"application/pdf","X-Nombre":encodeURIComponent(f.file.name)},body:await cfB64(b)});if(!u.ok){const ej=await u.json().catch(()=>({}));throw new Error(ej.error||"error");}f.st="ok";const uj=await u.json().catch(()=>({}));C4_DOCS_OK.push({n:f.file.name,u:uj.enlace||""});}catch(x){f.st="err";toast(f.file.name+": "+(x.message||"no se pudo subir"));}
       k++;cfLista();}
     bar.style.width="100%";const n=CF.filter(f=>f.st==="ok").length;msg.textContent=n?`✓ ${n===1?"1 documento recibido":n+" documentos recibidos"}. Ahora envía el mensaje en WhatsApp.`:"No se pudieron subir. Mándalos por WhatsApp.";
   }catch(x){msg.textContent="No se pudieron subir ahora ("+x.message+"). Mándalos por WhatsApp.";}
