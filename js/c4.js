@@ -237,13 +237,41 @@
 
   /* fotos que cambian al pasar el mouse */
   function hover(sel, P) {
-    let t = null, box = null, k = 0;
-    const stop = () => { clearInterval(t); t = null; if (box) { const p = P.find(x => x.id === box.dataset.c4); const im = box.querySelector("img"); if (p && im) im.src = p.img[0]; } box = null; };
+    if (!document.getElementById("c4-hover-css")) {
+      const st = document.createElement("style"); st.id = "c4-hover-css";
+      st.textContent = ".c4-hx{position:absolute;object-fit:cover;opacity:0;transition:opacity .45s ease;pointer-events:none}.c4-hx.on{opacity:1}" +
+        ".c4-dots{position:absolute;left:0;right:0;top:14px;display:flex;justify-content:center;gap:5px;z-index:4;pointer-events:none}" +
+        ".c4-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 4px rgba(0,0,0,.45);transition:width .25s}.c4-dots i.on{background:#fff;width:16px;border-radius:3px}";
+      document.head.append(st);
+    }
+    let t = null, t0 = null, box = null, p = null, k = 0, base = null, over = null, dots = null;
+    const stop = () => {
+      clearInterval(t); clearTimeout(t0); t = t0 = null;
+      if (over) over.remove(); if (dots) dots.remove();
+      if (base && p) base.src = p.img[0];
+      box = p = base = over = dots = null;
+    };
+    const step = () => {
+      if (!box) return; k = (k + 1) % p.img.length; const src = p.img[k], b = box;
+      const pre = new Image(); pre.onload = () => {
+        if (box !== b) return; over.src = src; over.classList.add("on");
+        setTimeout(() => { if (box === b) { base.src = src; over.classList.remove("on"); } }, 460);
+      }; pre.src = src;
+      if (dots) dots.querySelectorAll("i").forEach((d, n) => d.classList.toggle("on", n === k % 12));
+    };
     document.addEventListener("mouseover", e => {
       const g = e.target.closest(sel); if (g === box) return; stop(); if (!g || !matchMedia("(hover:hover)").matches) return;
-      const p = P.find(x => x.id === g.dataset.c4); if (!p || p.img.length < 2) return; box = g; k = 0;
-      p.img.slice(1, 4).forEach(s => { const i = new Image(); i.src = s; });
-      t = setInterval(() => { if (!box) return; k = (k + 1) % p.img.length; const im = box.querySelector("img"); if (im) { im.style.opacity = .35; setTimeout(() => { im.src = p.img[k]; im.style.opacity = 1; }, 160); } }, 1300);
+      const q = P.find(x => x.id === g.dataset.c4); const im = g.querySelector("img"); if (!q || !im || q.img.length < 2) return;
+      box = g; p = q; base = im; k = 0;
+      const par = im.parentElement; if (getComputedStyle(par).position === "static") par.style.position = "relative";
+      const cs = getComputedStyle(im);
+      over = document.createElement("img"); over.className = "c4-hx"; over.alt = ""; over.setAttribute("aria-hidden", "true");
+      Object.assign(over.style, { top: im.offsetTop + "px", left: im.offsetLeft + "px", width: im.offsetWidth + "px", height: im.offsetHeight + "px", objectPosition: cs.objectPosition, zIndex: cs.zIndex === "auto" ? "" : cs.zIndex, borderRadius: cs.borderRadius });
+      im.after(over);
+      dots = document.createElement("div"); dots.className = "c4-dots"; dots.innerHTML = p.img.slice(0, 12).map((_, n) => `<i class="${n ? "" : "on"}"></i>`).join("");
+      par.append(dots);
+      p.img.slice(1, 4).forEach(x => { const i = new Image(); i.src = x; });
+      t0 = setTimeout(step, 350); t = setInterval(step, 1300);
     });
   }
 
