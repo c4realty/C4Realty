@@ -409,3 +409,31 @@ SELECT p.id, p.codigo, p.titulo, p.estado,
   CASE WHEN p.asesor_id IS NULL THEN 1 ELSE 0 END AS sin_asesor
 FROM propiedades p
 WHERE p.estado NOT IN ('vendida','retirada');
+
+-- Archivos subidos desde el panel (fotos) o por clientes (documentos privados). Base64 en partes.
+CREATE TABLE IF NOT EXISTS archivos (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  clave       TEXT NOT NULL UNIQUE,
+  nombre      TEXT,
+  tipo_mime   TEXT NOT NULL,
+  tamano      INTEGER NOT NULL DEFAULT 0,
+  partes      INTEGER NOT NULL DEFAULT 1,
+  privado     INTEGER NOT NULL DEFAULT 0 CHECK (privado IN (0,1)),
+  cliente_id  INTEGER REFERENCES clientes(id) ON DELETE CASCADE,
+  subido_por  INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  creado_en   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_archivos_cliente ON archivos(cliente_id);
+CREATE TABLE IF NOT EXISTS archivo_partes (
+  archivo_id  INTEGER NOT NULL REFERENCES archivos(id) ON DELETE CASCADE,
+  n           INTEGER NOT NULL,
+  datos       TEXT NOT NULL,
+  PRIMARY KEY (archivo_id, n)
+);
+-- Permiso temporal para que un cliente suba documentos después de enviar el formulario
+CREATE TABLE IF NOT EXISTS subidas (
+  token       TEXT PRIMARY KEY,
+  cliente_id  INTEGER NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
+  usados      INTEGER NOT NULL DEFAULT 0,
+  expira      TEXT NOT NULL
+);

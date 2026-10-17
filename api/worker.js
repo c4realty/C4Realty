@@ -167,6 +167,73 @@ async function cambiarClave(req, env, u) {
   return json({ ok: true });
 }
 
+// ---------------------------------------------------------------- archivos (fotos y documentos guardados en la base)
+// Se guardan en base64 (texto) en partes de ~1.5 MB. El navegador manda el base64 ya hecho.
+const API_URL = 'https://c4realty-api.c4realty0.workers.dev';
+const PARTE = 1_500_000;
+const MIME_FOTO = /^image\/(jpeg|png|webp)$/;
+const MIME_DOC = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
+const urlArchivo = (clave, mime) => `${API_URL}/public/archivo/${clave}.${/png/.test(mime) ? 'png' : /webp/.test(mime) ? 'webp' : /pdf/.test(mime) ? 'pdf' : 'jpg'}`;
+async function guardarArchivo(env, req, { privado = 0, cliente_id = null, usuario_id = null, maxMB = 6, mimeOk = MIME_FOTO }) {
+  const mime = (req.headers.get('X-Mime') || '').toLowerCase();
+  if (!mimeOk.test(mime)) fail('Tipo de archivo no permitido (usa foto JPG/PNG o PDF)');
+  let nombre = ''; try { nombre = decodeURIComponent(req.headers.get('X-Nombre') || ''); } catch { }
+  const b64 = (await req.text()).replace(/^data:[^,]*,/, '').replace(/\s/g, '');
+  if (!b64 || /[^A-Za-z0-9+/=]/.test(b64)) fail('El archivo llegó dañado');
+  const tam = Math.floor(b64.length * 3 / 4);
+  if (tam > maxMB * 1048576) fail(`El archivo pesa más de ${maxMB} MB`);
+  const clave = randHex(16), n = Math.ceil(b64.length / PARTE);
+  const r = await env.DB.prepare('INSERT INTO archivos (clave,nombre,tipo_mime,tamano,partes,privado,cliente_id,subido_por) VALUES (?,?,?,?,?,?,?,?)')
+    .bind(clave, nombre.slice(0, 160) || null, mime, tam, n, privado ? 1 : 0, cliente_id, usuario_id).run();
+  const id = r.meta.last_row_id;
+  const st = []; for (let i = 0; i < n; i++) st.push(env.DB.prepare('INSERT INTO archivo_partes (archivo_id,n,datos) VALUES (?,?,?)').bind(id, i, b64.slice(i * PARTE, (i + 1) * PARTE)));
+  await env.DB.batch(st);
+  return { id, clave, nombre, mime, tamano: tam, url: urlArchivo(clave, mime) };
+}
+function deB64(b64) {
+  if (typeof Uint8Array.fromBase64 === 'function') return Uint8Array.fromBase64(b64);
+  const bin = atob(b64), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function servirArchivo(env, clave, publico) {
+  const a = await env.DB.prepare('SELECT * FROM archivos WHERE clave=?').bind(String(clave).replace(/\..*$/, '')).first();
+  if (!a || (publico && a.privado)) fail('No existe', 404);
+  const { results } = await env.DB.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
+  const bytes = deB64(results.map(x => x.datos).join(''));
+  const h = { ...CORS, 'Content-Type': a.tipo_mime, 'Content-Length': String(bytes.length) };
+  h['Cache-Control'] = publico ? 'public, max-age=31536000, immutable' : 'private, no-store';
+  if (!publico) h['Content-Disposition'] = `inline; filename="${encodeURIComponent(a.nombre || 'documento')}"`;
+  return new Response(bytes, { headers: h });
+}
+async function borrarArchivoDeRuta(env, ruta) {
+  const m = /\/public\/archivo\/([0-9a-f]{32})/.exec(ruta || '');
+  if (m) await env.DB.prepare('DELETE FROM archivos WHERE clave=?').bind(m[1]).run();
+}
+async function subirFoto(env, u, req, url) {
+  exigir(u, 'medios', 'crear');
+  const pid = Number(url.searchParams.get('propiedad_id')) || null;
+  const tipo = ['foto', 'volante'].includes(url.searchParams.get('tipo')) ? url.searchParams.get('tipo') : 'foto';
+  if (pid && !(await env.DB.prepare('SELECT id FROM propiedades WHERE id=?').bind(pid).first())) fail('La propiedad no existe', 404);
+  const a = await guardarArchivo(env, req, { usuario_id: u.id, maxMB: 6, mimeOk: MIME_FOTO });
+  let medio = null;
+  if (pid) {
+    const mx = await env.DB.prepare(`SELECT COALESCE(MAX(orden),-1) AS o, COUNT(*) AS n FROM medios WHERE propiedad_id=? AND tipo IN ('foto','volante')`).bind(pid).first();
+    const r = await env.DB.prepare('INSERT INTO medios (propiedad_id,tipo,ruta,es_principal,orden) VALUES (?,?,?,?,?)').bind(pid, tipo, a.url, mx.n ? 0 : 1, mx.o + 1).run();
+    medio = await env.DB.prepare('SELECT * FROM medios WHERE id=?').bind(r.meta.last_row_id).first();
+    await bitacora(env, u.id, 'crear', 'medios', medio.id, null, { propiedad_id: pid, tipo, ruta: a.url }, req);
+  }
+  return json({ ...a, medio }, 201);
+}
+async function ordenMedios(env, u, req, pid) {
+  exigir(u, 'medios', 'editar');
+  const { ids = [] } = await cuerpo(req);
+  if (!Array.isArray(ids) || !ids.length) fail('Falta el orden');
+  await env.DB.batch(ids.map((id, i) => env.DB.prepare('UPDATE medios SET orden=?, es_principal=? WHERE id=? AND propiedad_id=?').bind(i, i === 0 ? 1 : 0, Number(id), pid)));
+  await bitacora(env, u.id, 'editar', 'medios', pid, null, { orden: ids }, req);
+  return json({ ok: true });
+}
+
 // ---------------------------------------------------------------- CRUD genérico
 function limpiar(t, data, u) {
   const out = {};
@@ -215,6 +282,7 @@ async function obtener(env, nombre, u, id) {
     r.negocios = (await env.DB.prepare(`${LISTAS.negocios} WHERE n.cliente_id=? ORDER BY n.actualizado_en DESC`).bind(id).all()).results;
     r.citas = (await env.DB.prepare(`${LISTAS.citas} WHERE ci.cliente_id=? ORDER BY ci.fecha_hora DESC`).bind(id).all()).results;
     r.documentos = (await env.DB.prepare('SELECT * FROM cliente_documentos WHERE cliente_id=? ORDER BY documento').bind(id).all()).results;
+    r.archivos = (await env.DB.prepare('SELECT id,clave,nombre,tipo_mime,tamano,creado_en FROM archivos WHERE cliente_id=? ORDER BY id DESC').bind(id).all()).results;
   }
   return json(r);
 }
@@ -262,6 +330,7 @@ async function borrar(env, nombre, u, req, id) {
   if (!antes) fail('No existe', 404);
   if (t.own && propios(u, t.mod) && antes[t.own] !== u.id) fail('No tienes permiso para esto', 403);
   await env.DB.prepare(`DELETE FROM ${nombre} WHERE id=?`).bind(id).run();
+  if (nombre === 'medios') await borrarArchivoDeRuta(env, antes.ruta);
   await bitacora(env, u.id, 'borrar', nombre, id, antes, null, req);
   return json({ ok: true });
 }
@@ -424,6 +493,16 @@ async function publico(req, env, partes, ctx) {
     const { results } = await env.DB.prepare('SELECT * FROM v_catalogo_publico ORDER BY destacada DESC, orden').all();
     return json(results);
   }
+  if (req.method === 'GET' && r === 'archivo' && partes[2]) return servirArchivo(env, partes[2], true);
+  if (req.method === 'POST' && r === 'documento') {
+    const tok = String(req.headers.get('X-Subida') || '');
+    const sb = tok && await env.DB.prepare(`SELECT * FROM subidas WHERE token=? AND expira > datetime('now')`).bind(await sha256(tok)).first();
+    if (!sb) fail('El enlace para subir documentos venció. Vuelve a tocar Enviar.', 403);
+    if (sb.usados >= 12) fail('Ya subiste el máximo de 12 documentos', 403);
+    const a = await guardarArchivo(env, req, { privado: 1, cliente_id: sb.cliente_id, maxMB: 8, mimeOk: MIME_DOC });
+    await env.DB.prepare('UPDATE subidas SET usados=usados+1 WHERE token=?').bind(sb.token).run();
+    return json({ ok: true, nombre: a.nombre, tamano: a.tamano }, 201);
+  }
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
     const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','bono_monto','bono_tope_precio')`).all()).results;
@@ -451,9 +530,15 @@ async function publico(req, env, partes, ctx) {
     if (Array.isArray(b.documentos)) for (const d of b.documentos.slice(0, 20)) {
       await env.DB.prepare(`INSERT INTO cliente_documentos (cliente_id,documento,lo_tiene) VALUES (?,?,1) ON CONFLICT(cliente_id,documento) DO UPDATE SET lo_tiene=1, actualizado=datetime('now')`).bind(c.id, String(d).slice(0, 200)).run();
     }
+    // Si el cliente va a subir documentos, se le da un permiso de 2 horas ligado a su ficha
+    let subida = null;
+    if (b.subir_documentos) {
+      subida = randHex(24);
+      await env.DB.prepare(`INSERT INTO subidas (token,cliente_id,expira) VALUES (?,?,datetime('now','+2 hours'))`).bind(await sha256(subida), c.id).run();
+    }
     // HubSpot al instante: se envía apenas llega el formulario (el envío cada minuto queda de respaldo)
     if (env.HUBSPOT_TOKEN && ctx) ctx.waitUntil(sincronizarHubSpot(env).catch(() => { }));
-    return json({ ok: true }, 201);
+    return json(subida ? { ok: true, subida } : { ok: true }, 201);
   }
   if (req.method === 'POST' && r === 'vista') {
     const b = await cuerpo(req);
@@ -565,6 +650,17 @@ async function rutas(req, env, ctx) {
   if (r === 'hubspot' && partes[2] === 'sincronizar' && m === 'POST') { exigir(u, 'configuracion', 'editar'); return json(await sincronizarHubSpot(env)); }
   if (r === 'clientes' && id && partes[3] === 'interacciones' && m === 'POST') return nuevaInteraccion(env, u, req, id);
   if (r === 'clientes' && id && partes[3] === 'documentos' && m === 'POST') return documentos(env, u, req, id);
+  if (r === 'archivos' && m === 'POST' && !partes[2]) return subirFoto(env, u, req, url);
+  if (r === 'archivos' && m === 'GET' && partes[2]) { exigir(u, 'clientes', 'ver'); return servirArchivo(env, partes[2], false); }
+  if (r === 'archivos' && m === 'DELETE' && partes[2]) {
+    exigir(u, 'clientes', 'editar');
+    const a = await env.DB.prepare('SELECT id,cliente_id,nombre FROM archivos WHERE clave=? AND privado=1').bind(String(partes[2])).first();
+    if (!a) fail('No existe', 404);
+    await env.DB.prepare('DELETE FROM archivos WHERE id=?').bind(a.id).run();
+    await bitacora(env, u.id, 'borrar', 'archivos', a.id, { cliente_id: a.cliente_id, nombre: a.nombre }, null, req);
+    return json({ ok: true });
+  }
+  if (r === 'propiedades' && id && partes[3] === 'orden-medios' && m === 'POST') return ordenMedios(env, u, req, id);
   if (TABLAS[r]) {
     if (m === 'GET' && !id) return listar(env, r, u, url);
     if (m === 'GET' && id) return obtener(env, r, u, id);

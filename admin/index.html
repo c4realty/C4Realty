@@ -7,7 +7,7 @@
 <title>C4 Realty · Administración</title>
 <link rel="icon" href="../img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=Inter+Tight:wght@700&family=Fraunces:wght@700&family=Playfair+Display:wght@800;900&family=DM+Serif+Display&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=Inter+Tight:wght@700&family=Fraunces:wght@700&family=Playfair+Display:ital,wght@0,800;0,900;1,700&family=DM+Serif+Display&family=Montserrat:wght@500;600;700;800;900&family=Kaushan+Script&display=swap">
 <style>
 :root{
   --bg:#0a1322;--panel:#0f1c33;--card:#132342;--card-2:#1a2f55;
@@ -139,6 +139,18 @@ td.r,th.r{text-align:right}
 .drawer .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:-20px;background:var(--bg);padding:8px 0;z-index:2}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .gal img,.gal video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:9px;background:var(--panel)}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ft{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.ft img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.ft .bd{position:absolute;left:8px;top:8px;background:var(--accent);color:#14171c;font-weight:800;font-size:.72rem;padding:3px 8px;border-radius:99px}
+.ft .ac{display:flex;gap:4px;padding:6px;justify-content:space-between}
+.ft .ac button{flex:1;min-width:0;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;padding:6px 0;cursor:pointer;font:inherit;font-size:.85rem}
+.ft .ac button:hover{background:var(--card)}.ft .ac button.x{color:#ff8f86}
+.ft .ac button:disabled{opacity:.35;cursor:default}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;display:grid;gap:8px;justify-items:center;cursor:pointer}
+.drop.on{border-color:var(--accent);background:rgba(242,184,75,.06)}
+.prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.arch{display:grid;gap:8px}.arch .li{align-items:center}
 .tl{display:grid;gap:10px}
 .tl .it{border-left:2px solid var(--line);padding:0 0 0 12px}
 .tl .it small{color:var(--muted);display:block}
@@ -164,6 +176,9 @@ td.r,th.r{text-align:right}
 .vl-thumbs button{flex:none;width:64px;height:84px;border-radius:8px;border:2px solid transparent;padding:0;overflow:hidden;cursor:pointer;background:var(--panel)}
 .vl-thumbs button.on{border-color:var(--accent)}
 .vl-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.vl-est{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.vl-est button{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;padding:10px 8px;font:inherit;font-weight:700;cursor:pointer}
+.vl-est button[aria-pressed="true"]{border-color:var(--accent);background:rgba(242,184,75,.12);color:var(--accent)}
 
 /* hot list y difusión */
 .hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
@@ -461,7 +476,7 @@ async function fichaPropiedad(id) {
   const pag = (() => { try { return JSON.parse(p.pagos || "[]"); } catch { return []; } })();
   abrir(`
     <div class="hd"><div><h1>${id ? esc(p.titulo) : "Nueva propiedad"}</h1>${id ? `<div style="margin-top:6px">${pillP(p.estado)} ${p.aplica_bono ? `<span class="pill">Aplica bono</span>` : ""}</div>` : ""}</div><button class="btn sm" data-close>Cerrar</button></div>
-    ${id && p.medios?.length ? `<div class="gal">${p.medios.map(m => m.tipo === "plano" ? `<a class="btn" href="${esc(img(m.ruta.replace(/\.pdf$/i, ".jpg")))}" target="_blank" rel="noopener">📐 Ver plano</a>` : m.tipo === "video" ? `<video src="${esc(img(m.ruta))}" poster="${esc(img(m.portada))}" controls preload="none" playsinline></video>` : `<img src="${esc(img(m.ruta))}" alt="" loading="lazy">`).join("")}</div>` : ""}
+    ${id ? `<div class="card" id="p-fotos"></div>` : `<div class="card"><h2>Fotos</h2><p class="muted" style="margin-top:6px">Primero llena los datos y toca <b>Guardar</b>. Después vuelves a abrir la propiedad y aquí podrás subir sus fotos.</p></div>`}
     <form id="f-p" class="card"><div class="grid2">${campos.map(c => campo(c, p[c.k])).join("")}</div>
       <div class="grid3" style="margin-top:12px">
         <div class="f"><label>Características (una por línea: nombre: valor)</label><textarea name="caracteristicas">${esc(kv.map(x => Array.isArray(x) ? x.join(": ") : x).join("\n"))}</textarea></div>
@@ -477,6 +492,7 @@ async function fichaPropiedad(id) {
     ${id && p.publicaciones?.length ? `<div class="card"><h2>Publicaciones de Instagram</h2>${p.publicaciones.map(x => `<div class="li"><span>${x.fecha ? dia(x.fecha) : "Sin fecha"} · ${esc(x.tipo || "")}</span><a class="btn sm" href="${esc(x.url)}" target="_blank" rel="noopener">Ver ↗</a></div>`).join("")}</div>` : ""}
   `, () => {
     const f = $("#f-p"); if (!ed) $$("input,select,textarea", f).forEach(x => x.disabled = true);
+    if (id) fotosPropiedad(id, p.medios || []);
     f.onsubmit = async e => {
       e.preventDefault(); const b = leer(f, campos);
       b.caracteristicas = f.elements.caracteristicas.value.split("\n").map(s => s.trim()).filter(Boolean).map(s => { const i = s.indexOf(":"); return i > 0 ? [s.slice(0, i).trim(), s.slice(i + 1).trim()] : [s, ""]; });
@@ -487,6 +503,53 @@ async function fichaPropiedad(id) {
     };
     if ($("#p-del")) $("#p-del").onclick = async () => { if (!confirm("¿Borrar esta propiedad para siempre? Si solo ya no está a la venta, mejor cambia el estatus a Retirada.")) return; try { await api("/api/propiedades/" + id, { method: "DELETE" }); cerrar(); toast("Borrada"); RENDER.propiedades(); } catch (x) { toast(x.message, 1); } };
   });
+}
+
+/* ---------- FOTOS DE UNA PROPIEDAD ---------- */
+// Las fotos se achican en el navegador (máx. 1600 px) y se guardan en la base de datos.
+async function achicar(file, max = 1600, q = .85) {
+  let bmp; try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch { bmp = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error("No se pudo abrir " + file.name)); i.src = URL.createObjectURL(file); }); }
+  const w0 = bmp.width, h0 = bmp.height, k = Math.min(1, max / Math.max(w0, h0)), w = Math.round(w0 * k), h = Math.round(h0 * k);
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h; const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); x.drawImage(bmp, 0, 0, w, h);
+  return await new Promise(r => cv.toBlob(r, "image/jpeg", q));
+}
+const b64De = b => new Promise((ok, no) => { const f = new FileReader(); f.onload = () => ok(String(f.result).replace(/^data:[^,]*,/, "")); f.onerror = no; f.readAsDataURL(b); });
+async function subirArchivo(path, blob, nombre) {
+  const r = await fetch(API + path, { method: "POST", headers: { "Content-Type": "text/plain", "X-Mime": blob.type || "image/jpeg", "X-Nombre": encodeURIComponent(nombre || ""), Authorization: "Bearer " + TOK }, body: await b64De(blob) });
+  let j = null; try { j = await r.json(); } catch { } if (!r.ok) throw new Error(j?.error || "Error " + r.status); return j;
+}
+async function fotosPropiedad(id, medios) {
+  const box = $("#p-fotos"); if (!box) return;
+  const cr = can("medios", "crear"), ed = can("medios", "editar"), bo = can("medios", "borrar");
+  const F = medios.filter(m => m.tipo === "foto" || m.tipo === "volante").sort((a, b) => a.orden - b.orden);
+  const otros = medios.filter(m => m.tipo === "video" || m.tipo === "plano");
+  box.innerHTML = `<div class="top" style="margin:0 0 10px"><h2>Fotos (${F.length})</h2><span class="muted" style="font-size:.85rem">La primera es la portada en la página.</span></div>
+    ${cr ? `<label class="drop" id="ft-drop"><input type="file" id="ft-file" accept="image/*" multiple class="hide"><b>+ Subir fotos</b><span class="muted" style="font-size:.85rem">Toca para elegir o arrastra aquí varias fotos. Se ponen al final.</span><div class="prog hide" id="ft-prog" style="width:100%"><i></i></div><span class="faint" id="ft-msg" style="font-size:.82rem"></span></label>` : ""}
+    <div class="fotos" style="margin-top:12px">${F.map((m, i) => `<div class="ft" data-m="${m.id}"><img src="${esc(img(m.ruta))}" alt="Foto ${i + 1}" loading="lazy">${i === 0 ? `<span class="bd">Portada</span>` : ""}
+      ${ed || bo ? `<div class="ac">${ed ? `<button type="button" data-mv="-1" title="Mover antes" aria-label="Mover antes" ${i === 0 ? "disabled" : ""}>◀</button><button type="button" data-top title="Poner de portada" aria-label="Poner de portada" ${i === 0 ? "disabled" : ""}>★</button><button type="button" data-mv="1" title="Mover después" aria-label="Mover después" ${i === F.length - 1 ? "disabled" : ""}>▶</button>` : ""}${bo ? `<button type="button" class="x" data-rm title="Borrar foto" aria-label="Borrar foto">🗑</button>` : ""}</div>` : ""}</div>`).join("") || `<p class="empty">Todavía no tiene fotos.</p>`}</div>
+    ${otros.length ? `<p class="muted" style="margin:12px 0 6px;font-size:.85rem">Videos y planos</p><div class="gal">${otros.map(m => m.tipo === "plano" ? `<a class="btn" href="${esc(img(m.ruta.replace(/\.pdf$/i, ".jpg")))}" target="_blank" rel="noopener">📐 Ver plano</a>` : `<video src="${esc(img(m.ruta))}" poster="${esc(img(m.portada))}" controls preload="none" playsinline></video>`).join("")}</div>` : ""}`;
+  const recargar = async () => { const M = await api("/api/medios?propiedad_id=" + id); fotosPropiedad(id, M); C.propiedades = null; };
+  const guardarOrden = async ids => { try { await api(`/api/propiedades/${id}/orden-medios`, { method: "POST", body: { ids } }); await recargar(); } catch (x) { toast(x.message, 1); } };
+  $$(".ft", box).forEach((el, i) => {
+    const mid = +el.dataset.m, ids = F.map(m => m.id);
+    $$("[data-mv]", el).forEach(b => b.onclick = () => { const j = i + +b.dataset.mv; [ids[i], ids[j]] = [ids[j], ids[i]]; guardarOrden(ids); });
+    const t = $("[data-top]", el); if (t) t.onclick = () => guardarOrden([mid, ...ids.filter(x => x !== mid)]);
+    const rm = $("[data-rm]", el); if (rm) rm.onclick = async () => { if (!confirm("¿Borrar esta foto? Ya no saldrá en la página.")) return; try { await api("/api/medios/" + mid, { method: "DELETE" }); toast("Foto borrada"); await recargar(); } catch (x) { toast(x.message, 1); } };
+  });
+  if (!cr) return;
+  const subir = async files => {
+    files = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic)$/i.test(f.name)); if (!files.length) return toast("Elige fotos (JPG o PNG)", 1);
+    const pr = $("#ft-prog"), msg = $("#ft-msg"); pr.classList.remove("hide"); let ok = 0;
+    for (const [k, f] of files.entries()) {
+      msg.textContent = `Subiendo ${k + 1} de ${files.length}…`; $("i", pr).style.width = (k / files.length * 100) + "%";
+      try { await subirArchivo(`/api/archivos?propiedad_id=${id}&tipo=foto`, await achicar(f), f.name); ok++; } catch (x) { toast(`${f.name}: ${x.message}`, 1); }
+    }
+    $("i", pr).style.width = "100%"; toast(ok === 1 ? "Foto subida" : `${ok} fotos subidas`); await recargar();
+  };
+  $("#ft-file").onchange = e => subir(e.target.files);
+  const d = $("#ft-drop");
+  d.ondragover = e => { e.preventDefault(); d.classList.add("on"); }; d.ondragleave = () => d.classList.remove("on");
+  d.ondrop = e => { e.preventDefault(); d.classList.remove("on"); subir(e.dataTransfer.files); };
 }
 
 /* ---------- CLIENTES ---------- */
@@ -524,6 +587,7 @@ async function fichaCliente(id) {
     ${id ? `
     <div class="card"><h2>Anotar contacto</h2>
       <form id="f-i" class="grid2"><div class="f"><label>Tipo</label><select name="tipo">${["whatsapp", "llamada", "correo", "visita", "nota"].map(k => `<option value="${k}">${INTER[k]}</option>`).join("")}</select></div><div class="f"><label>Qué pasó</label><input name="detalle" required></div><div><button class="btn pri">Anotar</button></div></form></div>
+    ${c.archivos?.length ? `<div class="card"><h2>Documentos que subió (${c.archivos.length})</h2><div class="arch" style="margin-top:8px">${c.archivos.map(a => `<div class="li"><span>${/pdf/.test(a.tipo_mime) ? "📄" : "🖼️"} ${esc(a.nombre || "documento")} <small class="muted">· ${a.tamano > 1048576 ? (a.tamano / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(a.tamano / 1024)) + " KB"} · ${fecha(a.creado_en)}</small></span><span class="tools"><button class="btn sm" data-ver="${a.clave}" data-nom="${esc(a.nombre || "documento")}">Ver</button>${can("clientes", "editar") ? `<button class="btn sm del" data-qd="${a.clave}">Borrar</button>` : ""}</span></div>`).join("")}</div><p class="faint" style="font-size:.8rem;margin-top:8px">Solo se ven aquí, con usuario y clave. No salen en la página.</p></div>` : ""}
     <div class="card"><h2>Documentos (${INGRESO[tipoDocs]})</h2><div class="docs">${DOCS[tipoDocs].map(d => `<label><input type="checkbox" data-doc="${esc(d)}" ${tieneDoc.has(d) ? "checked" : ""} ${ed ? "" : "disabled"}><span>${esc(d)}</span></label>`).join("")}</div></div>
     <div class="card"><div class="top" style="margin:0 0 10px"><h2>Negocios</h2>${can("negocios", "crear") ? `<button class="btn sm" id="c-neg">+ Nuevo negocio</button>` : ""}</div>${c.negocios.length ? c.negocios.map(n => `<div class="li"><span>${esc(n.propiedad || "Sin propiedad elegida")}</span><span class="tools"><span class="pill">${ETAPAS[n.etapa]}</span><button class="btn sm" data-neg="${n.id}">Abrir</button></span></div>`).join("") : `<p class="empty">Sin negocios.</p>`}</div>
     <div class="card"><div class="top" style="margin:0 0 10px"><h2>Citas</h2>${can("citas", "crear") ? `<button class="btn sm" id="c-cita">+ Nueva cita</button>` : ""}</div>${c.citas.length ? c.citas.map(x => `<div class="li"><span>${CITA_T[x.tipo]} · ${fecha(x.fecha_hora)}</span><span class="pill">${CITA_E[x.estado]}</span></div>`).join("") : `<p class="empty">Sin citas.</p>`}</div>
@@ -534,6 +598,10 @@ async function fichaCliente(id) {
     if ($("#c-del")) $("#c-del").onclick = async () => { if (!confirm("¿Borrar este cliente y todo su historial?")) return; try { await api("/api/clientes/" + id, { method: "DELETE" }); cerrar(); toast("Borrado"); if (VISTA === "clientes") RENDER.clientes(); } catch (x) { toast(x.message, 1); } };
     if ($("#f-i")) $("#f-i").onsubmit = async e => { e.preventDefault(); const fd = new FormData(e.target); try { await api(`/api/clientes/${id}/interacciones`, { method: "POST", body: { tipo: fd.get("tipo"), detalle: fd.get("detalle") } }); toast("Anotado"); fichaCliente(id); } catch (x) { toast(x.message, 1); } };
     $$("[data-doc]").forEach(ch => ch.onchange = async () => { try { await api(`/api/clientes/${id}/documentos`, { method: "POST", body: { documento: ch.dataset.doc, lo_tiene: ch.checked } }); } catch (x) { toast(x.message, 1); ch.checked = !ch.checked; } });
+    $$("[data-ver]").forEach(b => b.onclick = async () => {
+      const w = window.open("", "_blank"); try { const r = await fetch(API + "/api/archivos/" + b.dataset.ver, { headers: { Authorization: "Bearer " + TOK } }); if (!r.ok) throw new Error("No se pudo abrir"); const u = URL.createObjectURL(await r.blob()); if (w) w.location = u; else { const a = document.createElement("a"); a.href = u; a.download = b.dataset.nom; a.click(); } } catch (x) { if (w) w.close(); toast(x.message, 1); }
+    });
+    $$("[data-qd]").forEach(b => b.onclick = async () => { if (!confirm("¿Borrar este documento?")) return; try { await api("/api/archivos/" + b.dataset.qd, { method: "DELETE" }); toast("Documento borrado"); fichaCliente(id); } catch (x) { toast(x.message, 1); } });
     if ($("#c-neg")) $("#c-neg").onclick = () => fichaNegocio(null, { cliente_id: id });
     if ($("#c-cita")) $("#c-cita").onclick = () => fichaCita(null, { cliente_id: id });
     $$("[data-neg]").forEach(b => b.onclick = () => fichaNegocio(b.dataset.neg));
@@ -856,12 +924,12 @@ async function zipVolantes(S) {
 async function compartirVolante() {
   const cv = $("#vl-cv"); if (!VL.img) return toast("Primero sube o elige una foto", 1);
   const blob = await new Promise(r => cv.toBlob(r, "image/png"));
-  const txt = [[$("#vl-t1").value, $("#vl-t2").value].filter(Boolean).join(" "), $("#vl-t3").value, [$("#vl-t4").value, $("#vl-t5").value].filter(Boolean).join(" ")].filter(Boolean).join("\n") + "\nC4 Realty · WhatsApp 6253-1751\n" + SITIO;
+  const txt = [[$("#vl-t1").value, $("#vl-t2").value].filter(Boolean).join(" "), $("#vl-t3").value, $("#vl-t6") && $("#vl-t6").value, [$("#vl-t4").value, $("#vl-t5").value].filter(Boolean).join(" "), $("#vl-t7") && $("#vl-t7").value].filter(Boolean).join("\n") + "\nC4 Realty · WhatsApp 6253-1751\n" + SITIO;
   await enviarWA({ blob, texto: txt, nombre: "volante-c4realty.png" });
 }
 
 /* ---------- VOLANTES ---------- */
-const VL = { img: null, zoom: 1, ox: 0, oy: 0, fmt: "historia" };
+const VL = { img: null, zoom: 1, ox: 0, oy: 0, fmt: "historia", estilo: store.get("c4_vl_est") || "dorado" };
 const VL_FMT = { historia: [1080, 1920, "Historia 9:16 (WhatsApp / Instagram)"], post: [1080, 1350, "Publicación 4:5 (Instagram)"], cuadro: [1080, 1080, "Cuadrado 1:1"] };
 RENDER.volantes = async () => {
   let props = [];
@@ -877,15 +945,21 @@ RENDER.volantes = async () => {
         <div class="f"><label for="vl-fmt">Tamaño</label><select id="vl-fmt">${Object.entries(VL_FMT).map(([k, f]) => `<option value="${k}">${f[2]}</option>`).join("")}</select></div>
       </div>
       <p class="faint" style="font-size:.82rem">Arrastra la foto en la vista previa para moverla.</p>
-      <h2 style="margin-top:6px">2 · Los textos</h2>
+      <h2 style="margin-top:6px">2 · El estilo</h2>
+      <div class="vl-est" id="vl-est" role="group" aria-label="Estilo del volante">${Object.entries(VL_EST).map(([k, t]) => `<button type="button" data-est="${k}" aria-pressed="${k === VL.estilo}">${t}</button>`).join("")}</div>
+      <h2 style="margin-top:6px">3 · Los textos</h2>
       <div class="grid2">
-        <div class="f"><label for="vl-t1">Texto blanco</label><input id="vl-t1" value="${v("t1") || "Modelo"}"></div>
-        <div class="f"><label for="vl-t2">Texto dorado</label><input id="vl-t2" value="${v("t2")}" placeholder="Coral"></div>
-        <div class="f" style="grid-column:1/-1"><label for="vl-t3">Segunda línea</label><input id="vl-t3" value="${v("t3")}" placeholder="en Bugaba"></div>
-        <div class="f"><label for="vl-t4">Etiqueta (blanco)</label><input id="vl-t4" value="${v("t4") || "Lote"}"></div>
-        <div class="f"><label for="vl-t5">Etiqueta (dorado)</label><input id="vl-t5" value="${v("t5")}" placeholder="450m2"></div>
+        <div class="f"><label for="vl-t1">Texto 1</label><input id="vl-t1" value="${v("t1") || "Modelo"}"></div>
+        <div class="f"><label for="vl-t2">Nombre del modelo</label><input id="vl-t2" value="${v("t2")}" placeholder="Coral"></div>
+        <div class="f" style="grid-column:1/-1"><label for="vl-t3">Lugar</label><input id="vl-t3" value="${v("t3").replace(/^en\s+/i, "")}" placeholder="Bugaba"></div>
+        <div class="f" data-c="t4"><label for="vl-t4">Etiqueta</label><input id="vl-t4" value="${v("t4") || "Lote"}"></div>
+        <div class="f" data-c="t5"><label for="vl-t5">Medida</label><input id="vl-t5" value="${v("t5")}" placeholder="450m2"></div>
+        <div class="f" data-c="t6" style="grid-column:1/-1"><label for="vl-t6">Detalles</label><input id="vl-t6" value="${v("t6")}" placeholder="2 Recámaras 1 Baño"></div>
+        <div class="f" data-c="t7"><label for="vl-t7">Precio</label><input id="vl-t7" value="${v("t7")}" placeholder="$70,000"></div>
+        <div class="f" data-c="t8"><label for="vl-t8">Precio regular (tachado)</label><input id="vl-t8" value="${v("t8")}" placeholder="$74,644"></div>
+        <div class="f" data-c="t9" style="grid-column:1/-1"><label for="vl-t9">Aviso corto</label><input id="vl-t9" value="${v("t9")}" placeholder="Por tiempo limitado"></div>
       </div>
-      <div class="grid2">
+      <div class="grid2" data-c="pos">
         <div class="f"><label for="vl-pos">Dónde van los textos</label><select id="vl-pos"><option value="arriba">Arriba (en el cielo)</option><option value="centro">Al centro</option><option value="abajo">Abajo</option></select></div>
         <div class="f chk" style="align-self:end"><input type="checkbox" id="vl-sombra" checked><label for="vl-sombra">Oscurecer detrás del texto</label></div>
       </div>
@@ -894,7 +968,10 @@ RENDER.volantes = async () => {
     <div class="vl-prev card"><canvas id="vl-cv" width="1080" height="1920" aria-label="Vista previa del volante"></canvas><p class="faint" id="vl-msg" style="font-size:.82rem">Sube una foto para empezar.</p></div>
   </div>`;
   const draw = () => vlDraw();
-  ["t1", "t2", "t3", "t4", "t5"].forEach(k => $("#vl-" + k).oninput = e => { store.set("c4_vl_" + k, e.target.value); draw(); });
+  ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"].forEach(k => $("#vl-" + k).oninput = e => { store.set("c4_vl_" + k, e.target.value); draw(); });
+  const campos = () => $$("[data-c]").forEach(el => el.classList.toggle("hide", !VL_CAMPOS[el.dataset.c].split(" ").includes(VL.estilo)));
+  $$("#vl-est button").forEach(b => b.onclick = () => { VL.estilo = b.dataset.est; store.set("c4_vl_est", VL.estilo); $$("#vl-est button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); campos(); draw(); });
+  campos();
   $("#vl-pos").onchange = draw; $("#vl-sombra").onchange = draw;
   $("#vl-zoom").oninput = e => { VL.zoom = +e.target.value; draw(); };
   $("#vl-fmt").value = VL.fmt; $("#vl-fmt").onchange = e => { VL.fmt = e.target.value; draw(); };
@@ -905,9 +982,14 @@ RENDER.volantes = async () => {
     if (p) {
       const m = /^Modelo\s+(.+)$/i.exec((p.titulo || "").split("·")[0].trim());
       if (m) { $("#vl-t1").value = "Modelo"; $("#vl-t2").value = m[1]; }
-      if (p.zona) $("#vl-t3").value = "en " + p.zona;
+      if (p.zona) $("#vl-t3").value = p.zona;
       if (p.lote_m2) { $("#vl-t4").value = "Lote"; $("#vl-t5").value = String(+p.lote_m2) + "m2"; }
-      ["t1", "t2", "t3", "t4", "t5"].forEach(k => store.set("c4_vl_" + k, $("#vl-" + k).value));
+      const rb = (p.recamaras ? `${p.recamaras} Recámaras` : "") + (p.banos ? ` ${p.banos} ${String(p.banos) === "1" ? "Baño" : "Baños"}` : "");
+      $("#vl-t6").value = rb.trim();
+      $("#vl-t7").value = p.precio ? (p.precio_desde ? "Desde " : "") + money(p.precio) : "Consultar";
+      $("#vl-t8").value = +p.precio_antes > +p.precio ? money(p.precio_antes) : "";
+      $("#vl-t9").value = p.etiqueta || "";
+      ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"].forEach(k => store.set("c4_vl_" + k, $("#vl-" + k).value));
     }
     try {
       const M = (await api("/api/medios?propiedad_id=" + id)).filter(x => x.tipo === "foto" || x.tipo === "volante");
@@ -926,9 +1008,196 @@ RENDER.volantes = async () => {
     const nom = ["volante", $("#vl-t2").value, $("#vl-t3").value.replace(/^en\s+/i, "")].filter(Boolean).join("-").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     cv.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = (nom || "volante") + ".png"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Volante descargado"); }, "image/png");
   };
-  try { await document.fonts.load('900 120px "Playfair Display"'); await document.fonts.load('800 80px "Playfair Display"'); await document.fonts.load('400 80px "DM Serif Display"'); } catch (x) {}
+  try { await Promise.all(['900 120px "Playfair Display"', '800 80px "Playfair Display"', 'italic 700 80px "Playfair Display"', '400 80px "DM Serif Display"', '900 80px "Montserrat"', '800 80px "Montserrat"', '700 80px "Montserrat"', '600 80px "Montserrat"', '500 80px "Montserrat"', '400 80px "Kaushan Script"'].map(f => document.fonts.load(f))); } catch (x) {}
+  vlLogo($("#vl-cv").getContext("2d"), -9999, -9999, 1);
   draw();
 };
+/* ---------- VOLANTES: otros estilos ---------- */
+const VLF = { serif: '"Playfair Display", Georgia, serif', sans: '"Montserrat", "Plus Jakarta Sans", Arial, sans-serif', script: '"Kaushan Script", "Brush Script MT", cursive' };
+const VL_EST = { dorado: "Dorado", precio: "Con precio", brocha: "Brocha verde", pro: "Profesional", oferta: "Oferta", lujo: "Elegante" };
+const VL_CAMPOS = { t4: "dorado precio brocha pro", t5: "dorado precio brocha pro", t6: "precio pro oferta lujo", t7: "precio pro oferta lujo", t8: "pro oferta", t9: "pro oferta", pos: "dorado", sombra: "dorado" };
+const vlV = k => { const e = $("#vl-" + k); return e ? e.value.trim() : ""; };
+const vlM2 = s => s.replace(/\s*m2\b/gi, " m²");
+function vlFit(x, t, w, fam, maxW, start, min = 18) { let s = Math.round(start); x.font = `${w} ${s}px ${fam}`; while (t && x.measureText(t).width > maxW && s > min) { s -= 2; x.font = `${w} ${s}px ${fam}`; } return s; }
+function vlFoto(x, X, Y, W, H) {
+  if (!VL.img) { const g = x.createLinearGradient(0, Y, 0, Y + H); g.addColorStop(0, "#1f6fd1"); g.addColorStop(.6, "#6fb3ef"); g.addColorStop(1, "#2f6a2a"); x.fillStyle = g; x.fillRect(X, Y, W, H); return; }
+  const s = Math.max(W / VL.img.width, H / VL.img.height) * VL.zoom, dw = VL.img.width * s, dh = VL.img.height * s;
+  x.drawImage(VL.img, X + (W - dw) / 2 + VL.ox * W, Y + (H - dh) / 2 + VL.oy * H, dw, dh);
+}
+function vlLogo(x, X, Y, h, alpha = 1) {
+  if (!VL.logo) { VL.logo = new Image(); VL.logo.onload = () => vlDraw(); VL.logo.src = "../img/logo.png"; return 0; }
+  if (!VL.logo.complete || !VL.logo.naturalWidth) return 0;
+  const w = h * VL.logo.naturalWidth / VL.logo.naturalHeight; x.save(); x.globalAlpha = alpha; x.filter = "brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0,0,0,.45))"; x.drawImage(VL.logo, X, Y, w, h); x.restore(); return w;
+}
+const vlLogoW = h => VL.logo && VL.logo.naturalWidth ? h * VL.logo.naturalWidth / VL.logo.naturalHeight : h * 5.4;
+function vlRR(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+function vlRand(seed) { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; }
+function vlBrocha(x, cx, cy, w, h, color, seed, rot = 0) {
+  const R = vlRand(seed); x.save(); x.translate(cx, cy); x.rotate(rot); x.fillStyle = color;
+  const L = -w / 2, Rt = w / 2, T = -h / 2, n = 16; x.beginPath(); x.moveTo(L, T);
+  for (let i = 1; i <= n; i++) x.lineTo(L + w * i / n, T + (R() - .5) * h * .09);
+  for (let i = 1; i <= 7; i++) x.lineTo(Rt + (i % 2 ? R() * h * .32 : -R() * h * .05), T + h * i / 7);
+  for (let i = n - 1; i >= 0; i--) x.lineTo(L + w * i / n, h / 2 + (R() - .5) * h * .09);
+  for (let i = 6; i >= 1; i--) x.lineTo(L - (i % 2 ? R() * h * .32 : -R() * h * .05), T + h * i / 7);
+  x.closePath(); x.shadowColor = "rgba(0,0,0,.28)"; x.shadowBlur = h * .18; x.shadowOffsetY = h * .05; x.fill(); x.shadowColor = "transparent";
+  x.globalAlpha = .16; x.strokeStyle = /fff/i.test(color) ? "#9aa" : "#fff"; x.lineWidth = Math.max(1, h * .018);
+  for (let i = 0; i < 7; i++) { const yy = T + h * (.12 + R() * .76), a = L + w * R() * .35; x.beginPath(); x.moveTo(a, yy); x.lineTo(a + w * (.3 + R() * .6), yy + (R() - .5) * h * .06); x.stroke(); }
+  x.restore();
+}
+function vlHoja(x, X, Y, len, ang) {
+  x.save(); x.translate(X, Y); x.rotate(ang); const g = x.createLinearGradient(0, 0, len, 0); g.addColorStop(0, "#2f7d22"); g.addColorStop(1, "#86c94a"); x.fillStyle = g;
+  x.shadowColor = "rgba(0,0,0,.3)"; x.shadowBlur = len * .08;
+  x.beginPath(); x.moveTo(0, 0); x.quadraticCurveTo(len * .45, -len * .4, len, 0); x.quadraticCurveTo(len * .45, len * .4, 0, 0); x.fill(); x.shadowColor = "transparent";
+  x.strokeStyle = "rgba(255,255,255,.5)"; x.lineWidth = len * .022; x.beginPath(); x.moveTo(len * .04, 0); x.quadraticCurveTo(len * .5, -len * .04, len * .93, 0); x.stroke(); x.restore();
+}
+function vlRamo(x, X, Y, s, base) { [[0, 1], [-.55, .82], [.5, .78], [-1.05, .62], [1.0, .58]].forEach(([a, k]) => vlHoja(x, X, Y, s * k, base + a)); }
+function vlPin(x, cx, top, s, fill, stroke) {
+  const r = s * .36; x.save(); x.beginPath(); x.arc(cx, top + r, r, Math.PI * .82, Math.PI * .18, false); x.lineTo(cx, top + s); x.closePath();
+  x.moveTo(cx + r * .42, top + r); x.arc(cx, top + r, r * .42, 0, Math.PI * 2, true);
+  if (stroke) { x.lineWidth = s * .12; x.strokeStyle = stroke; x.lineJoin = "round"; x.stroke(); } x.fillStyle = fill; x.fill("evenodd"); x.restore();
+}
+function vlIcono(x, tipo, X, Y, s, color) {
+  x.save(); x.translate(X, Y); x.scale(s / 24, s / 24); x.strokeStyle = color; x.lineWidth = 2; x.lineCap = "round"; x.lineJoin = "round"; x.beginPath();
+  if (tipo === "cama") { x.moveTo(3, 18); x.lineTo(3, 7); x.moveTo(3, 13); x.lineTo(21, 13); x.lineTo(21, 18); x.moveTo(21, 13); x.lineTo(21, 11); x.quadraticCurveTo(21, 9, 18, 9); x.lineTo(11, 9); x.lineTo(11, 13); x.moveTo(7.5, 10.5); x.arc(6.5, 10.5, 1.4, 0, Math.PI * 2); }
+  else if (tipo === "bano") { x.moveTo(4, 12); x.lineTo(20, 12); x.lineTo(20, 14); x.quadraticCurveTo(20, 19, 15, 19); x.lineTo(9, 19); x.quadraticCurveTo(4, 19, 4, 14); x.closePath(); x.moveTo(6, 12); x.lineTo(6, 5.5); x.quadraticCurveTo(6, 3.5, 8, 3.5); x.quadraticCurveTo(9.5, 3.5, 9.8, 5); x.moveTo(7, 19); x.lineTo(6, 21); x.moveTo(17, 19); x.lineTo(18, 21); }
+  else { x.rect(4, 4, 16, 16); x.moveTo(4, 9); x.lineTo(8, 9); x.moveTo(16, 4); x.lineTo(16, 8); x.moveTo(20, 15); x.lineTo(16, 15); x.moveTo(9, 20); x.lineTo(9, 16); }
+  x.stroke(); x.restore();
+}
+function vlOtros(est, x, W, H) {
+  const u = W / 1080, alto = H / W > 1.5;
+  const t1 = vlV("t1"), t2 = vlV("t2"), lugar = vlV("t3").replace(/^en\s+/i, ""), t4 = vlV("t4"), t5 = vlM2(vlV("t5")), det = vlV("t6"), pre = vlV("t7"), ant = vlV("t8"), avi = vlV("t9");
+  const tit = [t1, t2].filter(Boolean).join(" "), lote = [t4, t5].filter(Boolean).join(" ");
+  const sh = (b, c = "rgba(0,0,0,.7)", oy = 3) => { x.shadowColor = c; x.shadowBlur = b; x.shadowOffsetY = oy; x.shadowOffsetX = 0; };
+  const ns = () => { x.shadowColor = "transparent"; x.shadowBlur = 0; x.shadowOffsetY = 0; };
+  const sp = v => { try { x.letterSpacing = v; } catch (e) { } };
+  x.textBaseline = "alphabetic"; x.textAlign = "center"; x.lineJoin = "round";
+  const num = s => +String(s).replace(/[^\d.]/g, "") || 0;
+
+  if (est === "precio") {
+    vlFoto(x, 0, 0, W, H);
+    let g = x.createLinearGradient(0, 0, 0, H * .42); g.addColorStop(0, "rgba(0,0,0,.42)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.fillRect(0, 0, W, H * .42);
+    const L = [t1, t2].filter(Boolean); let y = H * (alto ? .06 : .03);
+    const fs = L.length ? Math.min(...L.map(l => vlFit(x, l, 900, VLF.serif, W * .88, (alto ? 175 : 150) * u))) : 0;
+    L.forEach(l => { x.font = `900 ${fs}px ${VLF.serif}`; y += fs * .92; sh(24); x.lineWidth = fs * .12; x.strokeStyle = "rgba(12,9,6,.92)"; x.strokeText(l, W / 2, y); ns(); x.fillStyle = "#fff"; x.fillText(l, W / 2, y); y += fs * .1; });
+    if (lugar) {
+      const fl = vlFit(x, lugar, 800, VLF.serif, W * .62, 80 * u); x.font = `800 ${fl}px ${VLF.serif}`; const tw = x.measureText(lugar).width, xr = W * .93; y += fl * 1.02;
+      vlPin(x, xr - tw - fl * .45, y - fl * .92, fl * 1.05, "#fff", "rgba(12,9,6,.92)");
+      x.textAlign = "right"; x.lineWidth = fl * .13; x.strokeStyle = "rgba(12,9,6,.92)"; x.strokeText(lugar, xr, y); x.fillStyle = "#fff"; x.fillText(lugar, xr, y); x.textAlign = "center";
+    }
+    const lines = [det, lote].filter(Boolean);
+    const bf = lines.length ? Math.min(...lines.map(l => vlFit(x, l, 800, VLF.serif, W * .86, 80 * u))) : 0;
+    const bh = lines.length ? bf * 1.22 * lines.length + 46 * u : 0, by = H - bh - H * .035;
+    if (lines.length) {
+      x.fillStyle = "rgba(30,22,15,.86)"; x.fillRect(0, by, W, bh);
+      const gl = x.createLinearGradient(0, 0, W, 0); gl.addColorStop(0, "#7a4d18"); gl.addColorStop(.5, "#f3d48a"); gl.addColorStop(1, "#7a4d18"); x.fillStyle = gl; x.fillRect(0, by, W, 6 * u); x.fillRect(0, by + bh - 6 * u, W, 6 * u);
+      x.font = `800 ${bf}px ${VLF.serif}`; x.fillStyle = "#fff"; lines.forEach((l, i) => x.fillText(l, W / 2, by + 23 * u + bf * (.98 + i * 1.22)));
+    }
+    const base = lines.length ? by : H - H * .04;
+    if (pre) {
+      const pf = vlFit(x, pre, 800, VLF.serif, W * .56, 96 * u); x.font = `800 ${pf}px ${VLF.serif}`;
+      const pw = x.measureText(pre).width + 80 * u, ph = pf * 1.5, px = W - pw - W * .035, py = base - ph - 26 * u;
+      sh(30, "rgba(0,0,0,.55)", 6); x.fillStyle = "rgba(52,34,22,.9)"; x.fillRect(px, py, pw, ph); ns();
+      x.strokeStyle = "rgba(243,212,138,.85)"; x.lineWidth = 3 * u; x.strokeRect(px + 9 * u, py + 9 * u, pw - 18 * u, ph - 18 * u);
+      x.fillStyle = "#fff"; x.fillText(pre, px + pw / 2, py + ph / 2 + pf * .34);
+    }
+    vlLogo(x, W * .045, base - 26 * u - 64 * u, 64 * u, .95);
+    return;
+  }
+
+  if (est === "brocha") {
+    vlFoto(x, 0, 0, W, H);
+    const s = 260 * u; vlRamo(x, -30 * u, H * .02, s, .55); vlRamo(x, W + 30 * u, H * .03, s, Math.PI - .55); vlRamo(x, -40 * u, H * .97, s * .9, -.6); vlRamo(x, W + 40 * u, H * .96, s * .9, Math.PI + .6);
+    const A = tit || lugar, B = tit ? lugar : "", top = H * (alto ? .07 : .05);
+    let cy = top;
+    if (A) { const f = vlFit(x, A, 900, VLF.sans, W * .74, (alto ? 150 : 130) * u); x.font = `900 ${f}px ${VLF.sans}`; const w = x.measureText(A).width; cy = top + f * .7;
+      vlBrocha(x, W / 2, cy, w + 130 * u, f * 1.4, "#ffffff", 3, -.025); x.save(); x.translate(W / 2, cy); x.rotate(-.025); x.fillStyle = "#13294b"; x.fillText(A, 0, f * .36); x.restore(); cy += f * .7; }
+    if (B) { const f = vlFit(x, B, 800, VLF.sans, W * .64, (alto ? 100 : 86) * u); x.font = `800 ${f}px ${VLF.sans}`; const w = x.measureText(B).width; const c2 = cy + f * .62;
+      vlBrocha(x, W / 2, c2, w + 120 * u, f * 1.5, "#3f9a2c", 11, .02); x.save(); x.translate(W / 2, c2); x.rotate(.02); x.fillStyle = "#fff"; x.fillText(B, 0, f * .36); x.restore(); }
+    if (t4 || t5) {
+      const big = t5 || t4, small = t5 && t4 ? (/ de$/i.test(t4) ? t4 : t4 + " de") : "";
+      const fb = vlFit(x, big, 900, VLF.sans, W * .7, (alto ? 200 : 170) * u); x.font = `900 ${fb}px ${VLF.sans}`; const wb = x.measureText(big).width;
+      const yb = H * (alto ? .9 : .87) - fb * .3;
+      vlBrocha(x, W / 2, yb, wb + 160 * u, fb * 1.3, "#3f9a2c", 21, -.03); x.save(); x.translate(W / 2, yb); x.rotate(-.03); x.fillStyle = "#fff"; x.fillText(big, 0, fb * .36); x.restore();
+      if (small) { const f = 96 * u; x.font = `400 ${f}px ${VLF.script}`; const ws = x.measureText(small).width, ys = yb - fb * .62 - f * .5;
+        vlBrocha(x, W / 2 - 40 * u, ys, ws + 120 * u, f * 1.35, "#13294b", 31, -.06); x.save(); x.translate(W / 2 - 40 * u, ys); x.rotate(-.06); x.fillStyle = "#fff"; x.fillText(small, 0, f * .32); x.restore(); }
+    }
+    return;
+  }
+
+  if (est === "pro") {
+    const navy = "#0b1f3a", gold = "#c9a14a";
+    x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+    const fh = (alto ? 140 : 112) * u, ph = Math.round((H - fh) * (alto ? .6 : .54)), cut = 80 * u;
+    x.save(); x.beginPath(); x.moveTo(0, 0); x.lineTo(W, 0); x.lineTo(W, ph - cut); x.lineTo(0, ph); x.closePath(); x.clip(); vlFoto(x, 0, 0, W, ph); x.restore();
+    x.strokeStyle = gold; x.lineWidth = 9 * u; x.beginPath(); x.moveTo(0, ph); x.lineTo(W, ph - cut); x.stroke();
+    if (avi) { x.font = `800 ${34 * u}px ${VLF.sans}`; sp(`${3 * u}px`); const t = avi.toUpperCase(), w = x.measureText(t).width + 56 * u; sh(18, "rgba(0,0,0,.35)", 4); x.fillStyle = "#f2b84b"; vlRR(x, 50 * u, 50 * u, w, 70 * u, 35 * u); x.fill(); ns(); x.fillStyle = navy; x.textAlign = "left"; x.fillText(t, 50 * u + 28 * u, 50 * u + 47 * u); sp("0px"); x.textAlign = "center"; }
+    const lw = vlLogoW(56 * u); vlLogo(x, W - 50 * u - lw, 54 * u, 56 * u);
+    const need = 34 + 22 + 112 + 16 + 46 + 36 + 56 + 36 + 140, avail = (H - fh - ph) / u - 40;
+    const k = Math.max(.62, Math.min(1.18, avail / need)), P = 70 * u; let y = ph + 26 * u * k;
+    x.textAlign = "left";
+    x.font = `700 ${30 * u * k}px ${VLF.sans}`; sp(`${6 * u * k}px`); x.fillStyle = gold; y += 34 * u * k; x.fillText(("En venta" + (lugar ? " · Chiriquí" : "")).toUpperCase(), P, y); sp("0px"); y += 22 * u * k;
+    const ft = vlFit(x, tit || "C4 Realty", 800, VLF.sans, W - 2 * P, 112 * u * k); x.font = `800 ${ft}px ${VLF.sans}`; x.fillStyle = navy; y += ft * .92; x.fillText(tit || "C4 Realty", P, y); y += 16 * u * k;
+    if (lugar) { const f = 44 * u * k; x.font = `600 ${f}px ${VLF.sans}`; y += f; vlPin(x, P + f * .38, y - f * .9, f * 1.0, gold); x.fillStyle = "#5b6475"; x.fillText(lugar + ", Chiriquí", P + f * .95, y); }
+    y += 36 * u * k;
+    const rec = (/(\d+(?:\s*o\s*\d+)?)\s*rec/i.exec(det) || [])[1], ban = (/(\d+(?:\.\d)?)\s*ba/i.exec(det) || [])[1];
+    const chips = [rec && ["cama", `${rec} Recámaras`], ban && ["bano", `${ban} ${+ban === 1 ? "Baño" : "Baños"}`], lote && ["lote", lote]].filter(Boolean);
+    if (!chips.length && det) chips.push(["cama", det]);
+    if (chips.length) { const f = 36 * u * k, ic = 46 * u * k; x.font = `600 ${f}px ${VLF.sans}`; let cx = P; const cyy = y + ic * .5;
+      chips.forEach(([t, txt], i) => { const w = ic + 14 * u * k + x.measureText(txt).width; if (cx + w > W - P && i) { cx = P; y += ic + 18 * u * k; } const yy = y + ic * .5;
+        vlIcono(x, t, cx, yy - ic / 2, ic, navy); x.fillStyle = "#2b3445"; x.fillText(txt, cx + ic + 14 * u * k, yy + f * .36); cx += w + 40 * u * k; });
+      y += ic + 36 * u * k; }
+    x.fillStyle = "#e4e7ee"; x.fillRect(P, y - 14 * u * k, W - 2 * P, 2 * u); y += 14 * u * k;
+    if (pre) { const desde = /^desde\s+/i.test(pre), val = pre.replace(/^desde\s+/i, ""); const lf = 28 * u * k; x.font = `700 ${lf}px ${VLF.sans}`; sp(`${4 * u * k}px`); x.fillStyle = "#8a92a3"; y += lf; x.fillText(desde ? "DESDE" : "PRECIO", P, y); sp("0px");
+      const pf = vlFit(x, val, 900, VLF.sans, W * .58, 128 * u * k); x.font = `900 ${pf}px ${VLF.sans}`; x.fillStyle = navy; y += pf * .95; x.fillText(val, P, y); const vw = x.measureText(val).width;
+      if (ant) { const af = 44 * u * k; x.font = `600 ${af}px ${VLF.sans}`; x.fillStyle = "#98a0b0"; const ax = P + vw + 30 * u, aw = x.measureText(ant).width; x.fillText(ant, ax, y - 6 * u); x.fillStyle = "#e3262f"; x.fillRect(ax - 4 * u, y - 6 * u - af * .33, aw + 8 * u, 4 * u);
+        const d = num(ant) > num(val) && num(val) ? Math.round((1 - num(val) / num(ant)) * 100) : 0; if (d) { const bf = 34 * u * k; x.font = `800 ${bf}px ${VLF.sans}`; const bt = `−${d} %`, bw = x.measureText(bt).width + 30 * u; x.fillStyle = "#e3262f"; vlRR(x, ax, y - af - bf * 1.9, bw, bf * 1.45, bf * .72); x.fill(); x.fillStyle = "#fff"; x.fillText(bt, ax + 15 * u, y - af - bf * .8); } } }
+    x.fillStyle = navy; x.fillRect(0, H - fh, W, fh);
+    const lh = fh * .36; vlLogo(x, P, H - fh / 2 - lh / 2, lh);
+    const wf = fh * .3; x.font = `700 ${wf}px ${VLF.sans}`; const wt = "6253-1751", ww = x.measureText(wt).width, wr = W - P; x.textAlign = "right"; x.fillStyle = "#fff"; x.fillText(wt, wr, H - fh / 2 + wf * .36);
+    const cr = wf * .62, ccx = wr - ww - cr - 18 * u; x.fillStyle = "#25d366"; x.beginPath(); x.arc(ccx, H - fh / 2, cr, 0, Math.PI * 2); x.fill();
+    x.save(); x.translate(ccx - cr * .55, H - fh / 2 - cr * .55); x.scale(cr * 1.1 / 24, cr * 1.1 / 24); x.fillStyle = "#fff"; x.fill(new Path2D("M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2")); x.restore();
+    x.textAlign = "center"; return;
+  }
+
+  if (est === "oferta") {
+    vlFoto(x, 0, 0, W, H);
+    let g = x.createLinearGradient(0, H * .38, 0, H); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(.45, "rgba(0,0,0,.55)"); g.addColorStop(1, "rgba(0,0,0,.88)"); x.fillStyle = g; x.fillRect(0, H * .38, W, H * .62);
+    const d = num(ant) > num(pre) && num(pre) ? Math.round((1 - num(pre) / num(ant)) * 100) : 0;
+    const bx = W - 175 * u, byy = (alto ? 200 : 175) * u, br = 140 * u; x.save(); x.translate(bx, byy); x.rotate(.12); x.beginPath();
+    for (let i = 0; i < 36; i++) { const a = i * Math.PI / 18, r = i % 2 ? br * .86 : br; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); sh(26, "rgba(0,0,0,.45)", 6); x.fillStyle = "#e3262f"; x.fill(); ns();
+    x.lineWidth = 5 * u; x.strokeStyle = "#fff"; x.beginPath(); x.arc(0, 0, br * .72, 0, Math.PI * 2); x.stroke(); x.fillStyle = "#fff";
+    if (d) { x.font = `900 ${78 * u}px ${VLF.sans}`; x.fillText(`−${d}%`, 0, 20 * u); x.font = `800 ${22 * u}px ${VLF.sans}`; sp(`${3 * u}px`); x.fillText("DESCUENTO", 0, 54 * u); sp("0px"); } else { x.font = `900 ${50 * u}px ${VLF.sans}`; x.fillText("OFERTA", 0, 18 * u); }
+    x.restore();
+    const tag = (avi || "Oferta especial").toUpperCase(); x.save(); x.translate(60 * u, (alto ? 90 : 70) * u); x.rotate(-.05); x.font = `900 ${40 * u}px ${VLF.sans}`; const tw = x.measureText(tag).width + 50 * u; sh(18, "rgba(0,0,0,.4)", 4); x.fillStyle = "#ffd23f"; x.fillRect(0, 0, tw, 70 * u); ns(); x.fillStyle = "#14171c"; x.textAlign = "left"; x.fillText(tag, 25 * u, 50 * u); x.restore(); x.textAlign = "center";
+    let y = H - 50 * u; const lh = 40 * u; const lw2 = vlLogoW(lh); vlLogo(x, W / 2 - lw2 / 2, y - lh, lh, .95); y -= lh + 34 * u;
+    if (det) { const f = vlFit(x, det, 600, VLF.sans, W * .86, 40 * u); x.font = `600 ${f}px ${VLF.sans}`; x.fillStyle = "rgba(255,255,255,.88)"; x.fillText(det, W / 2, y); y -= f + 28 * u; }
+    if (pre) { const fp = vlFit(x, pre, 900, VLF.sans, W * .86, (alto ? 180 : 150) * u); x.font = `900 ${fp}px ${VLF.sans}`; sh(30, "rgba(0,0,0,.6)", 4); x.fillStyle = "#ffd23f"; x.fillText(pre, W / 2, y); ns(); y -= fp * .9 + 10 * u;
+      x.font = `800 ${34 * u}px ${VLF.sans}`; sp(`${8 * u}px`); x.fillStyle = "#ffd23f"; x.fillText("AHORA", W / 2, y); sp("0px"); y -= 34 * u + 22 * u; }
+    if (ant) { const f = 46 * u; x.font = `600 ${f}px ${VLF.sans}`; const t = "Antes " + ant, w = x.measureText(t).width, aw = x.measureText(ant).width; x.fillStyle = "rgba(255,255,255,.85)"; x.fillText(t, W / 2, y); x.fillStyle = "#e3262f"; x.fillRect(W / 2 + w / 2 - aw - 4 * u, y - f * .33, aw + 8 * u, 5 * u); y -= f + 26 * u; }
+    if (lugar) { const f = 46 * u; x.font = `600 ${f}px ${VLF.sans}`; const w = x.measureText(lugar).width; vlPin(x, W / 2 - w / 2 - f * .45, y - f * .9, f, "#ffd23f"); x.fillStyle = "#fff"; x.fillText(lugar, W / 2 + f * .3, y); y -= f + 24 * u; }
+    if (t2) { const f = vlFit(x, t2.toUpperCase(), 900, VLF.sans, W * .88, 140 * u); x.font = `900 ${f}px ${VLF.sans}`; sh(24); x.fillStyle = "#fff"; x.fillText(t2.toUpperCase(), W / 2, y); ns(); y -= f * .95; }
+    if (t1) { x.font = `600 ${46 * u}px ${VLF.sans}`; sp(`${10 * u}px`); x.fillStyle = "rgba(255,255,255,.9)"; x.fillText(t1.toUpperCase(), W / 2, y); sp("0px"); }
+    return;
+  }
+
+  if (est === "lujo") {
+    vlFoto(x, 0, 0, W, H);
+    const rg = x.createRadialGradient(W / 2, H * .4, W * .2, W / 2, H * .5, Math.max(W, H) * .75); rg.addColorStop(0, "rgba(0,0,0,0)"); rg.addColorStop(1, "rgba(0,0,0,.55)"); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+    const g = x.createLinearGradient(0, H * .45, 0, H); g.addColorStop(0, "rgba(8,10,14,0)"); g.addColorStop(.55, "rgba(8,10,14,.72)"); g.addColorStop(1, "rgba(8,10,14,.92)"); x.fillStyle = g; x.fillRect(0, H * .45, W, H * .55);
+    const gold = "#e2c27a"; x.strokeStyle = gold; x.lineWidth = 2.5 * u; x.strokeRect(36 * u, 36 * u, W - 72 * u, H - 72 * u); x.globalAlpha = .45; x.lineWidth = 1 * u; x.strokeRect(48 * u, 48 * u, W - 96 * u, H - 96 * u); x.globalAlpha = 1;
+    const lh = 50 * u, lw = vlLogoW(lh); vlLogo(x, W / 2 - lw / 2, 84 * u, lh);
+    let y = H - 110 * u;
+    if (pre) { const f = vlFit(x, pre, 700, VLF.serif, W * .8, 84 * u); x.font = `italic 700 ${f}px ${VLF.serif}`; x.fillStyle = gold; x.fillText(pre, W / 2, y); y -= f + 30 * u; }
+    if (det || lote) { const t = [det, lote].filter(Boolean).join("  ·  "); const f = vlFit(x, t.toUpperCase(), 500, VLF.sans, W * .82, 32 * u); x.font = `500 ${f}px ${VLF.sans}`; sp(`${4 * u}px`); x.fillStyle = "rgba(255,255,255,.85)"; x.fillText(t.toUpperCase(), W / 2, y); sp("0px"); y -= f + 34 * u; }
+    x.strokeStyle = gold; x.lineWidth = 2 * u; x.beginPath(); x.moveTo(W / 2 - 170 * u, y); x.lineTo(W / 2 - 18 * u, y); x.moveTo(W / 2 + 18 * u, y); x.lineTo(W / 2 + 170 * u, y); x.stroke();
+    x.fillStyle = gold; x.beginPath(); x.moveTo(W / 2, y - 10 * u); x.lineTo(W / 2 + 10 * u, y); x.lineTo(W / 2, y + 10 * u); x.lineTo(W / 2 - 10 * u, y); x.closePath(); x.fill(); y -= 46 * u;
+    if (lugar) { x.font = `600 ${38 * u}px ${VLF.sans}`; sp(`${12 * u}px`); x.fillStyle = "#fff"; x.fillText(lugar.toUpperCase(), W / 2, y); sp("0px"); y -= 38 * u + 34 * u; }
+    if (t2) { const T = t2.toUpperCase(); sp(`${8 * u}px`); const f = vlFit(x, T, 800, VLF.serif, W * .8, (alto ? 160 : 140) * u); x.font = `800 ${f}px ${VLF.serif}`; sh(30, "rgba(0,0,0,.5)", 4); x.fillStyle = "#fff"; x.fillText(T, W / 2, y); ns(); sp("0px"); y -= f * 1.06; }
+    if (t1) { x.font = `italic 700 ${64 * u}px ${VLF.serif}`; x.fillStyle = gold; x.fillText(t1, W / 2, y); }
+    return;
+  }
+}
+
 function vlCargar(src) {
   const im = new Image(); if (/^https?:/.test(src)) im.crossOrigin = "anonymous";
   im.onload = () => { VL.img = im; VL.ox = 0; VL.oy = 0; VL.zoom = 1; if ($("#vl-zoom")) $("#vl-zoom").value = 1; vlDraw(); };
@@ -939,6 +1208,7 @@ function vlDraw() {
   const cv = $("#vl-cv"); if (!cv) return;
   const [W, H] = VL_FMT[VL.fmt]; if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
   const x = cv.getContext("2d"); x.save(); x.clearRect(0, 0, W, H);
+  if ((VL.estilo || "dorado") !== "dorado") { try { vlOtros(VL.estilo, x, W, H); } finally { x.restore(); } const m = $("#vl-msg"); if (m) m.textContent = VL.img ? `Tamaño final: ${W} × ${H} px` : "Sube una foto para empezar."; return; }
   // fondo
   const bg = x.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#1f6fd1"); bg.addColorStop(.55, "#6fb3ef"); bg.addColorStop(1, "#2f6a2a"); x.fillStyle = bg; x.fillRect(0, 0, W, H);
   if (VL.img) {
@@ -946,7 +1216,7 @@ function vlDraw() {
     x.drawImage(VL.img, (W - dw) / 2 + VL.ox * W, (H - dh) / 2 + VL.oy * H, dw, dh);
   }
   const msg = $("#vl-msg"); if (msg) msg.textContent = VL.img ? `Tamaño final: ${W} × ${H} px` : "Sube una foto para empezar.";
-  const t1 = $("#vl-t1").value.trim(), t2 = $("#vl-t2").value.trim(), t3 = $("#vl-t3").value.trim(), t4 = $("#vl-t4").value.trim(), t5 = $("#vl-t5").value.trim();
+  const t1 = $("#vl-t1").value.trim(), t2 = $("#vl-t2").value.trim(), t3r = $("#vl-t3").value.trim(), t3 = t3r && !/^(en|de)\s/i.test(t3r) ? "en " + t3r : t3r, t4 = $("#vl-t4").value.trim(), t5 = $("#vl-t5").value.trim();
   const SERIF = '"Playfair Display", Georgia, "Times New Roman", serif', DIG = '"DM Serif Display", Georgia, serif';
   const runs = (t, font) => t.split(/([0-9]+)/).filter(Boolean).map(r => [r, /^[0-9]+$/.test(r) ? font.replace(/^\d+ /, "400 ").replace(SERIF, DIG) : font]);
   const ancho = (t, font) => runs(t, font).reduce((a, [r, f]) => { x.font = f; return a + x.measureText(r).width; }, 0);
@@ -1007,7 +1277,7 @@ function vlDraw() {
 
 /* ---------- CONFIGURACIÓN ---------- */
 RENDER.configuracion = async () => {
-  const L = await api("/api/configuracion"); const ed = can("configuracion", "editar");
+  const L = (await api("/api/configuracion")).filter(c => !/^hubspot_/.test(c.clave)); const ed = can("configuracion", "editar");
   $("#body").innerHTML = `<form id="f-cf" class="card"><div class="grid2">${L.map(c => `<div class="f"><label for="cf-${esc(c.clave)}">${esc(c.descripcion || c.clave)}</label><input id="cf-${esc(c.clave)}" name="${esc(c.clave)}" value="${esc(c.valor ?? "")}" ${ed ? "" : "disabled"}><small class="faint">${esc(c.clave)}</small></div>`).join("")}</div>${ed ? `<div class="tools" style="margin-top:14px"><button class="btn pri">Guardar</button><button type="button" class="btn" id="hs-sync">Enviar a HubSpot ahora</button></div>` : ""}</form>`;
   if (!ed) return;
   $("#f-cf").onsubmit = async e => { e.preventDefault(); const b = Object.fromEntries(new FormData(e.target)); try { await api("/api/configuracion", { method: "PATCH", body: b }); toast("Guardado"); } catch (x) { toast(x.message, 1); } };

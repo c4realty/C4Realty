@@ -269,6 +269,18 @@ footer{background:#070f1d;color:#9fb0c8;padding-block:40px 26px;border-top:1px s
 .seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:700;cursor:pointer;color:var(--muted)}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
 .docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upl{display:grid;gap:10px}
+.upl-btn{display:flex;gap:12px;align-items:center;border:1.5px dashed var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;font-size:.92rem;line-height:1.35;transition:border-color .2s,background .2s}
+.upl-btn:hover,.upl.on .upl-btn{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.upl-btn small{color:var(--muted)}
+.upl-ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);font-size:1.3rem;font-weight:800}
+.upl-in{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.upl-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}.upl-list:empty{display:none}
+.upl-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--bg-2,rgba(255,255,255,.04));border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.86rem}
+.upl-list li span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upl-list li.ok span::before{content:"✓ ";color:#25d366;font-weight:800}.upl-list li.err span::before{content:"✕ ";color:#ff6b5e;font-weight:800}
+.upl-list button{flex:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px}
+.upl-prog{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.upl-prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
 @media (max-width:700px){.docs{grid-template-columns:1fr}}
 .doc{display:flex;gap:10px;align-items:flex-start;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;font-size:.92rem}
 .doc input{margin-top:2px;accent-color:#f2b84b;width:18px;height:18px;flex:none}
@@ -509,6 +521,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       <form class="qform" id="qform" novalidate>
         <div class="eyebrow">1 · Tus datos</div>
         <div class="field"><label for="c-nombre">Nombre</label><input id="c-nombre" autocomplete="name" placeholder="Tu nombre"></div>
+        <div class="field"><label for="c-tel">Tu WhatsApp</label><input id="c-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej. 6000-0000"></div>
         <div class="field"><span class="flabel">Tipo de ingreso</span><div class="seg" role="group" aria-label="Tipo de ingreso" id="c-tipo"><button type="button" class="on" data-t="asal">Asalariado</button><button type="button" data-t="indep">Independiente</button></div></div>
         <div class="field"><label for="c-sal">Ingreso mensual aprox. (USD)</label><input id="c-sal" type="number" min="0" step="50" placeholder="Ej. 900"></div>
         <div class="eyebrow" style="margin-top:6px">2 · La casa que te interesa</div>
@@ -519,8 +532,15 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
         <div class="need-head"><div><div class="eyebrow">3 · Lo que necesitas</div><h3 style="margin-top:4px" id="need-title">Documentos para asalariados</h3></div><span class="muted" id="need-count" style="font-size:.88rem"></span></div>
         <div class="docs" id="docs"></div>
         <div class="fine" id="need-note"></div>
+        <div class="upl" id="c-upl">
+          <label class="upl-btn" for="c-files"><span class="upl-ic" aria-hidden="true">⇪</span><span><b>Sube tus documentos</b> <small>(opcional)</small><br><small>Fotos o PDF de tu cédula, talonario, carta de trabajo… Así adelantamos tu cotización.</small></span></label>
+          <input id="c-files" type="file" multiple accept="image/*,application/pdf" class="upl-in">
+          <ul class="upl-list" id="c-list"></ul>
+          <div class="upl-prog" id="c-prog" hidden><i></i></div>
+          <p class="fine" id="c-umsg" role="status"></p>
+        </div>
         <a class="btn btn-wa" id="c-wa" href="#" target="_blank" rel="noopener" style="justify-content:center;padding:15px 20px;font-size:1.02rem;white-space:normal;text-align:center">Enviar por WhatsApp · te respondemos ahí mismo</a>
-        <div class="fine">Se abre WhatsApp con tus datos, la casa y tu lista de documentos ya escritos. Solo tocas enviar al 6253-1751.</div>
+        <div class="fine">Se abre WhatsApp con tus datos, la casa y tu lista de documentos ya escritos. Solo tocas enviar al 6253-1751. Tus documentos solo los ve el equipo de C4 Realty.</div>
       </div>
     </div>
     <h3 style="margin-top:44px">Pasos para comprar tu casa</h3>
@@ -819,14 +839,39 @@ function pub(){const p=QP.find(x=>x.id===$("#c-prop").value);const box=$("#c-pub
   box.innerHTML=`<div class="pubhead"><img src="${IMG[p.img[0]]}" alt=""><div><b>${p.n}</b><span class="muted">${zonaTxt(p)}</span><span class="pubprice">${p.precio==null?"Precio: consultar":(p.desde?"Desde ":"")+fmt(p.precio)}${p.antes?` <s>${fmt(p.antes)}</s>`:""}</span></div></div>
    <div class="flabel" style="margin-top:4px">Precio y financiamiento</div><ul class="ticks">${(p.vr||[]).map(([k,v])=>`<li>${k}: ${fmt(v)}</li>`).join("")}${p.pagos.map(x=>`<li>${x}</li>`).join("")}</ul>
    ${p.precio&&p.precio<=(window.C4?+C4.cfg().bono_tope_precio:80000)?`<div class="fine">Casa de hasta ${window.C4?"$"+(+C4.cfg().bono_tope_precio).toLocaleString("en-US"):"$80,000"}: puede aplicar al Bono Pa' Ti si es tu primera vivienda con interés preferencial.</div>`:""}`;buildWA();}
-$("#c-prop").addEventListener("change",pub);["c-nombre","c-sal"].forEach(id=>$("#"+id).addEventListener("input",buildWA));
+$("#c-prop").addEventListener("change",pub);["c-nombre","c-sal","c-tel"].forEach(id=>$("#"+id).addEventListener("input",buildWA));
 function buildWA(){const p=QP.find(x=>x.id===$("#c-prop").value);const D=DOCS[tipo].d,ok=D.filter((_,i)=>have.has(tipo+i)),no=D.filter((_,i)=>!have.has(tipo+i));
-  const nom=$("#c-nombre").value.trim(),sal=$("#c-sal").value;
-  const L=["Hola C4 Realty, quiero cotizar mi casa.",nom?`Nombre: ${nom}`:"",`Ingreso: ${tipo==="asal"?"Asalariado":"Independiente"}${sal?` · $${(+sal).toLocaleString("en-US")} mensual`:""}`,
+  const nom=$("#c-nombre").value.trim(),sal=$("#c-sal").value,tel=($("#c-tel")||{value:""}).value.trim();
+  const L=["Hola C4 Realty, quiero cotizar mi casa.",nom?`Nombre: ${nom}`:"",tel?`Mi WhatsApp: ${tel}`:"",`Ingreso: ${tipo==="asal"?"Asalariado":"Independiente"}${sal?` · $${(+sal).toLocaleString("en-US")} mensual`:""}`,
    p?`Me interesa: ${p.n}${p.z?` (${p.z})`:""}${p.precio?` · ${p.desde?"desde ":""}${fmt(p.precio)}`:""}`:"Aún no elijo casa; ¿qué opciones tengo?",
-   ok.length?`Ya tengo: ${ok.join("; ")}`:"",no.length?`Me falta: ${no.join("; ")}`:""].filter(Boolean);
+   ok.length?`Ya tengo: ${ok.join("; ")}`:"",no.length?`Me falta: ${no.join("; ")}`:"",
+   window.C4_DOCS_OK&&C4_DOCS_OK.length?`Subí ${C4_DOCS_OK.length===1?"1 documento":C4_DOCS_OK.length+" documentos"} en la página: ${C4_DOCS_OK.join(", ")}`:""].filter(Boolean);
   $("#c-wa").href="https://wa.me/"+(window.C4?C4.WA:"50762531751")+"?text="+encodeURIComponent(L.join("\n"));}
-$("#c-wa").addEventListener("click",()=>{const p=QP.find(x=>x.id===$("#c-prop").value);hubspot("cotizacion",{firstname:$("#c-nombre").value,proyecto:p?p.n:"",tipo_ingreso:tipo,salario:$("#c-sal").value});});
+/* documentos: se guardan en la ficha del cliente (privados) y luego se abre WhatsApp */
+const CF=[];window.C4_DOCS_OK=[];
+const cfLista=()=>{$("#c-list").innerHTML=CF.map((f,i)=>`<li class="${f.st||""}"><span>${f.file.name.replace(/[<>&"]/g,"")}</span>${f.st?"":`<button type="button" data-q="${i}" aria-label="Quitar ${f.file.name.replace(/[<>&"]/g,"")}">✕</button>`}</li>`).join("");$$("#c-list [data-q]").forEach(b=>b.onclick=()=>{CF.splice(+b.dataset.q,1);cfLista();});$("#c-upl").classList.toggle("on",CF.length>0);};
+$("#c-files").addEventListener("change",e=>{for(const f of e.target.files){if(!/^image\/|application\/pdf/.test(f.type)&&!/\.(pdf|jpe?g|png|heic|webp)$/i.test(f.name)){toast(f.name+": solo fotos o PDF");continue;}if(/pdf/.test(f.type)&&f.size>8*1048576){toast(f.name+": el PDF pesa más de 8 MB, mándalo por WhatsApp");continue;}if(CF.length<12)CF.push({file:f});}e.target.value="";cfLista();});
+async function cfPrep(f){if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name))return f;try{let bmp;try{bmp=await createImageBitmap(f,{imageOrientation:"from-image"});}catch(e){bmp=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f);});}
+  const k=Math.min(1,2000/Math.max(bmp.width,bmp.height)),cv=document.createElement("canvas");cv.width=Math.round(bmp.width*k);cv.height=Math.round(bmp.height*k);const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);x.drawImage(bmp,0,0,cv.width,cv.height);
+  const b=await new Promise(r=>cv.toBlob(r,"image/jpeg",.86));return new File([b],f.name.replace(/\.\w+$/,"")+".jpg",{type:"image/jpeg"});}catch(e){return f;}}
+const cfB64=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).replace(/^data:[^,]*,/,""));r.onerror=no;r.readAsDataURL(b);});
+$("#c-wa").addEventListener("click",async e=>{
+  const p=QP.find(x=>x.id===$("#c-prop").value);hubspot("cotizacion",{firstname:$("#c-nombre").value,proyecto:p?p.n:"",tipo_ingreso:tipo,salario:$("#c-sal").value});
+  const nom=$("#c-nombre").value.trim(),tel=$("#c-tel").value.trim(),D=DOCS[tipo].d,listos=D.filter((_,i)=>have.has(tipo+i));
+  const datos={nombre:nom,telefono:tel,ingreso_mensual:$("#c-sal").value,tipo_ingreso:tipo==="asal"?"asalariado":"independiente",propiedad:p?p.id:"",interes:p?p.n+(p.z?" ("+p.z+")":""):"",origen:"web_cotizar",documentos:listos,mensaje:"Solicitud de cotización"};
+  const pend=CF.filter(f=>f.st!=="ok");
+  if(!pend.length){if(nom&&tel&&!C4_API.startsWith("__"))fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(datos),keepalive:true}).catch(()=>{});return;}
+  e.preventDefault();const msg=$("#c-umsg");
+  if(!nom||tel.replace(/\D/g,"").length<7){msg.textContent="Para subir documentos escribe tu nombre y tu WhatsApp arriba.";(nom?$("#c-tel"):$("#c-nombre")).focus();return;}
+  const w=window.open("about:blank","_blank");const pr=$("#c-prog");pr.hidden=false;const bar=pr.querySelector("i");msg.textContent="Subiendo tus documentos…";$("#c-wa").setAttribute("aria-disabled","true");
+  try{const r=await fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...datos,subir_documentos:true})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.subida)throw new Error(j.error||"No se pudo conectar");
+    let k=0;for(const f of pend){bar.style.width=(k/pend.length*100)+"%";msg.textContent=`Subiendo ${k+1} de ${pend.length}…`;
+      try{const b=await cfPrep(f.file);const u=await fetch(C4_API+"/public/documento",{method:"POST",headers:{"Content-Type":"text/plain","X-Subida":j.subida,"X-Mime":b.type||"application/pdf","X-Nombre":encodeURIComponent(f.file.name)},body:await cfB64(b)});if(!u.ok){const ej=await u.json().catch(()=>({}));throw new Error(ej.error||"error");}f.st="ok";C4_DOCS_OK.push(f.file.name);}catch(x){f.st="err";toast(f.file.name+": "+(x.message||"no se pudo subir"));}
+      k++;cfLista();}
+    bar.style.width="100%";const n=CF.filter(f=>f.st==="ok").length;msg.textContent=n?`✓ ${n===1?"1 documento recibido":n+" documentos recibidos"}. Ahora envía el mensaje en WhatsApp.`:"No se pudieron subir. Mándalos por WhatsApp.";
+  }catch(x){msg.textContent="No se pudieron subir ahora ("+x.message+"). Mándalos por WhatsApp.";}
+  buildWA();$("#c-wa").removeAttribute("aria-disabled");const url=$("#c-wa").href;if(w&&!w.closed)w.location.href=url;else location.href=url;
+});
 renderDocs();setQ("");
 
 /* videos y entregas */
