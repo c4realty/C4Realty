@@ -517,13 +517,16 @@ async function publico(req, env, partes, ctx) {
     if (!nombre || (!tel && !email)) fail('Escribe tu nombre y un teléfono o correo');
     const origen = ['web_cotizar', 'web_contacto', 'web'].includes(b.origen) ? b.origen : 'web';
     const tipo = ['asalariado', 'independiente', 'jubilado', 'otro'].includes(b.tipo_ingreso) ? b.tipo_ingreso : null;
+    const ing = Number(String(b.ingreso_mensual ?? '').replace(/[^\d.]/g, '')) || null;
     let c = await env.DB.prepare('SELECT id,telefono,email FROM clientes WHERE (telefono IS NOT NULL AND telefono=?) OR (email IS NOT NULL AND email=?) LIMIT 1').bind(tel, email).first();
     if (!c) {
-      const ins = await env.DB.prepare('INSERT INTO clientes (nombre,telefono,email,tipo_ingreso,origen) VALUES (?,?,?,?,?)').bind(nombre, tel, email, tipo, origen).run();
+      const ins = await env.DB.prepare('INSERT INTO clientes (nombre,telefono,email,tipo_ingreso,ingreso_mensual,origen) VALUES (?,?,?,?,?,?)').bind(nombre, tel, email, tipo, ing, origen).run();
       c = { id: ins.meta.last_row_id };
-    } else if ((!c.email && email) || (!c.telefono && tel)) {
+    } else {
       // cliente que ya existía: se completan el correo o el teléfono que le faltaban (eso también pasa a HubSpot)
-      await env.DB.prepare('UPDATE clientes SET email=COALESCE(email,?), telefono=COALESCE(telefono,?) WHERE id=?').bind(email, tel, c.id).run();
+      if ((!c.email && email) || (!c.telefono && tel)) await env.DB.prepare('UPDATE clientes SET email=COALESCE(email,?), telefono=COALESCE(telefono,?) WHERE id=?').bind(email, tel, c.id).run();
+      // el salario y el tipo de ingreso se actualizan con lo último que escribió
+      if (ing || tipo) await env.DB.prepare('UPDATE clientes SET ingreso_mensual=COALESCE(?,ingreso_mensual), tipo_ingreso=COALESCE(?,tipo_ingreso) WHERE id=?').bind(ing, tipo, c.id).run();
     }
     let pid = null;
     if (b.propiedad) { const p = await env.DB.prepare('SELECT id FROM propiedades WHERE codigo=?').bind(String(b.propiedad)).first(); pid = p?.id || null; }
