@@ -42,7 +42,7 @@ const ORDEN = { propiedades: 'p.orden, p.id', clientes: 'c.creado_en DESC', nego
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Mime,X-Nombre,X-Subida',
   'Access-Control-Max-Age': '86400',
 };
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS } });
