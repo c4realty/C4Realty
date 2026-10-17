@@ -635,6 +635,15 @@ async function syncInteraccion(env, id) {
 
 async function sincronizarHubSpot(env) {
   if (!env.HUBSPOT_TOKEN) return { omitido: 'Sin HUBSPOT_TOKEN' };
+  // candado: si el envío instantáneo y el de cada minuto coinciden, solo uno trabaja (así nadie se crea dos veces en HubSpot)
+  await env.DB.prepare(`INSERT OR IGNORE INTO configuracion (clave,valor,descripcion) VALUES ('hubspot_candado','2000-01-01 00:00:00','Uso interno')`).run();
+  const lk = await env.DB.prepare(`UPDATE configuracion SET valor=datetime('now') WHERE clave='hubspot_candado' AND valor < datetime('now','-50 seconds')`).run();
+  if (!lk.meta.changes) return { ocupado: true };
+  try { return await enviarPendientesHubSpot(env); }
+  finally { await env.DB.prepare(`UPDATE configuracion SET valor='2000-01-01 00:00:00' WHERE clave='hubspot_candado'`).run(); }
+}
+
+async function enviarPendientesHubSpot(env) {
   const { results } = await env.DB.prepare(`SELECT * FROM hubspot_sync WHERE estado IN ('pendiente','error') AND intentos < 5 ORDER BY id LIMIT 25`).all();
   const hecho = new Set(); let enviados = 0;
   for (const s of results) {
