@@ -40,6 +40,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .msg{font-size:.88rem;border-radius:10px;padding:10px 12px;background:rgba(108,182,255,.1);border:1px solid rgba(108,182,255,.3)}
 .msg.err{background:rgba(224,80,80,.12);border-color:rgba(224,80,80,.4)}
 .msg.ok{background:rgba(63,191,127,.12);border-color:rgba(63,191,127,.4)}
+.lnk{background:none;border:0;color:var(--sky);cursor:pointer;font:inherit;font-size:.88rem;padding:4px;justify-self:center;text-decoration:underline}
 
 /* formularios */
 .f{display:grid;gap:5px;min-width:0}
@@ -229,6 +230,19 @@ td.r,th.r{text-align:right}
       <div class="f"><label for="le">Correo</label><input id="le" type="email" autocomplete="username" required></div>
       <div class="f"><label for="lc">Clave</label><input id="lc" type="password" autocomplete="current-password" required></div>
       <button class="btn pri" type="submit">Entrar</button>
+      <button type="button" class="lnk" id="l-olv">¿Olvidaste tu clave?</button>
+    </form>
+    <form id="f-olvide" class="tl hide" style="gap:12px">
+      <p class="muted" style="font-size:.9rem">Escribe tu correo y te mandamos un enlace para crear una clave nueva.</p>
+      <div class="f"><label for="oe">Correo</label><input id="oe" type="email" autocomplete="username" required></div>
+      <button class="btn pri" type="submit">Enviarme el enlace</button>
+      <button type="button" class="lnk" data-volver>Volver a entrar</button>
+    </form>
+    <form id="f-recuperar" class="tl hide" style="gap:12px">
+      <p class="muted" style="font-size:.9rem">Crea tu clave nueva.</p>
+      <div class="f"><label for="rp">Clave nueva</label><input id="rp" type="password" autocomplete="new-password" placeholder="Mínimo 8, con letras y números" required></div>
+      <div class="f"><label for="rp2">Repite la clave</label><input id="rp2" type="password" autocomplete="new-password" required></div>
+      <button class="btn pri" type="submit">Guardar y entrar</button>
     </form>
     <form id="f-activar" class="tl hide" style="gap:12px">
       <p class="muted" style="font-size:.9rem">Para activar tu cuenta necesitas el código de activación que te da el administrador. Aquí creas tu propia clave.</p>
@@ -316,6 +330,22 @@ $$("[data-lt]").forEach(b => b.onclick = () => { $$("[data-lt]").forEach(x => x.
 $("#f-entrar").onsubmit = async e => {
   e.preventDefault(); const b = e.submitter; b.disabled = true; lmsg("");
   try { const r = await api("/auth/login", { method: "POST", body: { email: $("#le").value, clave: $("#lc").value } }); TOK = r.token; store.set("c4_tok", TOK); $("#lc").value = ""; await iniciar(); }
+  catch (x) { lmsg(x.message, "err"); } finally { b.disabled = false; }
+};
+const lForm = id => { ["f-entrar", "f-activar", "f-olvide", "f-recuperar"].forEach(f => $("#" + f).classList.toggle("hide", f !== id)); $(".login .tabs").classList.toggle("hide", id === "f-olvide" || id === "f-recuperar"); lmsg(""); };
+$("#l-olv").onclick = () => { $("#oe").value = $("#le").value; lForm("f-olvide"); $("#oe").focus(); };
+$$("[data-volver]").forEach(b => b.onclick = () => { $$("[data-lt]").forEach(x => x.classList.toggle("on", x.dataset.lt === "entrar")); lForm("f-entrar"); });
+$("#f-olvide").onsubmit = async e => {
+  e.preventDefault(); const b = e.submitter; b.disabled = true; lmsg("");
+  try { const r = await api("/auth/olvide", { method: "POST", body: { email: $("#oe").value } }); lmsg(r.mensaje, "ok"); } catch (x) { lmsg(x.message, "err"); } finally { b.disabled = false; }
+};
+const REC = (/^#recuperar=([0-9a-f]{48})$/.exec(location.hash) || [])[1];
+if (REC) { history.replaceState(null, "", location.pathname); lForm("f-recuperar"); }
+$("#f-recuperar").onsubmit = async e => {
+  e.preventDefault(); const b = e.submitter; lmsg("");
+  if ($("#rp").value !== $("#rp2").value) return lmsg("Las dos claves no son iguales", "err");
+  b.disabled = true;
+  try { const r = await api("/auth/recuperar", { method: "POST", body: { token: REC, clave: $("#rp").value } }); TOK = r.token; store.set("c4_tok", TOK); $("#rp").value = $("#rp2").value = ""; await iniciar(); toast("Listo, tu clave nueva quedó guardada"); }
   catch (x) { lmsg(x.message, "err"); } finally { b.disabled = false; }
 };
 $("#f-activar").onsubmit = async e => {

@@ -155,6 +155,50 @@ async function activar(req, env) {
   return json({ ok: true, token });
 }
 
+// ---------------------------------------------------------------- olvidé mi clave
+// El correo sale desde el Gmail de C4 Realty mediante un Google Apps Script (secretos CORREO_URL y CORREO_CLAVE).
+const PANEL_URL = 'https://c4realty.github.io/C4Realty/admin/';
+async function olvide(req, env) {
+  const { email = '' } = await cuerpo(req);
+  const em = String(email).trim().toLowerCase();
+  if (!em) fail('Escribe tu correo');
+  if (!env.CORREO_URL || !env.CORREO_CLAVE) fail('La recuperación por correo aún no está activada. Pide al administrador una clave nueva.', 503);
+  const listo = json({ ok: true, mensaje: 'Si ese correo está registrado, te enviamos un enlace para crear una clave nueva. Revisa también tu carpeta de spam.' });
+  const u = await env.DB.prepare(`SELECT id,nombre,email FROM usuarios WHERE email=? AND estado='activo'`).bind(em).first();
+  if (!u) return listo; // misma respuesta para no revelar qué correos existen
+  const n = await env.DB.prepare(`SELECT COUNT(*) AS n FROM recuperaciones WHERE usuario_id=? AND creado_en > datetime('now','-1 hour')`).bind(u.id).first();
+  if ((n?.n || 0) >= 3) return listo;
+  const t = randHex(24);
+  await env.DB.prepare(`INSERT INTO recuperaciones (token_hash,usuario_id,expira) VALUES (?,?,datetime('now','+1 hour'))`).bind(await sha256(t), u.id).run();
+  const enlace = PANEL_URL + '#recuperar=' + t;
+  const nom = String(u.nombre || '').split(' ')[0];
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0f1a30">
+    <h2 style="margin:0 0 12px">Crea tu clave nueva</h2>
+    <p>Hola${nom ? ' ' + esc(nom) : ''}, pediste recuperar tu clave del panel de C4 Realty.</p>
+    <p style="margin:24px 0"><a href="${enlace}" style="background:#f2b84b;color:#14110a;padding:13px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Crear mi clave nueva</a></p>
+    <p style="color:#555;font-size:14px">El enlace sirve una sola vez y vence en 1 hora. Si tú no lo pediste, ignora este correo: tu clave sigue igual.</p></div>`;
+  const texto = `Hola${nom ? ' ' + nom : ''}, para crear tu clave nueva del panel de C4 Realty abre este enlace (vence en 1 hora): ${enlace}\nSi tú no lo pediste, ignora este correo.`;
+  try {
+    await fetch(env.CORREO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ clave: env.CORREO_CLAVE, para: u.email, asunto: 'Crea tu clave nueva · C4 Realty', html, texto }) });
+  } catch { }
+  await bitacora(env, u.id, 'recuperar_clave', 'usuario', u.id, null, null, req);
+  return listo;
+}
+async function recuperar(req, env) {
+  const { token = '', clave = '' } = await cuerpo(req);
+  const r = await env.DB.prepare(`SELECT * FROM recuperaciones WHERE token_hash=? AND usado=0 AND expira > datetime('now')`).bind(await sha256(String(token))).first();
+  if (!r) fail('Este enlace ya venció o ya se usó. Pide uno nuevo con "¿Olvidaste tu clave?".', 400);
+  if (!claveValida(clave)) fail('La clave debe tener al menos 8 caracteres, con letras y números');
+  const u = await env.DB.prepare(`SELECT id FROM usuarios WHERE id=? AND estado='activo'`).bind(r.usuario_id).first();
+  if (!u) fail('Tu usuario no está activo. Habla con el administrador.', 403);
+  const sal = randHex(16);
+  await env.DB.prepare(`UPDATE usuarios SET clave_hash=?, clave_sal=?, cambiar_clave=0, actualizado_en=datetime('now') WHERE id=?`).bind(await pbkdf2(clave, sal), sal, u.id).run();
+  await env.DB.prepare('UPDATE recuperaciones SET usado=1 WHERE usuario_id=?').bind(u.id).run();
+  await env.DB.prepare('DELETE FROM sesiones WHERE usuario_id=?').bind(u.id).run();
+  await bitacora(env, u.id, 'cambiar_clave', 'usuario', u.id, null, null, req);
+  return json({ ok: true, token: await crearSesion(env, req, u.id) });
+}
+
 async function cambiarClave(req, env, u) {
   const { actual = '', nueva = '' } = await cuerpo(req);
   const f = await env.DB.prepare('SELECT clave_hash,clave_sal FROM usuarios WHERE id=?').bind(u.id).first();
@@ -717,6 +761,8 @@ async function rutas(req, env, ctx) {
   if (partes[0] === 'public') return publico(req, env, partes, ctx);
   if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'login') return login(req, env);
   if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'activar') return activar(req, env);
+  if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'olvide') return olvide(req, env);
+  if (partes[0] === 'auth' && m === 'POST' && partes[1] === 'recuperar') return recuperar(req, env);
 
   if (partes[0] !== 'api' && partes[0] !== 'auth') fail('Ruta no encontrada', 404);
   const u = await sesion(req, env);
