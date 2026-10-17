@@ -860,7 +860,10 @@ $("#c-wa").addEventListener("click",async e=>{
   const nom=$("#c-nombre").value.trim(),tel=$("#c-tel").value.trim(),D=DOCS[tipo].d,listos=D.filter((_,i)=>have.has(tipo+i));
   const datos={nombre:nom,telefono:tel,ingreso_mensual:$("#c-sal").value,tipo_ingreso:tipo==="asal"?"asalariado":"independiente",propiedad:p?p.id:"",interes:p?p.n+(p.z?" ("+p.z+")":""):"",origen:"web_cotizar",documentos:listos,mensaje:"Solicitud de cotización"};
   const pend=CF.filter(f=>f.st!=="ok");
-  if(!pend.length){if(nom&&tel&&!C4_API.startsWith("__"))fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(datos),keepalive:true}).catch(()=>{});return;}
+  if(!pend.length){const um=$("#c-umsg");
+    if(!nom||tel.replace(/\D/g,"").length<7){e.preventDefault();um.textContent="Escribe tu nombre y tu WhatsApp arriba para guardar tu solicitud.";(nom?$("#c-tel"):$("#c-nombre")).focus();return;}
+    if(!C4_API.startsWith("__"))fetch(C4_API+"/public/contacto",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(datos),keepalive:true}).catch(()=>{});
+    um.textContent="✓ Solicitud recibida. Envía el mensaje en WhatsApp.";return;}
   e.preventDefault();const msg=$("#c-umsg");
   if(!nom||tel.replace(/\D/g,"").length<7){msg.textContent="Para subir documentos escribe tu nombre y tu WhatsApp arriba.";(nom?$("#c-tel"):$("#c-nombre")).focus();return;}
   const w=window.open("about:blank","_blank");const pr=$("#c-prog");pr.hidden=false;const bar=pr.querySelector("i");msg.textContent="Subiendo tus documentos…";$("#c-wa").setAttribute("aria-disabled","true");
