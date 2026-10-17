@@ -173,6 +173,23 @@ const API_URL = 'https://c4realty-api.c4realty0.workers.dev';
 const PARTE = 1_500_000;
 const MIME_FOTO = /^image\/(jpeg|png|webp)$/;
 const MIME_DOC = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
+// Gavetas: la 0 es la base principal; FOTOS1..FOTOS9 son bases extra solo para fotos y documentos.
+// Cada base gratis aguanta 500 MB; cuando una se llena, lo nuevo se guarda solo en la siguiente.
+const GAVETAS = 10;
+const CAPACIDAD = g => g === 0 ? 380_000_000 : 480_000_000; // bytes en base64, con margen
+const gDB = (env, g) => (g ? env['FOTOS' + g] : env.DB);
+async function usoGavetas(env) {
+  const { results } = await env.DB.prepare('SELECT gaveta, SUM(tamano) AS t, COUNT(*) AS n FROM archivos GROUP BY gaveta').all();
+  const m = Object.fromEntries(results.map(r => [r.gaveta, r]));
+  const L = [];
+  for (let g = 0; g < GAVETAS; g++) if (g === 0 || env['FOTOS' + g]) L.push({ gaveta: g, usado: Math.round((m[g]?.t || 0) * 4 / 3), archivos: m[g]?.n || 0, capacidad: CAPACIDAD(g) });
+  return L;
+}
+async function borrarArchivo(env, a) {
+  if (!a) return;
+  if (a.gaveta && gDB(env, a.gaveta)) await gDB(env, a.gaveta).prepare('DELETE FROM archivo_partes WHERE archivo_id=?').bind(a.id).run();
+  await env.DB.prepare('DELETE FROM archivos WHERE id=?').bind(a.id).run();
+}
 const urlArchivo = (clave, mime) => `${API_URL}/public/archivo/${clave}.${/png/.test(mime) ? 'png' : /webp/.test(mime) ? 'webp' : /pdf/.test(mime) ? 'pdf' : 'jpg'}`;
 async function guardarArchivo(env, req, { privado = 0, cliente_id = null, usuario_id = null, maxMB = 6, mimeOk = MIME_FOTO }) {
   const mime = (req.headers.get('X-Mime') || '').toLowerCase();
@@ -183,11 +200,14 @@ async function guardarArchivo(env, req, { privado = 0, cliente_id = null, usuari
   const tam = Math.floor(b64.length * 3 / 4);
   if (tam > maxMB * 1048576) fail(`El archivo pesa más de ${maxMB} MB`);
   const clave = randHex(16), n = Math.ceil(b64.length / PARTE);
-  const r = await env.DB.prepare('INSERT INTO archivos (clave,nombre,tipo_mime,tamano,partes,privado,cliente_id,subido_por) VALUES (?,?,?,?,?,?,?,?)')
-    .bind(clave, nombre.slice(0, 160) || null, mime, tam, n, privado ? 1 : 0, cliente_id, usuario_id).run();
+  const libre = (await usoGavetas(env)).find(x => x.usado + b64.length <= x.capacidad);
+  if (!libre) fail('Se llenó el espacio para fotos. Borra las fotos de propiedades vendidas para liberar espacio.', 507);
+  const g = libre.gaveta, db = gDB(env, g);
+  const r = await env.DB.prepare('INSERT INTO archivos (clave,nombre,tipo_mime,tamano,partes,privado,cliente_id,subido_por,gaveta) VALUES (?,?,?,?,?,?,?,?,?)')
+    .bind(clave, nombre.slice(0, 160) || null, mime, tam, n, privado ? 1 : 0, cliente_id, usuario_id, g).run();
   const id = r.meta.last_row_id;
-  const st = []; for (let i = 0; i < n; i++) st.push(env.DB.prepare('INSERT INTO archivo_partes (archivo_id,n,datos) VALUES (?,?,?)').bind(id, i, b64.slice(i * PARTE, (i + 1) * PARTE)));
-  await env.DB.batch(st);
+  const st = []; for (let i = 0; i < n; i++) st.push(db.prepare('INSERT INTO archivo_partes (archivo_id,n,datos) VALUES (?,?,?)').bind(id, i, b64.slice(i * PARTE, (i + 1) * PARTE)));
+  try { await db.batch(st); } catch (e) { await borrarArchivo(env, { id, gaveta: g }); throw e; }
   return { id, clave, nombre, mime, tamano: tam, url: urlArchivo(clave, mime) };
 }
 function deB64(b64) {
@@ -199,7 +219,8 @@ function deB64(b64) {
 async function servirArchivo(env, clave, publico) {
   const a = await env.DB.prepare('SELECT * FROM archivos WHERE clave=?').bind(String(clave).replace(/\..*$/, '')).first();
   if (!a || (publico && a.privado)) fail('No existe', 404);
-  const { results } = await env.DB.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
+  const db = gDB(env, a.gaveta || 0); if (!db) fail('No existe', 404);
+  const { results } = await db.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
   const bytes = deB64(results.map(x => x.datos).join(''));
   const h = { ...CORS, 'Content-Type': a.tipo_mime, 'Content-Length': String(bytes.length) };
   h['Cache-Control'] = publico ? 'public, max-age=31536000, immutable' : 'private, no-store';
@@ -208,7 +229,7 @@ async function servirArchivo(env, clave, publico) {
 }
 async function borrarArchivoDeRuta(env, ruta) {
   const m = /\/public\/archivo\/([0-9a-f]{32})/.exec(ruta || '');
-  if (m) await env.DB.prepare('DELETE FROM archivos WHERE clave=?').bind(m[1]).run();
+  if (m) await borrarArchivo(env, await env.DB.prepare('SELECT id,gaveta FROM archivos WHERE clave=?').bind(m[1]).first());
 }
 async function subirFoto(env, u, req, url) {
   exigir(u, 'medios', 'crear');
@@ -287,10 +308,16 @@ async function obtener(env, nombre, u, id) {
   return json(r);
 }
 
+// Una casilla obligatoria que llega vacía no se toca: al crear usa su valor por defecto, al editar se queda como estaba
+async function sinVaciosObligatorios(env, nombre, d) {
+  const { results } = await env.DB.prepare(`PRAGMA table_info(${nombre})`).all();
+  for (const c of results) if (c.notnull && c.dflt_value != null && d[c.name] == null && c.name in d) delete d[c.name];
+  return d;
+}
 async function crear(env, nombre, u, req) {
   const t = TABLAS[nombre];
   exigir(u, t.mod, 'crear');
-  const d = limpiar(t, await cuerpo(req), u);
+  const d = await sinVaciosObligatorios(env, nombre, limpiar(t, await cuerpo(req), u));
   if (t.own && propios(u, t.mod)) d[t.own] = u.id;
   if (nombre === 'propiedades') d.creado_por = u.id;
   const cols = Object.keys(d);
@@ -308,7 +335,7 @@ async function editar(env, nombre, u, req, id) {
   if (!antes) fail('No existe', 404);
   if (t.own && propios(u, t.mod) && antes[t.own] !== u.id) fail('No tienes permiso para esto', 403);
   const body = await cuerpo(req);
-  const d = limpiar(t, body, u);
+  const d = await sinVaciosObligatorios(env, nombre, limpiar(t, body, u));
   const cols = Object.keys(d).filter(c => JSON.stringify(d[c]) !== JSON.stringify(antes[c]));
   if (cols.length) {
     await env.DB.prepare(`UPDATE ${nombre} SET ${cols.map(c => c + '=?').join(',')} WHERE id=?`).bind(...cols.map(c => d[c]), id).run();
@@ -331,9 +358,12 @@ async function borrar(env, nombre, u, req, id) {
   if (t.own && propios(u, t.mod) && antes[t.own] !== u.id) fail('No tienes permiso para esto', 403);
   // al borrar una propiedad también se borran sus fotos guardadas (para no gastar espacio)
   const rutas = nombre === 'propiedades' ? (await env.DB.prepare('SELECT ruta FROM medios WHERE propiedad_id=?').bind(id).all()).results.map(x => x.ruta) : [];
+  // los documentos de un cliente guardados en otras gavetas no se borran solos: se anotan antes
+  const docs = nombre === 'clientes' ? (await env.DB.prepare('SELECT id,gaveta FROM archivos WHERE cliente_id=? AND gaveta>0').bind(id).all()).results : [];
   await env.DB.prepare(`DELETE FROM ${nombre} WHERE id=?`).bind(id).run();
   if (nombre === 'medios') await borrarArchivoDeRuta(env, antes.ruta);
   for (const r of rutas) await borrarArchivoDeRuta(env, r);
+  for (const a of docs) if (gDB(env, a.gaveta)) await gDB(env, a.gaveta).prepare('DELETE FROM archivo_partes WHERE archivo_id=?').bind(a.id).run();
   await bitacora(env, u.id, 'borrar', nombre, id, antes, null, req);
   return json({ ok: true });
 }
@@ -354,6 +384,7 @@ async function resumen(env, u) {
     citas_proximas: await q(`${LISTAS.citas} WHERE ci.estado='programada' AND ci.fecha_hora >= datetime('now','-1 day')${own ? ' AND ci.asesor_id=' + Number(u.id) : ''} ORDER BY ci.fecha_hora LIMIT 10`),
     vistas: await q(`SELECT p.id, p.titulo, SUM(v.vistas) AS vistas, SUM(v.clics_whatsapp) AS whatsapp FROM vistas_diarias v JOIN propiedades p ON p.id=v.propiedad_id WHERE v.fecha >= date('now','-30 days') GROUP BY p.id ORDER BY vistas DESC LIMIT 10`),
     hubspot: await q(`SELECT estado, COUNT(*) AS n FROM hubspot_sync GROUP BY estado`),
+    espacio: await usoGavetas(env),
   });
 }
 
@@ -701,9 +732,9 @@ async function rutas(req, env, ctx) {
   if (r === 'archivos' && m === 'GET' && partes[2]) { exigir(u, 'clientes', 'ver'); return servirArchivo(env, partes[2], false); }
   if (r === 'archivos' && m === 'DELETE' && partes[2]) {
     exigir(u, 'clientes', 'editar');
-    const a = await env.DB.prepare('SELECT id,cliente_id,nombre FROM archivos WHERE clave=? AND privado=1').bind(String(partes[2])).first();
+    const a = await env.DB.prepare('SELECT id,cliente_id,nombre,gaveta FROM archivos WHERE clave=? AND privado=1').bind(String(partes[2])).first();
     if (!a) fail('No existe', 404);
-    await env.DB.prepare('DELETE FROM archivos WHERE id=?').bind(a.id).run();
+    await borrarArchivo(env, a);
     await bitacora(env, u.id, 'borrar', 'archivos', a.id, { cliente_id: a.cliente_id, nombre: a.nombre }, null, req);
     return json({ ok: true });
   }

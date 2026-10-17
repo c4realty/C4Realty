@@ -437,6 +437,8 @@ RENDER.resumen = async () => {
     <div class="card"><h2>Próximas citas</h2>${d.citas_proximas.length ? `<div class="list">${d.citas_proximas.map(c => `<div class="li"><div><b>${esc(CITA_T[c.tipo])} · ${esc(c.cliente)}</b><br><small class="muted">${fecha(c.fecha_hora)}${c.propiedad ? " · " + esc(c.propiedad) : ""}</small></div></div>`).join("")}</div>` : `<p class="empty">No hay citas programadas.</p>`}</div>
     <div class="card"><h2>Qué le falta a las propiedades</h2>${(() => { const f = d.incompletas.filter(x => x.sin_precio || !x.fotos || x.sin_zona); return f.length ? `<div class="list">${f.slice(0, 12).map(x => `<div class="li"><div><b>${esc(x.titulo)}</b><br><small class="muted">${[x.sin_precio ? "sin precio" : "", !x.fotos ? "sin fotos" : "", x.sin_zona ? "sin zona" : ""].filter(Boolean).join(" · ")}</small></div><button class="btn sm" data-prop="${x.id}">Completar</button></div>`).join("")}</div>` : `<p class="empty">Todas tienen precio, fotos y zona.</p>`; })()}</div>
     ${d.vistas.length ? `<div class="card"><h2>Más vistas en la página (30 días)</h2><div class="list">${d.vistas.map(v => `<div class="li"><span>${esc(v.titulo)}</span><span class="num muted">${v.vistas} vistas · ${v.whatsapp} WhatsApp</span></div>`).join("")}</div></div>` : ""}
+    ${(() => { const E = d.espacio || []; if (!E.length) return ""; const u = E.reduce((a, x) => a + x.usado, 0), t = E.reduce((a, x) => a + x.capacidad, 0), n = E.reduce((a, x) => a + x.archivos, 0), pc = Math.min(100, u / t * 100), mb = v => v >= 1e9 ? (v / 1e9).toFixed(1) + " GB" : (v / 1e6).toFixed(v < 1e7 ? 1 : 0) + " MB";
+      return `<div class="card"><h2>Espacio para fotos</h2><div class="li" style="border:0;padding:8px 0 6px"><span><b class="num">${mb(u)}</b> <span class="muted">de ${mb(t)} gratis</span></span><span class="num muted">${n} ${n === 1 ? "archivo" : "fotos y documentos"}</span></div><div class="bar"><i style="width:${Math.max(pc, 0.6)}%;${pc > 80 ? "background:var(--crit)" : ""}"></i></div><p class="muted" style="font-size:.82rem;margin-top:8px">${pc > 80 ? "<b style='color:var(--crit)'>Se está llenando.</b> Borra las fotos de las propiedades vendidas (Propiedades → la propiedad → Borrar fotos)." : "Cuando vendas una propiedad, puedes borrar sus fotos para liberar espacio. Las fotos que vinieron con la página no cuentan aquí."}</p></div>`; })()}
     ${can("configuracion") ? `<div class="card"><h2>HubSpot</h2>${d.hubspot.length ? d.hubspot.map(h => `<div class="li"><span>${{ pendiente: "Por enviar", enviado: "Enviados", error: "Con error" }[h.estado]}</span><b class="num">${h.n}</b></div>`).join("") : `<p class="empty">Sin movimientos.</p>`}</div>` : ""}
   </div>`;
   $$("[data-cli]").forEach(b => b.onclick = () => fichaCliente(b.dataset.cli));
@@ -494,7 +496,7 @@ async function fichaPropiedad(id) {
   const pag = (() => { try { return JSON.parse(p.pagos || "[]"); } catch { return []; } })();
   abrir(`
     <div class="hd"><div><h1>${id ? esc(p.titulo) : "Nueva propiedad"}</h1>${id ? `<div style="margin-top:6px">${pillP(p.estado)} ${p.aplica_bono ? `<span class="pill">Aplica bono</span>` : ""}</div>` : ""}</div><button class="btn sm" data-close>Cerrar</button></div>
-    ${id ? `<div class="card" id="p-fotos"></div>` : `<div class="card"><h2>Fotos</h2><p class="muted" style="margin-top:6px">Primero llena los datos y toca <b>Guardar</b>. Después vuelves a abrir la propiedad y aquí podrás subir sus fotos.</p></div>`}
+    ${id ? `<div class="card" id="p-fotos"></div>` : `<div class="card"><h2>Fotos</h2><p class="muted" style="margin-top:6px">Primero llena los datos y toca <b>Guardar</b>. Apenas guardes, aquí mismo aparece el botón para subir las fotos.</p></div>`}
     <form id="f-p" class="card"><div class="grid2">${campos.map(c => campo(c, p[c.k])).join("")}</div>
       <div class="grid3" style="margin-top:12px">
         <div class="f"><label>Características (una por línea: nombre: valor)</label><textarea name="caracteristicas">${esc(kv.map(x => Array.isArray(x) ? x.join(": ") : x).join("\n"))}</textarea></div>
@@ -510,14 +512,16 @@ async function fichaPropiedad(id) {
     ${id && p.publicaciones?.length ? `<div class="card"><h2>Publicaciones de Instagram</h2>${p.publicaciones.map(x => `<div class="li"><span>${x.fecha ? dia(x.fecha) : "Sin fecha"} · ${esc(x.tipo || "")}</span><a class="btn sm" href="${esc(x.url)}" target="_blank" rel="noopener">Ver ↗</a></div>`).join("")}</div>` : ""}
   `, () => {
     const f = $("#f-p"); if (!ed) $$("input,select,textarea", f).forEach(x => x.disabled = true);
-    if (id) fotosPropiedad(id, p.medios || []);
+    if (id) fotosPropiedad(id, p.medios || [], p.estado);
     f.onsubmit = async e => {
       e.preventDefault(); const b = leer(f, campos);
       b.caracteristicas = f.elements.caracteristicas.value.split("\n").map(s => s.trim()).filter(Boolean).map(s => { const i = s.indexOf(":"); return i > 0 ? [s.slice(0, i).trim(), s.slice(i + 1).trim()] : [s, ""]; });
       b.incluye = f.elements.incluye.value.split("\n").map(s => s.trim()).filter(Boolean);
       b.pagos = f.elements.pagos.value.split("\n").map(s => s.trim()).filter(Boolean);
       if (f.elements.motivo) b.motivo = f.elements.motivo.value; if (f.elements.nota) b.nota = f.elements.nota.value;
-      try { await api(id ? "/api/propiedades/" + id : "/api/propiedades", { method: id ? "PATCH" : "POST", body: b }); toast("Guardado"); cerrar(); if (VISTA === "propiedades") RENDER.propiedades(); else C.propiedades = null; } catch (x) { toast(x.message, 1); }
+      try { const r = await api(id ? "/api/propiedades/" + id : "/api/propiedades", { method: id ? "PATCH" : "POST", body: b }); C.propiedades = null;
+        if (!id && r && r.id) { toast("Guardado. Ya puedes subir las fotos"); if (VISTA === "propiedades") RENDER.propiedades(); await fichaPropiedad(r.id); setTimeout(() => { const fx = $("#p-fotos"); if (fx) fx.scrollIntoView({ behavior: "smooth", block: "start" }); }, 300); return; }
+        toast("Guardado"); cerrar(); if (VISTA === "propiedades") RENDER.propiedades(); } catch (x) { toast(x.message, 1); }
     };
     if ($("#p-del")) $("#p-del").onclick = async () => { if (!confirm("¿Borrar esta propiedad para siempre? Si solo ya no está a la venta, mejor cambia el estatus a Retirada.")) return; try { await api("/api/propiedades/" + id, { method: "DELETE" }); cerrar(); toast("Borrada"); RENDER.propiedades(); } catch (x) { toast(x.message, 1); } };
   });
@@ -536,17 +540,25 @@ async function subirArchivo(path, blob, nombre) {
   const r = await fetch(API + path, { method: "POST", headers: { "Content-Type": "text/plain", "X-Mime": blob.type || "image/jpeg", "X-Nombre": encodeURIComponent(nombre || ""), Authorization: "Bearer " + TOK }, body: await b64De(blob) });
   let j = null; try { j = await r.json(); } catch { } if (!r.ok) throw new Error(j?.error || "Error " + r.status); return j;
 }
-async function fotosPropiedad(id, medios) {
+async function fotosPropiedad(id, medios, estado) {
   const box = $("#p-fotos"); if (!box) return;
   const cr = can("medios", "crear"), ed = can("medios", "editar"), bo = can("medios", "borrar");
   const F = medios.filter(m => m.tipo === "foto" || m.tipo === "volante").sort((a, b) => a.orden - b.orden);
   const otros = medios.filter(m => m.tipo === "video" || m.tipo === "plano");
   box.innerHTML = `<div class="top" style="margin:0 0 10px"><h2>Fotos (${F.length})</h2><span class="muted" style="font-size:.85rem">La primera es la portada en la página.</span></div>
+    ${estado === "vendida" && bo && F.length > 1 ? `<div class="li" style="border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px"><span style="font-size:.88rem">Ya se vendió. Puedes borrar las fotos y dejar solo la portada para liberar espacio.</span><button type="button" class="btn sm del" id="ft-limpiar">Borrar fotos (dejar la portada)</button></div>` : ""}
     ${cr ? `<label class="drop" id="ft-drop"><input type="file" id="ft-file" accept="image/*" multiple class="hide"><b>+ Subir fotos</b><span class="muted" style="font-size:.85rem">Toca para elegir o arrastra aquí varias fotos. Se ponen al final.</span><div class="prog hide" id="ft-prog" style="width:100%"><i></i></div><span class="faint" id="ft-msg" style="font-size:.82rem"></span></label>` : ""}
     <div class="fotos" style="margin-top:12px">${F.map((m, i) => `<div class="ft" data-m="${m.id}"><img src="${esc(img(m.ruta))}" alt="Foto ${i + 1}" loading="lazy">${i === 0 ? `<span class="bd">Portada</span>` : ""}
       ${ed || bo ? `<div class="ac">${ed ? `<button type="button" data-mv="-1" title="Mover antes" aria-label="Mover antes" ${i === 0 ? "disabled" : ""}>◀</button><button type="button" data-top title="Poner de portada" aria-label="Poner de portada" ${i === 0 ? "disabled" : ""}>★</button><button type="button" data-mv="1" title="Mover después" aria-label="Mover después" ${i === F.length - 1 ? "disabled" : ""}>▶</button>` : ""}${bo ? `<button type="button" class="x" data-rm title="Borrar foto" aria-label="Borrar foto">🗑</button>` : ""}</div>` : ""}</div>`).join("") || `<p class="empty">Todavía no tiene fotos.</p>`}</div>
     ${otros.length ? `<p class="muted" style="margin:12px 0 6px;font-size:.85rem">Videos y planos</p><div class="gal">${otros.map(m => m.tipo === "plano" ? `<a class="btn" href="${esc(img(m.ruta.replace(/\.pdf$/i, ".jpg")))}" target="_blank" rel="noopener">📐 Ver plano</a>` : `<video src="${esc(img(m.ruta))}" poster="${esc(img(m.portada))}" controls preload="none" playsinline></video>`).join("")}</div>` : ""}`;
-  const recargar = async () => { const M = await api("/api/medios?propiedad_id=" + id); fotosPropiedad(id, M); C.propiedades = null; };
+  const recargar = async () => { const M = await api("/api/medios?propiedad_id=" + id); fotosPropiedad(id, M, estado); C.propiedades = null; };
+  const lim = $("#ft-limpiar");
+  if (lim) lim.onclick = async () => {
+    if (!confirm(`¿Borrar ${F.length - 1 === 1 ? "1 foto" : F.length - 1 + " fotos"} y dejar solo la portada? Esto libera espacio y no se puede deshacer.`)) return;
+    lim.disabled = true; let n = 0;
+    for (const m of F.slice(1)) { try { await api("/api/medios/" + m.id, { method: "DELETE" }); n++; } catch (x) { toast(x.message, 1); } }
+    toast(n === 1 ? "1 foto borrada" : n + " fotos borradas"); await recargar();
+  };
   const guardarOrden = async ids => { try { await api(`/api/propiedades/${id}/orden-medios`, { method: "POST", body: { ids } }); await recargar(); } catch (x) { toast(x.message, 1); } };
   $$(".ft", box).forEach((el, i) => {
     const mid = +el.dataset.m, ids = F.map(m => m.id);

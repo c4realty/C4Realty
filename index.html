@@ -530,7 +530,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       </form>
       <div class="need">
         <div class="need-head"><div><div class="eyebrow">3 · ¿Cuáles de estos requisitos ya cumples?</div><h3 style="margin-top:4px" id="need-title">Documentos para asalariados</h3></div><span class="muted" id="need-count" style="font-size:.88rem"></span></div>
-        <p class="fine" style="margin:0 0 10px">Marca los que tengas. No necesitas tenerlos todos para cotizar; con esto te decimos qué te falta.</p>
+        <p class="fine" style="margin:0 0 10px">Ya vienen marcados. <b>Desmarca los que todavía no tengas</b>; no necesitas tenerlos todos para cotizar, con esto te decimos qué te falta.</p>
         <div class="docs" id="docs"></div>
         <div class="fine" id="need-note"></div>
         <div class="upl" id="c-upl">
@@ -825,7 +825,7 @@ $("#m-share").addEventListener("click",async()=>{const u=new URL(location.href);
 /* cotizador (sin calculadora: muestra lo publicado y arma el WhatsApp) */
 const DOCS={asal:{t:"Documentos para asalariados",d:["Estatus permanente en tu trabajo","Mínimo 1 año de trabajo (hay excepciones; consultamos tu caso)","Cédula de identidad personal","Talonario o comprobante de pago quincenal","Ficha de la CSS (te llega por correo)","Carta de trabajo"],n:"Los documentos los aportas después de tu recorrido, cuando ya elegiste la mejor opción para ti y tu familia."},
  indep:{t:"Requisitos para independientes",d:["Declaración de renta o estados financieros de mínimo 2 años","Movimiento bancario de mínimo 6 meses","Cartas de referencias comerciales","Abono entre 10 % y 20 %, normalmente en varios pagos durante la construcción"],n:"Los profesionales independientes son una excepción en el porcentaje de abono. Si cumples, te ayudamos a buscar la vivienda que se ajuste a tu presupuesto."}};
-let tipo="asal";const have=new Set();
+let tipo="asal";const have=new Set(Object.entries(DOCS).flatMap(([t,o])=>o.d.map((_,i)=>t+i)));/* vienen todos marcados; el cliente desmarca lo que no tiene */
 function renderDocs(){const D=DOCS[tipo];$("#need-title").textContent=D.t;$("#need-note").textContent=D.n;
   $("#docs").innerHTML=D.d.map((x,i)=>`<label class="doc"><input type="checkbox" data-d="${i}" ${have.has(tipo+i)?"checked":""}><span>${x}</span></label>`).join("");
   $$("#docs input").forEach(c=>c.addEventListener("change",()=>{c.checked?have.add(tipo+c.dataset.d):have.delete(tipo+c.dataset.d);countDocs();buildWA();}));countDocs();buildWA();}

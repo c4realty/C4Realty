@@ -421,7 +421,8 @@ CREATE TABLE IF NOT EXISTS archivos (
   privado     INTEGER NOT NULL DEFAULT 0 CHECK (privado IN (0,1)),
   cliente_id  INTEGER REFERENCES clientes(id) ON DELETE CASCADE,
   subido_por  INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
-  creado_en   TEXT NOT NULL DEFAULT (datetime('now'))
+  creado_en   TEXT NOT NULL DEFAULT (datetime('now')),
+  gaveta      INTEGER NOT NULL DEFAULT 0   -- 0 = esta base; 1..9 = bases extra solo para fotos (db/gaveta_fotos.sql)
 );
 CREATE INDEX IF NOT EXISTS ix_archivos_cliente ON archivos(cliente_id);
 CREATE TABLE IF NOT EXISTS archivo_partes (
