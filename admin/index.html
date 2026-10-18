@@ -309,7 +309,7 @@ const DOCS = {
 let TOK = store.get("c4_tok"), YO = null, VISTA = store.get("c4_vista") || "resumen";
 const C = { propiedades: null, clientes: null, usuarios: null };
 
-function toast(t, bad) { const d = document.createElement("div"); d.className = "toast" + (bad ? " err" : ""); d.textContent = t; document.body.append(d); setTimeout(() => d.remove(), 3200); }
+function toast(t, bad) { const d = document.createElement("div"); d.className = "toast" + (bad ? " err" : ""); d.textContent = t; document.body.append(d); setTimeout(() => d.remove(), Math.max(3200, String(t).length * 65)); }
 const pill = (txt, color) => `<span class="pill" style="color:${color}"><i></i><span style="color:var(--fg)">${esc(txt)}</span></span>`;
 const pillP = e => pill(EST_P[e] || e, `var(--st-${e})`);
 const COL_C = { nuevo: "var(--sky)", contactado: "var(--warn)", en_proceso: "var(--accent)", cliente: "var(--good)", perdido: "var(--crit)", descartado: "var(--faint)" };
@@ -507,7 +507,7 @@ RENDER.propiedades = async () => {
       <td class="r num">${p.n_fotos}${p.n_videos ? ` + ${p.n_videos} 🎬` : ""}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">Nada coincide con el filtro.</td></tr>`}</tbody></table></div>`;
     $$("tr[data-id]").forEach(tr => tr.onclick = e => { if (e.target.closest("select,input")) return; fichaPropiedad(tr.dataset.id); });
     $$("[data-est]").forEach(s => s.onchange = async () => {
-      try { const r = await api("/api/propiedades/" + s.dataset.est, { method: "PATCH", body: { estado: s.value } }); Object.assign(P.find(x => x.id == r.id), r); s.style.color = `var(--st-${r.estado})`; toast(`${r.titulo}: ${EST_P[r.estado]}`); } catch (x) { toast(x.message, 1); pinta(); }
+      try { const r = await api("/api/propiedades/" + s.dataset.est, { method: "PATCH", body: { estado: s.value } }); const o = P.find(x => x.id == r.id), nf = +o?.n_fotos || 0; Object.assign(o, r); s.style.color = `var(--st-${r.estado})`; toast(r.estado === "vendida" ? `${r.titulo}: Vendida. Ya no sale en la página. ${nf > 1 ? `En 30 días (el ${new Date(Date.now() + 30 * 864e5).toLocaleDateString("es-PA", { day: "numeric", month: "long" })}) se borrarán ${nf - 1 === 1 ? "1 foto" : nf - 1 + " fotos"} y quedará la portada. Si la venta se cae, ponla Disponible antes y no se borra nada.` : "Tiene solo la portada, así que no hay fotos que borrar."}` : `${r.titulo}: ${EST_P[r.estado]}`); } catch (x) { toast(x.message, 1); pinta(); }
     });
     $$("[data-pub]").forEach(c => c.onchange = async () => {
       try { const r = await api("/api/propiedades/" + c.dataset.pub, { method: "PATCH", body: { publicada: c.checked ? 1 : 0 } }); toast(r.publicada ? "Publicada en la página" : "Quitada de la página"); } catch (x) { toast(x.message, 1); c.checked = !c.checked; }
