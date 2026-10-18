@@ -705,7 +705,6 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   <h3>Aviso de privacidad</h3>
   <p>Los datos que nos envías (nombre, teléfono, correo y lo que te interesa) se usan solo para atender tu solicitud, enviarte cotizaciones e información de propiedades, y gestionar tu precalificación con el banco que elijas.</p>
   <p>No vendemos ni compartimos tus datos con terceros fuera de ese fin. Puedes pedir que los corrijamos o eliminemos escribiendo a c4realty1@gmail.com.</p>
-  <p class="fine">Texto base de la demo; revisarlo con C4 Realty antes de publicar (Ley 81 de 2019 de protección de datos personales).</p>
   <button class="btn btn-accent" type="button" id="priv-ok" style="justify-self:start">Entendido</button>
 </div></div>
 <div class="toast" id="toast"></div>
@@ -717,7 +716,7 @@ const VNEW=[["videos/aguacatal-vila-1","Recámara"],["videos/aguacatal-vila-2","
 const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]];
 const DELIV=[];
 
-/* HubSpot: rellenar cuando exista la cuenta. Vacío = modo demo */
+/* HubSpot: rellenar cuando exista la cuenta. */
 const HUBSPOT_PORTAL_ID="";const HUBSPOT_FORMS={registro:"",cotizacion:"",contacto:""};
 async function hubspot(k,fields){const id=HUBSPOT_FORMS[k];if(!HUBSPOT_PORTAL_ID||!id)return true;try{const r=await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${HUBSPOT_PORTAL_ID}/${id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:Object.entries(fields).map(([name,value])=>({name,value:String(value??"")})),context:{pageUri:location.href,pageName:document.title}})});return r.ok;}catch(e){return false;}}
 
