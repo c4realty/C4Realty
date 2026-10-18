@@ -218,7 +218,7 @@
       ${p.kv.length ? `<div class="c4f-sec"><h3>Características</h3><div class="c4f-rows">${p.kv.map(([k, v]) => `<div><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div></div>` : ""}
       ${p.plano.length ? `<div class="c4f-sec"><h3>Plano</h3><div class="c4f-planos">${p.plano.map(([t, u], k) => `<div class="c4f-plano"><button type="button" data-pl="${k}" aria-label="Ver ${esc(t)}"><img src="${esc(u.replace(/\.pdf$/i, ".jpg"))}" alt="${esc(t)}" loading="lazy"></button><div><span>${esc(t)}</span><a href="${esc(u)}" target="_blank" rel="noopener">PDF</a></div></div>`).join("")}</div></div>` : ""}
       ${p.vids.length ? `<div class="c4f-sec"><h3>Videos</h3><div class="c4f-vids">${p.vids.map(v => `<video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>`).join("")}</div></div>` : ""}
-      ${p.txt ? `<details><summary>Texto completo de la publicación</summary><p>${esc(p.txt)}</p></details>` : ""}
+      ${p.txt ? `<details open ontoggle="this.firstElementChild.textContent=this.open?'Ocultar texto':'Ver texto completo de la publicación'"><summary>Ocultar texto</summary><p>${esc(p.txt)}</p></details>` : ""}
       <div class="c4f-ase"><b>¿Te interesa esta casa?</b><span>Cotización gratis · Recorrido gratis · Asesoría gratuita</span><span>WhatsApp ${esc(c.whatsapp_visible)}</span></div>
       <p style="font-size:.8rem;color:var(--f-mut);margin:0">Confirma precio y disponibilidad por WhatsApp al ${esc(c.whatsapp_visible)}.</p>
      </div>
