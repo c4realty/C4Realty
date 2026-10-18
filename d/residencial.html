@@ -386,7 +386,8 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
   const vila=P.find(p=>p.id==="vila-aguacatal");
   $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+(vila&&vila.vids.length?vila.vids.map(v=>[v,(VNEW.find(x=>v.endsWith("/"+x[0]))||[,""])[1]]):VNEW.map(([v,t])=>["../videos/"+v,t])).map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>${t?`<figcaption>${esc(t)}</figcaption>`:""}</figure>`).join("");
   if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
-  $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div class="vt"><small>${esc(z)}</small>${esc(t)}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
+  const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${esc(v.lugar||"")}</small>${esc(v.titulo)}</div><a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");};
+ pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
   /* cifras */
   const pr=P.filter(p=>p.precio).map(p=>p.precio),lt=P.map(p=>p.lote).filter(Boolean);
   $("#cifras").innerHTML=[[P.length,"casas disponibles"],[zs.length,"zonas de Chiriquí"],[pr.length?fmt(Math.min(...pr)):"—","precio desde"],[lt.length?Math.min(...lt)+" m²":"—","lotes desde"]].map(([b,s])=>`<div><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");

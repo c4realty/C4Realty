@@ -236,7 +236,8 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
  const vila=P.find(p=>p.id==="vila-aguacatal");
  $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+(vila&&vila.vids.length?vila.vids.map(v=>[v,(VNEW.find(x=>v.endsWith("/"+x[0]))||[,""])[1]]):VNEW.map(([v,t])=>["../videos/"+v,t])).map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>${t?`<figcaption>${esc(t)}</figcaption>`:""}</figure>`).join("");
  if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
- $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vcard"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div class="vt"><small>${esc(z)}</small>${esc(t)}</div><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");
+ const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${esc(v.lugar||"")}</small>${esc(v.titulo)}</div><a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");};
+ pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
  /* índice */
  const zs=[...new Set(P.map(p=>p.z).filter(Boolean))].sort();let z="";
  const tabla=()=>{$("#tb").innerHTML=P.filter(p=>!z||p.z===z).map(p=>`<tr class="r" data-f="${esc(p.id)}" tabindex="0"><td><img src="${esc(p.img[0])}" alt="" loading="lazy"></td><td class="m">${esc(p.n)}</td><td>${esc(p.zl||p.z)}</td><td>${p.lote?esc(p.lote)+" m²":""}</td><td class="p">${esc(C4.precioTxt(p))}</td></tr>`).join("");$$("#zf button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.z===z)));};

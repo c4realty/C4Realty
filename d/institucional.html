@@ -308,7 +308,8 @@ document.getElementById("yr").textContent=new Date().getFullYear();
   $("#fz").innerHTML=zs.map(z=>`<li><button type="button" data-z3="${esc(z)}">${esc(z)}</button></li>`).join("");$$("[data-z3]").forEach(b=>b.onclick=()=>{F.z=b.dataset.z3;ir();});
   /* videos de Instagram */
   const VIDS=[["DcPh7MpxQds","Algarrobos","Nuevo residencial desde $114,750"],["DdDHjB5xsYs","Vía Caldera","Modelo Onix en Boquete"],["DeDX-FBRPLY","Las Trancas","Casa de lujo, lote de 904 m²"],["DdXvidHOVLs","El Francés","Casa de $70,000 en Boquete"],["DdxXy82R5o4","Volcán","Entrega inmediata en Paso Ancho"],["Ddke02gxHxd","Aguacatal","Casas desde $55,000"],["DdIN_4ZxRqz","Vía Caldera","Modelo Star Plus"],["DbKGygdRUF9","Las Trancas","Casa en lote de 614 m²"]];
-  $("#vids").innerHTML=VIDS.map(([c,z,t])=>`<div class="vc"><video controls playsinline preload="none" poster="../videos/${c}.jpg" src="../videos/${c}.mp4" aria-label="${esc(t)}"></video><div><small>${esc(z)}</small><b>${esc(t)}</b><a href="https://www.instagram.com/reel/${c}/" target="_blank" rel="noopener">Ver en Instagram</a></div></div>`).join("");
+  const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vc">${C4.videoMedia(v)}<div><small>${esc(v.lugar||"")}</small><b>${esc(v.titulo)}</b><a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a></div></div>`).join("");};
+  pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
   /* bono */
   await C4.sitio;
   $("#bl").innerHTML=P.filter(p=>p.precio&&p.precio<=TOPE()).sort((a,b)=>a.precio-b.precio).slice(0,6).map(p=>`<button type="button" data-c4="${esc(p.id)}"><span><b>${esc(p.n)}</b><small>${esc(p.zl||p.z)}</small></span><span class="p">${esc(C4.precioTxt(p))}</span></button>`).join("");

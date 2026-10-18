@@ -17,6 +17,7 @@ const TABLAS = {
   negocios:    { mod: 'negocios', own: 'asesor_id', cols: ['cliente_id','propiedad_id','etapa','monto','banco','usa_bono','asesor_id','motivo_perdida'] },
   citas:       { mod: 'citas', own: 'asesor_id', cols: ['cliente_id','propiedad_id','tipo','fecha_hora','estado','asesor_id','notas'] },
   medios:      { mod: 'medios', cols: ['propiedad_id','tipo','ruta','portada','es_principal','orden'] },
+  videos:      { mod: 'propiedades', cols: ['titulo','lugar','codigo','publicado','orden'] },
 };
 
 const LISTAS = {
@@ -34,9 +35,10 @@ const LISTAS = {
   citas: `SELECT ci.*, c.nombre AS cliente, c.telefono AS cliente_tel, p.titulo AS propiedad, u.nombre AS asesor
     FROM citas ci JOIN clientes c ON c.id=ci.cliente_id LEFT JOIN propiedades p ON p.id=ci.propiedad_id LEFT JOIN usuarios u ON u.id=ci.asesor_id`,
   medios: `SELECT m.* FROM medios m`,
+  videos: `SELECT v.* FROM videos v`,
 };
-const ALIAS = { propiedades: 'p', clientes: 'c', negocios: 'n', citas: 'ci', medios: 'm' };
-const ORDEN = { propiedades: 'p.orden, p.id', clientes: 'c.creado_en DESC', negocios: 'n.actualizado_en DESC', citas: 'ci.fecha_hora DESC', medios: 'm.propiedad_id, m.orden' };
+const ALIAS = { propiedades: 'p', clientes: 'c', negocios: 'n', citas: 'ci', medios: 'm', videos: 'v' };
+const ORDEN = { propiedades: 'p.orden, p.id', clientes: 'c.creado_en DESC', negocios: 'n.actualizado_en DESC', citas: 'ci.fecha_hora DESC', medios: 'm.propiedad_id, m.orden', videos: 'v.orden, v.id' };
 
 // ---------------------------------------------------------------- utilidades
 const CORS = {
@@ -374,12 +376,25 @@ async function sinVaciosObligatorios(env, nombre, d) {
   for (const c of results) if (c.notnull && c.dflt_value != null && d[c.name] == null && c.name in d) delete d[c.name];
   return d;
 }
+// Un video se guarda con el código de su enlace de Instagram (instagram.com/reel/CODIGO/)
+function videoValido(d, nuevo) {
+  if ('codigo' in d || nuevo) {
+    const t = String(d.codigo || '').trim();
+    const m = /instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(?:reels?|p|tv)\/([A-Za-z0-9_-]{5,40})/i.exec(t) || /^([A-Za-z0-9_-]{8,40})$/.exec(t);
+    if (!m) fail('Pega el enlace de un video de Instagram (ej. https://www.instagram.com/reel/…)');
+    d.codigo = m[1];
+  }
+  if (('titulo' in d || nuevo) && !String(d.titulo || '').trim()) fail('Escribe un título para el video');
+  d.actualizado_en = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  return d;
+}
 async function crear(env, nombre, u, req) {
   const t = TABLAS[nombre];
   exigir(u, t.mod, 'crear');
   const d = await sinVaciosObligatorios(env, nombre, limpiar(t, await cuerpo(req), u));
   if (t.own && propios(u, t.mod)) d[t.own] = u.id;
   if (nombre === 'propiedades') d.creado_por = u.id;
+  if (nombre === 'videos') { videoValido(d, true); delete d.actualizado_en; if (d.orden == null) d.orden = ((await env.DB.prepare('SELECT MAX(orden) AS o FROM videos').first())?.o ?? -1) + 1; }
   const cols = Object.keys(d);
   if (!cols.length) fail('No enviaste datos');
   const r = await env.DB.prepare(`INSERT INTO ${nombre} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`).bind(...cols.map(c => d[c])).run();
@@ -396,6 +411,7 @@ async function editar(env, nombre, u, req, id) {
   if (t.own && propios(u, t.mod) && antes[t.own] !== u.id) fail('No tienes permiso para esto', 403);
   const body = await cuerpo(req);
   const d = await sinVaciosObligatorios(env, nombre, limpiar(t, body, u));
+  if (nombre === 'videos') videoValido(d, false);
   const cols = Object.keys(d).filter(c => JSON.stringify(d[c]) !== JSON.stringify(antes[c]));
   if (cols.length) {
     await env.DB.prepare(`UPDATE ${nombre} SET ${cols.map(c => c + '=?').join(',')} WHERE id=?`).bind(...cols.map(c => d[c]), id).run();
@@ -610,7 +626,8 @@ async function publico(req, env, partes, ctx) {
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
     const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio')`).all()).results;
-    return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])) });
+    let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
+    return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])), videos });
   }
   if (req.method === 'POST' && r === 'contacto') {
     const b = await cuerpo(req);

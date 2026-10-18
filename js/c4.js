@@ -28,11 +28,32 @@
     try { const t = JSON.parse(localStorage.getItem("c4_tema") || "null"); if (t && t.tokens) irDiseno(t.tokens.layout || "azul", propio); } catch (e) { }
     fetch(API + "/public/sitio").then(r => r.ok ? r.json() : null).then(j => {
       if (j && j.config) { CFG = j.config; WA = cfg().whatsapp; try { localStorage.setItem("c4_cfg", JSON.stringify(CFG)); } catch (e) { } aplicar(); }
+      if (j && Array.isArray(j.videos)) { VID = j.videos; try { localStorage.setItem("c4_videos", JSON.stringify(VID)); } catch (e) { } VCB.forEach(f => { try { f(VID); } catch (e) { } }); }
       sitioOk();
       if (!j || !j.plantilla) return; try { localStorage.setItem("c4_tema", JSON.stringify(j.plantilla)); } catch (e) { } irDiseno(j.plantilla.tokens.layout || "azul", propio);
     }).catch(() => sitioOk());
     vigilar();
   }
+  /* ---------- videos: los que Alicia agrega, oculta u ordena en el panel (sección Videos) ---------- */
+  let VID = null; try { VID = JSON.parse(localStorage.getItem("c4_videos") || "null"); } catch (e) { }
+  const VCB = [];
+  // cb(lista) se llama ya con la última lista guardada y otra vez cuando llega la del panel
+  function videos(cb) { VCB.push(cb); if (Array.isArray(VID)) try { cb(VID); } catch (e) { } }
+  // lo que se ve de cada video: el archivo propio o el reproductor de Instagram
+  function videoMedia(v) {
+    const t = esc(v.titulo || "Video");
+    if (v.archivo) return `<video controls playsinline preload="none" poster="${ruta(v.archivo)}.jpg" src="${ruta(v.archivo)}.mp4" aria-label="${t}"></video>`;
+    return `<div class="c4-igw"><iframe class="c4-ig" src="https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/embed/" title="${t}" loading="lazy" scrolling="no" allowtransparency="true" allowfullscreen></iframe></div>`;
+  }
+  const videoLink = v => `https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/`;
+  // los videos que trae la página, por si el panel no responde
+  const videosDe = L => L.map(([c, z, t]) => ({ codigo: c, lugar: z, titulo: t, archivo: "videos/" + c }));
+  { const st = document.createElement("style"); st.textContent = ".c4-igw{position:relative;overflow:hidden;border-radius:14px;background:#fff;aspect-ratio:280/520}.c4-igw iframe.c4-ig{position:absolute;left:0;top:0;width:280px;height:520px;border:0;background:#fff;transform-origin:0 0}"; document.head.appendChild(st); }
+  // el reproductor de Instagram se arma a 280 px de ancho y se achica o agranda para llenar la tarjeta
+  const igFit = () => $$(".c4-igw").forEach(w => { const f = w.querySelector("iframe"); if (f && w.clientWidth) f.style.transform = `scale(${w.clientWidth / 280})`; });
+  if (window.ResizeObserver) { const ro = new ResizeObserver(igFit); new MutationObserver(() => $$(".c4-igw:not([data-ro])").forEach(w => { w.dataset.ro = 1; ro.observe(w); igFit(); })).observe(document.documentElement, { childList: true, subtree: true }); }
+  addEventListener("resize", igFit);
+
   /* pone en la página el WhatsApp, correo, Instagram, título y bono guardados en el panel */
   const money = v => "$" + Math.round(+v || 0).toLocaleString("en-US");
   function aplicar() {
@@ -316,5 +337,5 @@
   /* enlace directo ?p=codigo */
   function abrirDesdeUrl(P) { try { const c = new URLSearchParams(location.search).get("p"); const p = c && P.find(x => x.id === c); if (p) ficha(p); } catch (e) { } }
 
-  window.C4 = { cfg, sitio, aplicar, vista, avisar, API, get WA() { return WA; }, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
+  window.C4 = { cfg, sitio, videos, videoMedia, videoLink, videosDe, aplicar, vista, avisar, API, get WA() { return WA; }, $, $$, esc, fmt, ruta, cargar, desc, precioTxt, datos, link, waHref, waProp, ficha, galeria, hover, contacto, abrirDesdeUrl, tema, montar };
 })();
