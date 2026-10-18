@@ -507,3 +507,15 @@ INSERT INTO propiedad_publicaciones (propiedad_id,codigo,orden) VALUES ((SELECT 
 
 -- Usuaria administradora (la clave se crea en el primer ingreso)
 INSERT INTO usuarios (nombre,email,rol_id,estado,cambiar_clave) VALUES ('Alicia','c4realty1@gmail.com','administrador','pendiente',1);
+
+-- Videos que ya estaban en la página
+INSERT INTO videos (titulo,lugar,codigo,archivo,orden) SELECT * FROM (VALUES
+  ('Nuevo residencial desde $114,750','Algarrobos','DcPh7MpxQds','videos/DcPh7MpxQds',0),
+  ('Modelo Onix en Boquete','Vía Caldera','DdDHjB5xsYs','videos/DdDHjB5xsYs',1),
+  ('Casa de lujo, lote de 904 m²','Las Trancas','DeDX-FBRPLY','videos/DeDX-FBRPLY',2),
+  ('Casa de $70,000 en Boquete','El Francés','DdXvidHOVLs','videos/DdXvidHOVLs',3),
+  ('Entrega inmediata en Paso Ancho','Volcán','DdxXy82R5o4','videos/DdxXy82R5o4',4),
+  ('Casas desde $55,000','Aguacatal','Ddke02gxHxd','videos/Ddke02gxHxd',5),
+  ('Modelo Star Plus','Vía Caldera','DdIN_4ZxRqz','videos/DdIN_4ZxRqz',6),
+  ('Casa en lote de 614 m²','Las Trancas','DbKGygdRUF9','videos/DbKGygdRUF9',7)
+) WHERE NOT EXISTS (SELECT 1 FROM videos);

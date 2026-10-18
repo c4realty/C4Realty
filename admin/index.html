@@ -204,6 +204,7 @@ td.r,th.r{text-align:right}
 .hl-img{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--panel)}
 .hl-img img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
 .hl-b{position:absolute;left:8px;top:8px;background:#e8463a;color:#fff;font-weight:800;font-size:.85rem;border-radius:999px;padding:4px 10px}
+.vd-img{aspect-ratio:9/16;height:320px;width:auto;margin:0 auto}.vd-ig{width:100%;height:100%;display:grid;place-content:center;justify-items:center;gap:6px;color:#fff;background:linear-gradient(135deg,#f58529,#dd2a7b 50%,#8134af)}.vd-ig span{font-size:2.2rem;line-height:1}.vd-ig small{font-weight:700}
 .hl-t{display:grid;gap:3px}.hl-p{display:flex;gap:8px;align-items:baseline;font-size:1.15rem;font-weight:800}.hl-p s{font-size:.85rem;font-weight:600}
 .dl{display:grid;gap:6px;max-height:420px;overflow:auto}
 .dli{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer;font-size:.9rem}
@@ -390,6 +391,7 @@ const VISTAS = [
   { id: "hotlist", t: "Hot list", ico: "✦", mod: "propiedades", sub: "Ofertas y casas destacadas, ordenadas por el mayor descuento" },
   { id: "difusion", t: "Difusión WhatsApp", ico: "✆", mod: "propiedades", sub: "Envía casas y volantes por WhatsApp, a uno o a varios clientes" },
   { id: "volantes", t: "Volantes", ico: "▣", mod: "propiedades", sub: "Haz volantes con el estilo de C4 Realty y descárgalos" },
+  { id: "videos", t: "Videos", ico: "▶", mod: "propiedades", sub: "Los videos que salen en la sección Videos de la página" },
   { id: "citas", t: "Citas", ico: "◷", mod: "citas", sub: "Recorridos, llamadas, firmas y entregas" },
   { id: "usuarios", t: "Usuarios y permisos", ico: "⚿", mod: "usuarios", sub: "Quién entra al panel y qué puede hacer" },
   { id: "diseno", t: "Diseño", ico: "◐", mod: "plantillas", sub: "Elige la plantilla de la página pública" },
@@ -1353,6 +1355,47 @@ function vlDraw() {
 }
 
 /* ---------- CONFIGURACIÓN ---------- */
+/* ---------- VIDEOS DE LA PÁGINA ---------- */
+// Los videos de la sección "Videos". Los nuevos se agregan con el enlace de Instagram (no gastan espacio).
+RENDER.videos = async () => {
+  const V = await api("/api/videos");
+  const cr = can("propiedades", "crear"), ed = can("propiedades", "editar"), bo = can("propiedades", "borrar");
+  $("#tools").innerHTML = cr ? `<button class="btn pri" id="vd-new">+ Agregar video</button>` : "";
+  const thumb = v => v.archivo ? `<img src="${esc(img(v.archivo + ".jpg"))}" alt="" loading="lazy">` : `<div class="vd-ig"><span>▶</span><small>Video de Instagram</small></div>`;
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los videos de la sección <b>Videos</b> de la página, en el mismo orden. Para agregar uno, en Instagram toca los tres puntos ⋯ del video → <b>Copiar enlace</b>, y pégalo con <b>+ Agregar video</b>. <b>Ocultar</b> lo quita de la página sin borrarlo; <b>Mostrar</b> lo vuelve a poner.</p>
+   ${V.length ? `<div class="hl">${V.map((v, i) => `<div class="card hlc" data-vid="${v.id}" style="${v.publicado ? "" : "opacity:.6"}">
+     <div class="hl-img vd-img">${thumb(v)}${v.publicado ? "" : `<span class="hl-b" style="background:#64748b">Oculto</span>`}</div>
+     <div class="hl-t"><small class="muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${esc(v.lugar || "")}</small><b>${esc(v.titulo)}</b><a class="muted" style="font-size:.85rem" href="https://www.instagram.com/reel/${esc(v.codigo)}/" target="_blank" rel="noopener">Ver en Instagram ↗</a></div>
+     ${ed || bo ? `<div class="tools">${ed ? `<button class="btn sm" data-mv="-1" ${i === 0 ? "disabled" : ""} title="Mover antes" aria-label="Mover antes">◀</button><button class="btn sm" data-mv="1" ${i === V.length - 1 ? "disabled" : ""} title="Mover después" aria-label="Mover después">▶</button><button class="btn sm" data-ed>Editar</button><button class="btn sm" data-pub>${v.publicado ? "Ocultar" : "Mostrar"}</button>` : ""}${bo ? `<button class="btn sm del" data-rm>Borrar</button>` : ""}</div>` : ""}
+   </div>`).join("")}</div>` : `<div class="card"><p>No hay videos todavía.${cr ? " Toca <b>+ Agregar video</b> para poner el primero." : ""}</p></div>`}`;
+  const byId = id => V.find(x => String(x.id) === String(id));
+  $$("[data-vid]").forEach(card => {
+    const v = byId(card.dataset.vid), i = V.indexOf(v);
+    $$("[data-mv]", card).forEach(b => b.onclick = async () => {
+      const j = i + +b.dataset.mv, ids = V.map(x => x.id); [ids[i], ids[j]] = [ids[j], ids[i]];
+      try { for (let k = 0; k < ids.length; k++) { const x = byId(ids[k]); if (x.orden !== k) await api("/api/videos/" + x.id, { method: "PATCH", body: { orden: k } }); } RENDER.videos(); } catch (x) { toast(x.message, 1); }
+    });
+    const e = $("[data-ed]", card); if (e) e.onclick = () => videoForm(v);
+    const p = $("[data-pub]", card); if (p) p.onclick = async () => { try { await api("/api/videos/" + v.id, { method: "PATCH", body: { publicado: v.publicado ? 0 : 1 } }); toast(v.publicado ? "Video oculto: ya no sale en la página" : "Video visible otra vez en la página"); RENDER.videos(); } catch (x) { toast(x.message, 1); } };
+    const r = $("[data-rm]", card); if (r) r.onclick = async () => { if (!confirm("¿Borrar este video de la página para siempre? Si solo quieres quitarlo por un tiempo, mejor usa Ocultar.")) return; try { await api("/api/videos/" + v.id, { method: "DELETE" }); toast("Video borrado"); RENDER.videos(); } catch (x) { toast(x.message, 1); } };
+  });
+  if ($("#vd-new")) $("#vd-new").onclick = () => videoForm(null);
+};
+function videoForm(v) {
+  const propio = v && v.archivo;
+  abrir(`<div class="hd"><h1>${v ? "Editar video" : "Agregar video"}</h1><button class="btn sm" data-close>Cerrar</button></div>
+   <form id="f-vd" class="card" style="display:grid;gap:12px">
+    ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar y el título.</p>` : `<div class="f"><label for="vd-l">Enlace del video en Instagram</label><input id="vd-l" required placeholder="https://www.instagram.com/reel/…" value="${v ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram toca los tres puntos ⋯ del video → Copiar enlace, y pégalo aquí.</small></div>`}
+    <div class="grid2"><div class="f"><label for="vd-z">Lugar</label><input id="vd-z" placeholder="ej. Boquete" value="${esc(v?.lugar || "")}"></div>
+     <div class="f"><label for="vd-t">Título</label><input id="vd-t" required placeholder="ej. Casa de $70,000 en Boquete" value="${esc(v?.titulo || "")}"></div></div>
+    <div class="tools"><button class="btn pri">${v ? "Guardar" : "Agregar a la página"}</button></div></form>`, () => {
+    $("#f-vd").onsubmit = async e => {
+      e.preventDefault(); const body = { lugar: $("#vd-z").value.trim() || null, titulo: $("#vd-t").value.trim() }; if ($("#vd-l")) body.codigo = $("#vd-l").value.trim();
+      try { await api("/api/videos" + (v ? "/" + v.id : ""), { method: v ? "PATCH" : "POST", body }); toast(v ? "Video guardado" : "Video agregado: ya sale en la página"); cerrar(); RENDER.videos(); } catch (x) { toast(x.message, 1); }
+    };
+  });
+}
+
 RENDER.configuracion = async () => {
   const L = (await api("/api/configuracion")).filter(c => !/^hubspot_/.test(c.clave)); const ed = can("configuracion", "editar");
   $("#body").innerHTML = `<form id="f-cf" class="card"><div class="grid2">${L.map(c => { const largo = c.clave === "hero_texto" || String(c.valor ?? "").length > 90; return `<div class="f"${largo ? ' style="grid-column:1/-1"' : ""}><label for="cf-${esc(c.clave)}">${esc(c.descripcion || c.clave)}</label>${largo ? `<textarea id="cf-${esc(c.clave)}" name="${esc(c.clave)}" rows="3" ${ed ? "" : "disabled"}>${esc(c.valor ?? "")}</textarea>` : `<input id="cf-${esc(c.clave)}" name="${esc(c.clave)}" value="${esc(c.valor ?? "")}" ${ed ? "" : "disabled"}>`}<small class="faint">${esc(c.clave)}</small></div>`; }).join("")}</div>${ed ? `<div class="tools" style="margin-top:14px"><button class="btn pri">Guardar</button><button type="button" class="btn" id="hs-sync">Enviar a HubSpot ahora</button></div>` : ""}</form>`;

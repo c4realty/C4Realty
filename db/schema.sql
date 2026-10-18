@@ -444,3 +444,17 @@ CREATE TABLE IF NOT EXISTS doc_enlaces (token_hash TEXT PRIMARY KEY, archivo_id 
 
 -- Olvidé mi clave: enlaces de un solo uso que vencen en 1 hora
 CREATE TABLE IF NOT EXISTS recuperaciones (token_hash TEXT PRIMARY KEY, usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE, expira TEXT NOT NULL, usado INTEGER NOT NULL DEFAULT 0, creado_en TEXT NOT NULL DEFAULT (datetime('now')));
+
+-- Videos de la sección "Videos" de la página. Los que traen archivo se ven desde GitHub;
+-- los que se agregan desde el panel solo guardan el código del enlace de Instagram.
+CREATE TABLE IF NOT EXISTS videos (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo         TEXT NOT NULL,
+  lugar          TEXT,
+  codigo         TEXT NOT NULL,
+  archivo        TEXT,
+  publicado      INTEGER NOT NULL DEFAULT 1,
+  orden          INTEGER NOT NULL DEFAULT 0,
+  creado_en      TEXT NOT NULL DEFAULT (datetime('now')),
+  actualizado_en TEXT
+);
