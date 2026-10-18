@@ -94,6 +94,12 @@ body.registered .welcome{display:flex}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;align-items:center}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--muted)}
 .chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.resbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;background:rgba(108,182,255,.08);border:1px solid rgba(108,182,255,.3);border-radius:14px;padding:12px 16px;margin:-8px 0 22px;font-size:.95rem}
+.resbar b{color:var(--accent)}
+.resbar .fl{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);border-radius:999px;padding:5px 8px 5px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.resbar .fl i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.12);font-size:.7rem}
+.resbar .fl:hover{border-color:var(--accent)}
+.resbar .clr{margin-left:auto;background:none;border:0;color:var(--sky);font:inherit;font-size:.86rem;cursor:pointer;text-decoration:underline}
 .chips .count{margin-left:auto;font-size:.86rem;color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
 @media (max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
@@ -506,6 +512,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       <button class="chip" data-chip="Alquiler" hidden data-oculto="alquiler">Alquileres</button>
       <span class="count" id="cat-count"></span>
     </div>
+    <div class="resbar" id="resbar" hidden></div>
     <div class="grid" id="grid"></div>
   </div>
 </section>
@@ -747,9 +754,21 @@ function render(){
   const l=list().sort((a,b)=>b.f.localeCompare(a.f));
   $("#cat-title").textContent=({"":"Todo el catálogo",Casa:"Casas",Terreno:"Terrenos",Finca:"Fincas",Alquiler:"Alquileres"})[st.type]+(st.zona?" en "+st.zona:"");
   $("#cat-count").textContent=l.length+" resultado"+(l.length===1?"":"s");
+  const rg=$(".ranges button.on"),fs=[];
+  if(st.type)fs.push(["type",({Casa:"Casas",Terreno:"Terrenos",Finca:"Fincas",Alquiler:"Alquileres"})[st.type]]);
+  if(st.zona)fs.push(["zona",st.zona]);
+  if(st.min||st.max)fs.push(["precio",rg?rg.textContent:"Rango de precio"]);
+  const rb=$("#resbar");rb.hidden=!fs.length;$("#cat-count").hidden=!!fs.length;
+  if(fs.length){rb.innerHTML=`<span>${l.length?`Encontramos <b>${l.length} ${l.length===1?"propiedad":"propiedades"}</b> para ti:`:"No encontramos propiedades con:"}</span>`+fs.map(([k,t])=>`<button type="button" class="fl" data-quitar="${k}" aria-label="Quitar filtro ${t}">${t}<i>✕</i></button>`).join("")+`<button type="button" class="clr" data-quitar="todo">Ver todas</button>`;
+    $$("#resbar [data-quitar]").forEach(b=>b.onclick=()=>quitarFiltro(b.dataset.quitar));}
   ORDER=l.map(p=>p.id);
   $("#grid").innerHTML=l.length?l.map(cardHTML).join(""):`<div class="empty">No hay propiedades con esos filtros. Prueba otro rango de precio u otra zona.</div>`;
 }
+function quitarFiltro(k){
+  if(k==="type"||k==="todo")st.type="";
+  if(k==="zona"||k==="todo"){st.zona="";$("#q-zona").value="";}
+  if(k==="precio"||k==="todo"){st.min=st.max=0;$$(".ranges button").forEach((x,i)=>x.classList.toggle("on",i===0));}
+  syncType();render();}
 function syncType(){$$(".chip").forEach(x=>x.classList.toggle("on",x.dataset.chip===st.type));$$(".types button").forEach(x=>x.classList.toggle("on",x.dataset.type===st.type));}
 $$(".types button").forEach(b=>b.addEventListener("click",()=>{st.type=b.dataset.type;syncType();render();}));
 $$(".chip").forEach(b=>b.addEventListener("click",()=>{st.type=b.dataset.chip;syncType();render();}));
