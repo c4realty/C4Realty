@@ -48,7 +48,11 @@
   const videoLink = v => `https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/`;
   // los videos que trae la página, por si el panel no responde
   const videosDe = L => L.map(([c, z, t]) => ({ codigo: c, lugar: z, titulo: t, archivo: "videos/" + c }));
-  { const st = document.createElement("style"); st.textContent = ".c4-igw{container-type:inline-size;border-radius:14px;overflow:hidden;background:#fff;border:1px solid rgba(127,127,127,.25)}iframe.c4-ig{display:block;width:100%;height:calc(125cqw + 150px);min-height:420px;border:0;background:#fff}"; document.head.appendChild(st); }
+  { const st = document.createElement("style"); st.textContent = ".c4-igw{position:relative;overflow:hidden;border-radius:14px;background:#fff;aspect-ratio:280/520}.c4-igw iframe.c4-ig{position:absolute;left:0;top:0;width:280px;height:520px;border:0;background:#fff;transform-origin:0 0}"; document.head.appendChild(st); }
+  // el reproductor de Instagram se arma a 280 px de ancho y se achica o agranda para llenar la tarjeta
+  const igFit = () => $$(".c4-igw").forEach(w => { const f = w.querySelector("iframe"); if (f && w.clientWidth) f.style.transform = `scale(${w.clientWidth / 280})`; });
+  if (window.ResizeObserver) { const ro = new ResizeObserver(igFit); new MutationObserver(() => $$(".c4-igw:not([data-ro])").forEach(w => { w.dataset.ro = 1; ro.observe(w); igFit(); })).observe(document.documentElement, { childList: true, subtree: true }); }
+  addEventListener("resize", igFit);
 
   /* pone en la página el WhatsApp, correo, Instagram, título y bono guardados en el panel */
   const money = v => "$" + Math.round(+v || 0).toLocaleString("en-US");
