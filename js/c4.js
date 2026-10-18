@@ -244,25 +244,27 @@
         ".c4-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 4px rgba(0,0,0,.45);transition:width .25s}.c4-dots i.on{background:#fff;width:16px;border-radius:3px}";
       document.head.append(st);
     }
-    let t = null, t0 = null, box = null, p = null, k = 0, base = null, over = null, dots = null;
+    let t = null, t0 = null, box = null, p = null, k = 0, base = null, over = null, dots = null, ms = 1300;
+    const tactil = () => !matchMedia("(hover:hover)").matches;
     const stop = () => {
       clearInterval(t); clearTimeout(t0); t = t0 = null;
       if (over) over.remove(); if (dots) dots.remove();
       if (base && p) base.src = p.img[0];
       box = p = base = over = dots = null;
     };
-    const step = () => {
-      if (!box) return; k = (k + 1) % p.img.length; const src = p.img[k], b = box;
+    const ver = n => {
+      if (!box) return; k = (n + p.img.length) % p.img.length; const src = p.img[k], b = box;
       const pre = new Image(); pre.onload = () => {
         if (box !== b) return; over.src = src; over.classList.add("on");
         setTimeout(() => { if (box === b) { base.src = src; over.classList.remove("on"); } }, 460);
       }; pre.src = src;
-      if (dots) dots.querySelectorAll("i").forEach((d, n) => d.classList.toggle("on", n === k % 12));
+      if (dots) dots.querySelectorAll("i").forEach((d, n2) => d.classList.toggle("on", n2 === k % 12));
     };
-    document.addEventListener("mouseover", e => {
-      const g = e.target.closest(sel); if (g === box) return; stop(); if (!g || !matchMedia("(hover:hover)").matches) return;
+    const step = () => ver(k + 1);
+    const empezar = (g, int, primero) => {
+      if (g === box) return; stop();
       const q = P.find(x => x.id === g.dataset.c4); const im = g.querySelector("img"); if (!q || !im || q.img.length < 2) return;
-      box = g; p = q; base = im; k = 0;
+      box = g; p = q; base = im; k = 0; ms = int;
       const par = im.parentElement; if (getComputedStyle(par).position === "static") par.style.position = "relative";
       const cs = getComputedStyle(im);
       over = document.createElement("img"); over.className = "c4-hx"; over.alt = ""; over.setAttribute("aria-hidden", "true");
@@ -271,8 +273,22 @@
       dots = document.createElement("div"); dots.className = "c4-dots"; dots.innerHTML = p.img.slice(0, 12).map((_, n) => `<i class="${n ? "" : "on"}"></i>`).join("");
       par.append(dots);
       p.img.slice(1, 4).forEach(x => { const i = new Image(); i.src = x; });
-      t0 = setTimeout(step, 350); t = setInterval(step, 1300);
-    });
+      t0 = setTimeout(step, primero); t = setInterval(step, ms);
+    };
+    document.addEventListener("mouseover", e => { if (tactil()) return; const g = e.target.closest(sel); if (g === box) return; stop(); if (g) empezar(g, 1300, 350); });
+    // celular: la foto más centrada en la pantalla pasa sus fotos sola
+    let pend = false;
+    const centro = () => { pend = false; if (!tactil()) return; const h = innerHeight; let mejor = null, dmin = 1e9;
+      document.querySelectorAll(sel).forEach(g => { const im = g.querySelector("img"); if (!im) return; const r = im.getBoundingClientRect(); if (!r.height || r.width < 60) return; const vis = Math.min(r.bottom, h) - Math.max(r.top, 0); if (vis < r.height * .6) return; const d = Math.abs((r.top + r.bottom) / 2 - h / 2); if (d < dmin) { dmin = d; mejor = g; } });
+      if (mejor) empezar(mejor, 2200, 900); else stop(); };
+    const pedir = () => { if (!pend) { pend = true; requestAnimationFrame(centro); } };
+    addEventListener("scroll", pedir, { passive: true }); addEventListener("resize", pedir); setTimeout(pedir, 800);
+    // celular: deslizar el dedo sobre la foto para cambiarla
+    let x0 = null, y0 = 0, gx = null, sin = 0;
+    document.addEventListener("touchstart", e => { const g = e.target.closest(sel); if (!g) return; gx = g; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener("touchend", e => { if (x0 == null || !gx) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { if (box !== gx) empezar(gx, 2200, 99999); if (box) { ver(k + (dx < 0 ? 1 : -1)); clearInterval(t); clearTimeout(t0); t = setInterval(step, ms); } sin = Date.now(); } gx = null; }, { passive: true });
+    document.addEventListener("click", e => { if (Date.now() - sin < 500 && e.target.closest(sel)) { e.stopPropagation(); e.preventDefault(); } }, true);
   }
 
   /* aviso por correo de cada formulario (FormSubmit; la primera vez hay que activarlo desde el correo) */

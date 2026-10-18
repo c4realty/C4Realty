@@ -914,17 +914,35 @@ $$(".privlink").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();$("
 $("#priv-ok").addEventListener("click",()=>$("#priv").classList.remove("open"));
 $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
 render();
-/* al pasar el mouse sobre la foto de una casa, las fotos cambian solas */
-(()=>{let t=null,box=null,k=0;
-  const stop=()=>{clearInterval(t);t=null;if(box){const p=P.find(x=>x.id===box.dataset.gal);const a=box.querySelector("img.ph-a"),b=box.querySelector("img.ph-b");if(b)b.classList.remove("on");if(a&&p)a.src=IMG[p.img[0]];box.querySelectorAll(".ph-dots i").forEach((d,j)=>d.classList.toggle("on",j===0));box.classList.remove("hov");}box=null;};
-  const step=()=>{if(!box)return;const p=P.find(x=>x.id===box.dataset.gal);if(!p||p.img.length<2)return;k=(k+1)%p.img.length;
+/* al pasar el mouse sobre la foto de una casa, las fotos cambian solas.
+   En el celular: la casa que está en el centro de la pantalla pasa sus fotos sola, y se puede deslizar el dedo para cambiarlas */
+(()=>{let t=null,t0=null,box=null,k=0,ms=1300;
+  const tactil=()=>!matchMedia("(hover:hover)").matches;
+  const stop=()=>{clearInterval(t);clearTimeout(t0);t=t0=null;if(box){const p=P.find(x=>x.id===box.dataset.gal);const a=box.querySelector("img.ph-a"),b=box.querySelector("img.ph-b");if(b)b.classList.remove("on");if(a&&p)a.src=IMG[p.img[0]];box.querySelectorAll(".ph-dots i").forEach((d,j)=>d.classList.toggle("on",j===0));box.classList.remove("hov");}box=null;};
+  const ver=n=>{if(!box)return;const p=P.find(x=>x.id===box.dataset.gal);if(!p||p.img.length<2)return;k=(n+p.img.length)%p.img.length;
     const a=box.querySelector("img.ph-a");let b=box.querySelector("img.ph-b");if(!b){b=document.createElement("img");b.className="ph-b";b.alt="";a.after(b);}
-    const src=IMG[p.img[k]];const show=()=>{b.classList.add("on");setTimeout(()=>{if(box&&b.classList.contains("on")){a.src=src;b.classList.remove("on");}},450);};
-    b.onload=show;b.src=src;if(b.complete)show();box.querySelectorAll(".ph-dots i").forEach((d,j)=>d.classList.toggle("on",j===k));};
-  document.addEventListener("mouseover",e=>{const g=e.target.closest(".photo[data-gal]");if(g===box)return;stop();if(!g||!matchMedia("(hover:hover)").matches)return;
-    const p=P.find(x=>x.id===g.dataset.gal);if(!p||p.img.length<2)return;box=g;k=0;g.classList.add("hov");
+    const src=IMG[p.img[k]],g=box;const show=()=>{b.classList.add("on");setTimeout(()=>{if(box===g&&b.classList.contains("on")){a.src=src;b.classList.remove("on");}},450);};
+    b.onload=show;b.src=src;if(b.complete)show();box.querySelectorAll(".ph-dots i").forEach((d,j)=>d.classList.toggle("on",j===k%12));};
+  const step=()=>ver(k+1);
+  const empezar=(g,int,primero)=>{if(g===box)return;stop();const p=P.find(x=>x.id===g.dataset.gal);if(!p||p.img.length<2)return;box=g;k=0;ms=int;g.classList.add("hov");
     if(!g.querySelector(".ph-dots")){const d=document.createElement("div");d.className="ph-dots";d.innerHTML=p.img.slice(0,12).map((_,j)=>`<i class="${j?"":"on"}"></i>`).join("");g.append(d);}
-    p.img.slice(1,4).forEach(x=>{const i=new Image();i.src=IMG[x];});setTimeout(step,350);t=setInterval(step,1300);});
+    p.img.slice(1,4).forEach(x=>{const i=new Image();i.src=IMG[x];});t0=setTimeout(step,primero);t=setInterval(step,ms);};
+  const reiniciar=()=>{clearInterval(t);clearTimeout(t0);t=setInterval(step,ms);};
+  document.addEventListener("mouseover",e=>{if(tactil())return;const g=e.target.closest(".photo[data-gal]");if(g===box)return;stop();if(g)empezar(g,1300,350);});
+  // celular: la foto más centrada en la pantalla
+  let pend=false;const centro=()=>{pend=false;if(!tactil())return;const h=innerHeight;let mejor=null,dmin=1e9;
+    document.querySelectorAll(".photo[data-gal]").forEach(g=>{const r=g.getBoundingClientRect();if(!r.height||r.width<60)return;const vis=Math.min(r.bottom,h)-Math.max(r.top,0);if(vis<r.height*.6)return;const d=Math.abs((r.top+r.bottom)/2-h/2);if(d<dmin){dmin=d;mejor=g;}});
+    if(mejor)empezar(mejor,2200,900);else stop();};
+  const pedir=()=>{if(!pend){pend=true;requestAnimationFrame(centro);}};
+  addEventListener("scroll",pedir,{passive:true});addEventListener("resize",pedir);
+  new MutationObserver(()=>{if(box&&!document.contains(box))box=null;pedir();}).observe(document.body,{childList:true,subtree:true});
+  // celular: deslizar el dedo sobre la foto para pasar a la siguiente o volver
+  let x0=null,y0=0,gx=null,sin=0;
+  document.addEventListener("touchstart",e=>{const g=e.target.closest(".photo[data-gal]");if(!g)return;gx=g;x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+  document.addEventListener("touchend",e=>{if(x0==null||!gx)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3){if(box!==gx)empezar(gx,2200,99999);ver(k+(dx<0?1:-1));reiniciar();sin=Date.now();}gx=null;},{passive:true});
+  document.addEventListener("click",e=>{if(Date.now()-sin<500&&e.target.closest(".photo[data-gal]")){e.stopPropagation();e.preventDefault();}},true);
+  setTimeout(pedir,600);
 })();
 /* carrusel a pantalla completa */
 let LB=[],LBi=0,LBp=null,LBpid=null;
