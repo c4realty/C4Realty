@@ -1389,12 +1389,17 @@ function videoForm(v) {
    <form id="f-vd" class="card" style="display:grid;gap:14px">
     ${!v ? `<div class="seg" role="tablist" style="display:flex;gap:8px"><button type="button" class="btn sm pri" data-m="subir">Subir el video (recomendado)</button><button type="button" class="btn sm" data-m="enlace">Solo enlace de Instagram</button></div>` : ""}
     <div data-p="subir" ${modo === "subir" ? "" : "hidden"}>
-     <label class="drop" for="vd-f" style="display:grid;gap:6px;justify-items:center;text-align:center;cursor:pointer"><input type="file" id="vd-f" accept="video/mp4,video/quicktime,video/webm,video/*" class="hide"><b>+ Elegir el video</b><span class="muted" style="font-size:.85rem">El mismo que subiste a Instagram, desde tu celular o computadora. Hasta 3 minutos.</span></label>
-     <div id="vd-pre" class="hide" style="display:flex;gap:12px;align-items:center;margin-top:10px"><video id="vd-v" muted playsinline style="width:90px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;background:#000"></video><span id="vd-inf" class="muted" style="font-size:.88rem"></span></div>
+     <label class="drop" for="vd-f" style="display:grid;gap:6px;justify-items:center;text-align:center;cursor:pointer"><input type="file" id="vd-f" accept="video/mp4,video/quicktime,video/webm,video/*" class="hide"><b>+ Elegir el video</b><span class="muted" style="font-size:.85rem">El mismo que subiste a Instagram, desde tu celular o computadora (MP4, MOV de iPhone o WebM). Si es largo, aquí mismo lo puedes acortar.</span></label>
+     <div id="vd-pre" class="hide" style="display:flex;gap:14px;align-items:flex-start;margin-top:12px;flex-wrap:wrap"><video id="vd-v" playsinline style="width:130px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;background:#000"></video>
+      <div style="flex:1;min-width:220px;display:grid;gap:10px"><span id="vd-inf" class="muted" style="font-size:.88rem"></span>
+       <div class="f"><label for="vd-a">Empieza en <b id="vd-at" class="num">0:00</b></label><input type="range" id="vd-a" min="0" step="0.1" value="0"></div>
+       <div class="f"><label for="vd-b">Termina en <b id="vd-bt" class="num">0:00</b></label><input type="range" id="vd-b" min="0" step="0.1" value="0"></div>
+       <span id="vd-dur" style="font-size:.88rem"></span>
+       <button type="button" class="btn sm" id="vd-play" style="justify-self:start">▶ Ver el pedazo elegido</button></div></div>
      <p class="muted" style="font-size:.82rem;margin-top:8px">Así se ve igual que los demás videos de la página y arranca solo. El panel lo achica antes de subirlo para que ocupe poco espacio.</p>
     </div>
     <div data-p="enlace" ${modo === "enlace" ? "" : "hidden"}>
-     <p class="muted" style="font-size:.85rem;margin-bottom:8px">Con solo el enlace, en la página sale una tarjeta que abre el video en Instagram: <b>no se reproduce dentro de la página</b> (Instagram no lo permite).</p>
+     <p class="muted" style="font-size:.85rem;margin-bottom:8px">Con solo el enlace, en la página sale una tarjeta que abre el video en Instagram: <b>no se reproduce dentro de la página</b>, porque Instagram no lo permite (sobre todo en reels con música). Para que se reproduzca, bájalo de Instagram (en tu reel: ⋯ → <b>Descargar</b>) y súbelo con <b>Subir el video</b>.</p>
     </div>
     ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar, el título y el enlace.</p>` : ""}
     <div class="f"><label for="vd-l">Enlace del video en Instagram <span class="faint" id="vd-opc">${modo === "enlace" ? "" : "(opcional)"}</span></label><input id="vd-l" placeholder="https://www.instagram.com/reel/…" value="${v && v.codigo ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram: tres puntos ⋯ del video → Copiar enlace. Sirve para el botón "Ver en Instagram".</small></div>
@@ -1404,11 +1409,23 @@ function videoForm(v) {
     <div class="tools"><button class="btn pri" id="vd-ok">${v ? "Guardar" : "Agregar a la página"}</button></div></form>`, () => {
     let m = modo, file = null;
     $$("[data-m]").forEach(b => b.onclick = () => { m = b.dataset.m; $$("[data-m]").forEach(x => x.classList.toggle("pri", x === b)); $$("[data-p]").forEach(p => p.hidden = p.dataset.p !== m); $("#vd-opc").textContent = m === "enlace" ? "" : "(opcional)"; });
+    let desde = 0, hasta = 0, dur = 0;
+    const mmss = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+    const pintaCorte = () => { $("#vd-at").textContent = mmss(desde); $("#vd-bt").textContent = mmss(hasta); const d = hasta - desde; $("#vd-dur").innerHTML = d > 180 ? `<span style="color:var(--crit)">Quedan ${mmss(d)} min: el máximo es 3:00. Acórtalo un poco más.</span>` : d < 3 ? `<span style="color:var(--crit)">Muy corto: deja al menos 3 segundos.</span>` : `Quedará de <b>${mmss(d)}</b> min${desde > 0 || hasta < dur - .2 ? " (acortado)" : ""}.`; };
     $("#vd-f") && ($("#vd-f").onchange = e => {
       file = e.target.files[0]; if (!file) return;
       const u = URL.createObjectURL(file), vv = $("#vd-v"); vv.src = u; $("#vd-pre").classList.remove("hide");
-      vv.onloadedmetadata = () => { const d = vv.duration; $("#vd-inf").innerHTML = `<b>${esc(file.name)}</b><br>${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, "0")} min · ${(file.size / 1048576).toFixed(1)} MB${d > 180 ? `<br><span style="color:var(--crit)">Dura más de 3 minutos: usa uno más corto.</span>` : ""}`; vv.currentTime = Math.min(1, d / 2); };
+      vv.onloadedmetadata = () => {
+        dur = vv.duration || 0; desde = 0; hasta = Math.min(dur, 180);
+        for (const id of ["#vd-a", "#vd-b"]) $(id).max = dur.toFixed(1);
+        $("#vd-a").value = 0; $("#vd-b").value = hasta.toFixed(1);
+        $("#vd-inf").innerHTML = `<b>${esc(file.name)}</b> · ${mmss(dur)} min · ${(file.size / 1048576).toFixed(1)} MB${dur > 180 ? `<br><span style="color:var(--warn)">Dura más de 3 minutos: mueve "Termina en" para acortarlo.</span>` : ""}`;
+        pintaCorte(); vv.currentTime = Math.min(1, dur / 2);
+      };
     });
+    $("#vd-a") && ($("#vd-a").oninput = e => { desde = Math.min(+e.target.value, hasta - 1); e.target.value = desde; $("#vd-v").currentTime = desde; pintaCorte(); });
+    $("#vd-b") && ($("#vd-b").oninput = e => { hasta = Math.max(+e.target.value, desde + 1); e.target.value = hasta; $("#vd-v").currentTime = hasta; pintaCorte(); });
+    $("#vd-play") && ($("#vd-play").onclick = () => { const vv = $("#vd-v"); vv.currentTime = desde; vv.play(); vv.ontimeupdate = () => { if (vv.currentTime >= hasta) { vv.pause(); vv.ontimeupdate = null; } }; });
     const msg = t => { $("#vd-msg").textContent = t; $("#vd-msg").classList.toggle("hide", !t); };
     const prog = p => { $("#vd-prog").classList.toggle("hide", p == null); if (p != null) $("#vd-prog i").style.width = Math.round(p * 100) + "%"; };
     $("#f-vd").onsubmit = async e => {
@@ -1419,7 +1436,10 @@ function videoForm(v) {
       try {
         if (!v && m === "subir") {
           if (!file) throw new Error("Elige el video primero");
-          const r = await achicarVideo(file, (p, t) => { prog(p); msg(t); });
+          if (hasta - desde > 181) throw new Error("El video queda de más de 3 minutos. Acórtalo con \"Termina en\".");
+          if (hasta - desde < 3) throw new Error("El pedazo elegido es muy corto.");
+          $("#vd-v").pause();
+          const r = await achicarVideo(file, (p, t) => { prog(p); msg(t); }, { desde, hasta: hasta >= dur - .2 ? null : hasta });
           msg("Subiendo la portada…"); const pf = await subirArchivo("/api/archivos?tipo=foto", r.poster, "portada.jpg");
           msg("Subiendo el video… (no cierres esta pantalla)"); prog(.97); const vf = await subirArchivo("/api/archivos?tipo=video", r.blob, file.name);
           body.mp4 = vf.url; body.poster = pf.url;
@@ -1431,35 +1451,36 @@ function videoForm(v) {
   });
 }
 // Achica un video en el navegador: máx. 1280 px de alto, ~1.6 Mbps. Devuelve el video y una foto de portada.
-async function achicarVideo(file, aviso = () => { }, forzar = false) {
+async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, forzar = false } = {}) {
   const url = URL.createObjectURL(file), v = document.createElement("video");
   v.src = url; v.playsInline = true; v.preload = "auto"; v.crossOrigin = "anonymous";
   await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("No se pudo abrir ese video. Prueba con otro (MP4 o MOV).")); });
-  if (v.duration > 181) throw new Error("El video dura más de 3 minutos. Usa uno más corto.");
+  const fin = hasta == null ? v.duration : Math.min(hasta, v.duration), corto = desde > 0.05 || fin < v.duration - .2;
+  if (fin - desde > 181) throw new Error("El video queda de más de 3 minutos. Acórtalo.");
   const W0 = v.videoWidth, H0 = v.videoHeight; if (!W0 || !H0) throw new Error("No se pudo leer ese video. Prueba con otro.");
   // portada
-  await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.min(1, v.duration / 2); });
+  await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.min(desde + 1, (desde + fin) / 2); });
   const kp = Math.min(1, 720 / Math.max(W0, H0)), cp = document.createElement("canvas"); cp.width = Math.round(W0 * kp); cp.height = Math.round(H0 * kp); cp.getContext("2d").drawImage(v, 0, 0, cp.width, cp.height);
   const poster = await new Promise(r => cp.toBlob(r, "image/jpeg", .82));
   const MAX = 25 * 1048576;
   const yaSirve = /mp4/.test(file.type) && file.size <= 12 * 1048576 && Math.max(W0, H0) <= 1920;
-  if (yaSirve && !forzar) { aviso(.9, "El video ya es liviano, no hace falta achicarlo."); return { blob: file, poster }; }
+  if (yaSirve && !forzar && !corto) { aviso(.9, "El video ya es liviano, no hace falta achicarlo."); return { blob: file, poster }; }
   const tipos = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   const mime = window.MediaRecorder && tipos.find(t => MediaRecorder.isTypeSupported(t));
-  if (!mime) { if (/mp4|webm/.test(file.type) && file.size <= MAX) return { blob: file, poster }; throw new Error("Este navegador no puede achicar el video y es muy pesado. Prueba desde Chrome o con un video más corto."); }
+  if (!mime) { if (corto) throw new Error("Este navegador no puede acortar videos. Prueba desde Chrome en la computadora."); if (/mp4|webm/.test(file.type) && file.size <= MAX) return { blob: file, poster }; throw new Error("Este navegador no puede achicar el video y es muy pesado. Prueba desde Chrome o con un video más corto."); }
   const k = Math.min(1, 1280 / Math.max(W0, H0)), cv = document.createElement("canvas"); cv.width = Math.round(W0 * k / 2) * 2; cv.height = Math.round(H0 * k / 2) * 2;
   const cx = cv.getContext("2d"), st = cv.captureStream(30);
   let ac = null; try { ac = new AudioContext(); const src = ac.createMediaElementSource(v), dst = ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t => st.addTrack(t)); } catch { }
   const rec = new MediaRecorder(st, { mimeType: mime, videoBitsPerSecond: 1_600_000, audioBitsPerSecond: 96_000 }), partes = [];
   rec.ondataavailable = e => e.data.size && partes.push(e.data);
-  const fin = new Promise(ok => rec.onstop = ok);
-  v.currentTime = 0; await new Promise(ok => { v.onseeked = ok; });
-  let vivo = true; const pinta = () => { if (!vivo) return; cx.drawImage(v, 0, 0, cv.width, cv.height); aviso(Math.min(.9, v.currentTime / v.duration * .9), `Preparando el video… ${Math.round(v.currentTime / v.duration * 100)} % (tarda lo mismo que dura el video; no cierres esta pantalla)`); v.requestVideoFrameCallback ? v.requestVideoFrameCallback(pinta) : requestAnimationFrame(pinta); };
+  const listo = new Promise(ok => rec.onstop = ok);
+  v.currentTime = desde; await new Promise(ok => { v.onseeked = ok; });
+  let vivo = true; const pinta = () => { if (!vivo) return; cx.drawImage(v, 0, 0, cv.width, cv.height); const p = Math.max(0, Math.min(1, (v.currentTime - desde) / (fin - desde))); aviso(p * .9, `Preparando el video… ${Math.round(p * 100)} % (tarda lo mismo que dura el video; no cierres esta pantalla)`); if (v.currentTime >= fin - 0.03) { v.pause(); v.dispatchEvent(new Event("ended")); return; } v.requestVideoFrameCallback ? v.requestVideoFrameCallback(pinta) : requestAnimationFrame(pinta); };
   rec.start(1000); await v.play(); pinta();
-  await new Promise(ok => v.onended = ok); vivo = false; cx.drawImage(v, 0, 0, cv.width, cv.height); rec.stop(); await fin; try { ac && ac.close(); } catch { } URL.revokeObjectURL(url);
+  await new Promise(ok => v.onended = ok); vivo = false; rec.stop(); await listo; try { ac && ac.close(); } catch { } URL.revokeObjectURL(url);
   const blob = new Blob(partes, { type: mime.split(";")[0] });
   if (blob.size > MAX) throw new Error("Aun achicado, el video pesa más de 25 MB. Usa uno más corto.");
-  return { blob: blob.size < file.size || !/mp4|webm/.test(file.type) ? blob : file, poster };
+  return { blob: corto || blob.size < file.size || !/mp4|webm/.test(file.type) ? blob : file, poster };
 }
 
 RENDER.configuracion = async () => {
