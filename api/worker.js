@@ -275,6 +275,22 @@ async function borrarArchivoDeRuta(env, ruta) {
   const m = /\/public\/archivo\/([0-9a-f]{32})/.exec(ruta || '');
   if (m) await borrarArchivo(env, await env.DB.prepare('SELECT id,gaveta FROM archivos WHERE clave=?').bind(m[1]).first());
 }
+// Casas vendidas hace 30 días o más: se borran solas sus fotos y queda solo la portada.
+// Planos y videos no se tocan. Si la casa vuelve a Disponible antes, no se borra nada.
+const DIAS_FOTOS_VENDIDA = 30;
+async function limpiarVendidas(env) {
+  const { results } = await env.DB.prepare(`SELECT m.id, m.ruta, m.propiedad_id FROM medios m JOIN propiedades p ON p.id = m.propiedad_id
+    WHERE p.estado = 'vendida' AND p.vendida_en IS NOT NULL AND p.vendida_en <= datetime('now', '-${DIAS_FOTOS_VENDIDA} days')
+      AND m.tipo IN ('foto','volante')
+      AND m.id <> (SELECT m2.id FROM medios m2 WHERE m2.propiedad_id = p.id AND m2.tipo IN ('foto','volante') ORDER BY m2.es_principal DESC, m2.orden, m2.id LIMIT 1)
+    LIMIT 40`).all();
+  for (const m of results) {
+    await env.DB.prepare('DELETE FROM medios WHERE id=?').bind(m.id).run();
+    await borrarArchivoDeRuta(env, m.ruta);
+  }
+  if (results.length) await bitacora(env, null, 'borrar', 'medios', null, null, { motivo: `Fotos de casas vendidas hace ${DIAS_FOTOS_VENDIDA} días (se dejó la portada)`, fotos: results.length, propiedades: [...new Set(results.map(x => x.propiedad_id))] }, null);
+  return results.length;
+}
 async function subirFoto(env, u, req, url) {
   exigir(u, 'medios', 'crear');
   const pid = Number(url.searchParams.get('propiedad_id')) || null;
@@ -816,5 +832,9 @@ export default {
       return err('Error interno: ' + msg, 500);
     }
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(sincronizarHubSpot(env)); },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sincronizarHubSpot(env));
+    // una vez por hora revisa si hay casas vendidas hace 30 días para borrarles las fotos
+    if (new Date(event.scheduledTime || Date.now()).getUTCMinutes() === 17) ctx.waitUntil(limpiarVendidas(env).catch(() => 0));
+  },
 };
