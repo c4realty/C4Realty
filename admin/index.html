@@ -1441,7 +1441,7 @@ function videoForm(v) {
           $("#vd-v").pause();
           const r = await achicarVideo(file, (p, t) => { prog(p); msg(t); }, { desde, hasta: hasta >= dur - .2 ? null : hasta });
           msg("Subiendo la portada…"); const pf = await subirArchivo("/api/archivos?tipo=foto", r.poster, "portada.jpg");
-          msg("Subiendo el video… (no cierres esta pantalla)"); prog(.97); const vf = await subirArchivo("/api/archivos?tipo=video", r.blob, file.name);
+          const vf = await subirVideoPartes(r.blob, file.name, (p, t) => { prog(.9 + p * .1); msg(t); });
           body.mp4 = vf.url; body.poster = pf.url;
         }
         await api("/api/videos" + (v ? "/" + v.id : ""), { method: v ? "PATCH" : "POST", body });
@@ -1449,6 +1449,23 @@ function videoForm(v) {
       } catch (x) { toast(x.message, 1); msg(""); prog(null); ok.disabled = false; }
     };
   });
+}
+// Sube el video en pedazos de ~1 MB (cada envío es chico y, si uno falla, se reintenta)
+async function subirVideoPartes(blob, nombre, aviso = () => { }) {
+  const b64 = await b64De(blob), TP = 1_500_000, n = Math.ceil(b64.length / TP);
+  const ini = await api("/api/videos-subida", { method: "POST", body: { mime: (blob.type || "video/mp4").split(";")[0], tamano: blob.size, partes: n, nombre } });
+  for (let k = 0; k < n; k++) {
+    aviso(k / n, `Subiendo el video… ${Math.round(k / n * 100)} % (no cierres esta pantalla)`);
+    let ok = false, err = null;
+    for (let t = 0; t < 4 && !ok; t++) {
+      try { const r = await fetch(API + `/api/videos-subida/${ini.id}/${k}`, { method: "PUT", headers: { "Content-Type": "text/plain", Authorization: "Bearer " + TOK }, body: b64.slice(k * TP, (k + 1) * TP) }); if (r.ok) ok = true; else { const j = await r.json().catch(() => null); err = new Error(j?.error || "Error " + r.status); if (r.status < 500) break; } }
+      catch (x) { err = x; }
+      if (!ok) await new Promise(r => setTimeout(r, 1500 * (t + 1)));
+    }
+    if (!ok) throw new Error((err?.message || "Se cortó la conexión") + ". Revisa el internet y vuelve a intentarlo.");
+  }
+  aviso(1, "Terminando…");
+  return api(`/api/videos-subida/${ini.id}/fin`, { method: "POST", body: {} });
 }
 // Achica un video en el navegador: máx. 1280 px de alto, ~1.6 Mbps. Devuelve el video y una foto de portada.
 async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, forzar = false } = {}) {
@@ -1462,7 +1479,7 @@ async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, 
   await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.min(desde + 1, (desde + fin) / 2); });
   const kp = Math.min(1, 720 / Math.max(W0, H0)), cp = document.createElement("canvas"); cp.width = Math.round(W0 * kp); cp.height = Math.round(H0 * kp); cp.getContext("2d").drawImage(v, 0, 0, cp.width, cp.height);
   const poster = await new Promise(r => cp.toBlob(r, "image/jpeg", .82));
-  const MAX = 25 * 1048576;
+  const MAX = 30 * 1048576;
   const yaSirve = /mp4/.test(file.type) && file.size <= 12 * 1048576 && Math.max(W0, H0) <= 1920;
   if (yaSirve && !forzar && !corto) { aviso(.9, "El video ya es liviano, no hace falta achicarlo."); return { blob: file, poster }; }
   const tipos = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
@@ -1471,7 +1488,8 @@ async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, 
   const k = Math.min(1, 1280 / Math.max(W0, H0)), cv = document.createElement("canvas"); cv.width = Math.round(W0 * k / 2) * 2; cv.height = Math.round(H0 * k / 2) * 2;
   const cx = cv.getContext("2d"), st = cv.captureStream(30);
   let ac = null; try { ac = new AudioContext(); const src = ac.createMediaElementSource(v), dst = ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t => st.addTrack(t)); } catch { }
-  const rec = new MediaRecorder(st, { mimeType: mime, videoBitsPerSecond: 1_600_000, audioBitsPerSecond: 96_000 }), partes = [];
+  const vbps = Math.max(450_000, Math.min(1_600_000, Math.floor(20 * 8 * 1048576 / Math.max(1, fin - desde)) - 96_000));
+  const rec = new MediaRecorder(st, { mimeType: mime, videoBitsPerSecond: vbps, audioBitsPerSecond: 96_000 }), partes = [];
   rec.ondataavailable = e => e.data.size && partes.push(e.data);
   const listo = new Promise(ok => rec.onstop = ok);
   v.currentTime = desde; await new Promise(ok => { v.onseeked = ok; });
@@ -1479,7 +1497,7 @@ async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, 
   rec.start(1000); await v.play(); pinta();
   await new Promise(ok => v.onended = ok); vivo = false; rec.stop(); await listo; try { ac && ac.close(); } catch { } URL.revokeObjectURL(url);
   const blob = new Blob(partes, { type: mime.split(";")[0] });
-  if (blob.size > MAX) throw new Error("Aun achicado, el video pesa más de 25 MB. Usa uno más corto.");
+  if (blob.size > MAX) throw new Error("Aun achicado, el video pesa más de 30 MB. Acórtalo un poco más.");
   return { blob: corto || blob.size < file.size || !/mp4|webm/.test(file.type) ? blob : file, poster };
 }
 

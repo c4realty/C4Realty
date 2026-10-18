@@ -263,23 +263,30 @@ function deB64(b64) {
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
+const BYTES_PARTE = PARTE * 3 / 4; // cada pedazo guardado = 1,125,000 bytes del archivo
 async function servirArchivo(env, clave, publico, rango) {
   const a = await env.DB.prepare('SELECT * FROM archivos WHERE clave=?').bind(String(clave).replace(/\..*$/, '')).first();
-  if (!a || (publico && a.privado)) fail('No existe', 404);
+  if (!a || (publico && a.privado) || /^subiendo:/.test(a.nombre || '')) fail('No existe', 404);
   const db = gDB(env, a.gaveta || 0); if (!db) fail('No existe', 404);
-  const { results } = await db.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
-  const bytes = deB64(results.map(x => x.datos).join(''));
   const h = { ...CORS, 'Content-Type': a.tipo_mime, 'Accept-Ranges': 'bytes', 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges' };
   h['Cache-Control'] = publico ? 'public, max-age=31536000, immutable' : 'private, no-store';
   if (!publico) h['Content-Disposition'] = `inline; filename="${encodeURIComponent(a.nombre || 'documento')}"`;
-  // los videos se piden por pedazos (Range): sobre todo en iPhone
+  // Los videos se piden por pedazos (Range). Se entrega como máximo un pedazo guardado por vez:
+  // así cada pedido gasta muy poco (el plan gratis da poco tiempo por pedido) y el video empieza a verse enseguida.
   const m = /^bytes=(\d*)-(\d*)$/.exec(rango || '');
-  if (m && (m[1] || m[2])) {
-    const n = bytes.length;
+  if (m && (m[1] || m[2]) && a.tamano > 0) {
+    const n = a.tamano;
     let ini = m[1] ? +m[1] : Math.max(0, n - +m[2]), fin = m[1] && m[2] ? Math.min(+m[2], n - 1) : n - 1;
     if (ini >= n || ini > fin) return new Response(null, { status: 416, headers: { ...h, 'Content-Range': `bytes */${n}` } });
-    return new Response(bytes.slice(ini, fin + 1), { status: 206, headers: { ...h, 'Content-Range': `bytes ${ini}-${fin}/${n}`, 'Content-Length': String(fin - ini + 1) } });
+    const k = Math.floor(ini / BYTES_PARTE); fin = Math.min(fin, (k + 1) * BYTES_PARTE - 1);
+    const p = await db.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? AND n=?').bind(a.id, k).first();
+    if (!p) fail('No existe', 404);
+    const trozo = deB64(p.datos), desde = ini - k * BYTES_PARTE, hasta = Math.min(fin - k * BYTES_PARTE + 1, trozo.length);
+    fin = k * BYTES_PARTE + hasta - 1;
+    return new Response(trozo.slice(desde, hasta), { status: 206, headers: { ...h, 'Content-Range': `bytes ${ini}-${fin}/${n}`, 'Content-Length': String(hasta - desde) } });
   }
+  const { results } = await db.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
+  const bytes = deB64(results.map(x => x.datos).join(''));
   h['Content-Length'] = String(bytes.length);
   return new Response(bytes, { headers: h });
 }
@@ -307,15 +314,59 @@ async function limpiarVendidas(env) {
 // Documentos que suben los clientes (cédula, talonarios…): se borran solos a los 60 días.
 // El cliente y sus datos se quedan; solo se van los archivos.
 const DIAS_DOCUMENTOS = 60;
+async function limpiarSubidasRotas(env) {
+  const { results } = await env.DB.prepare(`SELECT id, gaveta FROM archivos WHERE nombre LIKE 'subiendo:%' AND creado_en <= datetime('now', '-1 day') LIMIT 20`).all();
+  for (const a of results) await borrarArchivo(env, a);
+  return results.length;
+}
 async function limpiarDocumentos(env) {
   const { results } = await env.DB.prepare(`SELECT id, gaveta, cliente_id FROM archivos WHERE privado = 1 AND creado_en <= datetime('now', '-${DIAS_DOCUMENTOS} days') LIMIT 40`).all();
   for (const a of results) { await env.DB.prepare('DELETE FROM doc_enlaces WHERE archivo_id=?').bind(a.id).run(); await borrarArchivo(env, a); }
   if (results.length) await bitacora(env, null, 'borrar', 'archivos', null, null, { motivo: `Documentos de clientes con más de ${DIAS_DOCUMENTOS} días`, documentos: results.length, clientes: [...new Set(results.map(x => x.cliente_id).filter(Boolean))] }, null);
   return results.length;
 }
+// Subida de video en pedazos (cada pedido es chico: el plan gratis da poco tiempo por pedido)
+//   POST /api/videos-subida {mime, tamano, partes} -> {id}
+//   PUT  /api/videos-subida/:id/:n   (cuerpo: un pedazo en base64)
+//   POST /api/videos-subida/:id/fin  -> {url}
+async function subidaVideo(env, u, req, partes) {
+  exigir(u, 'propiedades', 'crear');
+  const id = Number(partes[2]) || null;
+  if (req.method === 'POST' && !id) {
+    const b = await cuerpo(req), mime = String(b.mime || '').toLowerCase(), tam = Math.floor(+b.tamano || 0), n = Math.floor(+b.partes || 0);
+    if (!MIME_VIDEO.test(mime)) fail('Tipo de video no permitido (usa MP4 o WebM)');
+    if (!tam || tam > 30 * 1048576) fail('El video pesa más de 30 MB. Acórtalo.');
+    if (n !== Math.ceil(tam / BYTES_PARTE)) fail('Datos de subida no válidos');
+    const libre = (await usoGavetas(env)).find(x => x.usado + tam * 4 / 3 <= x.capacidad);
+    if (!libre) fail('Se llenó el espacio. Borra videos viejos o fotos de propiedades vendidas para liberar espacio.', 507);
+    const clave = randHex(16);
+    const r = await env.DB.prepare('INSERT INTO archivos (clave,nombre,tipo_mime,tamano,partes,privado,subido_por,gaveta) VALUES (?,?,?,?,?,0,?,?)')
+      .bind(clave, 'subiendo:' + String(b.nombre || 'video').slice(0, 120), mime, tam, n, u.id, libre.gaveta).run();
+    return json({ id: r.meta.last_row_id, partes: n, tam_parte: PARTE }, 201);
+  }
+  const a = id && await env.DB.prepare(`SELECT * FROM archivos WHERE id=? AND subido_por=? AND nombre LIKE 'subiendo:%'`).bind(id, u.id).first();
+  if (!a) fail('Esa subida ya no existe. Vuelve a intentarlo.', 404);
+  const db = gDB(env, a.gaveta || 0);
+  if (req.method === 'PUT' && partes[3] != null) {
+    const k = Number(partes[3]);
+    if (!(k >= 0 && k < a.partes)) fail('Pedazo no válido');
+    const b64 = (await req.text()).replace(/\s/g, '');
+    if (!b64 || b64.length > PARTE || (k < a.partes - 1 && b64.length !== PARTE) || /[^A-Za-z0-9+/=]/.test(b64)) fail('El pedazo llegó dañado');
+    await db.prepare('INSERT OR REPLACE INTO archivo_partes (archivo_id,n,datos) VALUES (?,?,?)').bind(a.id, k, b64).run();
+    return json({ ok: true, n: k });
+  }
+  if (req.method === 'POST' && partes[3] === 'fin') {
+    const c = await db.prepare('SELECT COUNT(*) AS n FROM archivo_partes WHERE archivo_id=?').bind(a.id).first();
+    if ((c?.n || 0) !== a.partes) fail(`Faltan pedazos del video (${c?.n || 0} de ${a.partes}). Vuelve a intentarlo.`);
+    await env.DB.prepare('UPDATE archivos SET nombre=? WHERE id=?').bind(a.nombre.replace(/^subiendo:/, ''), a.id).run();
+    await bitacora(env, u.id, 'crear', 'archivos', a.id, null, { tipo: 'video', tamano: a.tamano }, req);
+    return json({ id: a.id, clave: a.clave, url: urlArchivo(a.clave, a.tipo_mime) }, 201);
+  }
+  fail('Ruta no encontrada', 404);
+}
 async function subirVideo(env, u, req) {
   exigir(u, 'propiedades', 'crear');
-  const a = await guardarArchivo(env, req, { usuario_id: u.id, maxMB: 25, mimeOk: MIME_VIDEO });
+  const a = await guardarArchivo(env, req, { usuario_id: u.id, maxMB: 4, mimeOk: MIME_VIDEO });
   await bitacora(env, u.id, 'crear', 'archivos', a.id, null, { tipo: 'video', tamano: a.tamano }, req);
   return json(a, 201);
 }
@@ -850,6 +901,7 @@ async function rutas(req, env, ctx) {
   if (r === 'hubspot' && partes[2] === 'sincronizar' && m === 'POST') { exigir(u, 'configuracion', 'editar'); return json(await sincronizarHubSpot(env)); }
   if (r === 'clientes' && id && partes[3] === 'interacciones' && m === 'POST') return nuevaInteraccion(env, u, req, id);
   if (r === 'clientes' && id && partes[3] === 'documentos' && m === 'POST') return documentos(env, u, req, id);
+  if (r === 'videos-subida') return subidaVideo(env, u, req, partes);
   if (r === 'archivos' && m === 'POST' && !partes[2]) return url.searchParams.get('tipo') === 'video' ? subirVideo(env, u, req) : subirFoto(env, u, req, url);
   if (r === 'archivos' && m === 'GET' && partes[2]) { exigir(u, 'clientes', 'ver'); return servirArchivo(env, partes[2], false); }
   if (r === 'archivos' && m === 'DELETE' && partes[2]) {
@@ -885,6 +937,6 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sincronizarHubSpot(env));
     // una vez por hora: fotos de casas vendidas hace 30 días y documentos de clientes de más de 60 días
-    if (new Date(event.scheduledTime || Date.now()).getUTCMinutes() === 17) ctx.waitUntil(limpiarVendidas(env).catch(() => 0).then(() => limpiarDocumentos(env)).catch(() => 0));
+    if (new Date(event.scheduledTime || Date.now()).getUTCMinutes() === 17) ctx.waitUntil(limpiarVendidas(env).catch(() => 0).then(() => limpiarDocumentos(env)).then(() => limpiarSubidasRotas(env)).catch(() => 0));
   },
 };
