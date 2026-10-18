@@ -42,17 +42,20 @@
   // lo que se ve de cada video: el archivo propio o el reproductor de Instagram
   function videoMedia(v) {
     const t = esc(v.titulo || "Video");
-    if (v.archivo) return `<video controls playsinline preload="none" poster="${ruta(v.archivo)}.jpg" src="${ruta(v.archivo)}.mp4" aria-label="${t}"></video>`;
-    return `<div class="c4-igw"><iframe class="c4-ig" src="https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/embed/" title="${t}" loading="lazy" scrolling="no" allowtransparency="true" allowfullscreen></iframe></div>`;
+    // archivo propio (subido desde el panel o guardado en la página): se ve limpio y arranca solo, sin sonido, al aparecer
+    if (v.mp4 || v.archivo) { const src = v.mp4 || ruta(v.archivo) + ".mp4", pos = v.poster || (v.archivo ? ruta(v.archivo) + ".jpg" : ""); return `<video class="c4-auto" controls playsinline muted loop preload="none"${pos ? ` poster="${esc(pos)}"` : ""} src="${esc(src)}" aria-label="${t}"></video>`; }
+    // solo enlace: una tarjeta que abre el video en Instagram (Instagram no deja reproducirlo dentro de otra página)
+    return `<a class="c4-igc" href="${videoLink(v)}" target="_blank" rel="noopener" aria-label="Ver ${t} en Instagram"><span class="c4-igp">▶</span><b>Ver video en Instagram</b></a>`;
   }
-  const videoLink = v => `https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/`;
+  const videoLink = v => v.codigo ? `https://www.instagram.com/reel/${encodeURIComponent(v.codigo)}/` : "";
   // los videos que trae la página, por si el panel no responde
   const videosDe = L => L.map(([c, z, t]) => ({ codigo: c, lugar: z, titulo: t, archivo: "videos/" + c }));
-  { const st = document.createElement("style"); st.textContent = ".c4-igw{position:relative;overflow:hidden;border-radius:14px;background:#fff;aspect-ratio:280/520}.c4-igw iframe.c4-ig{position:absolute;left:0;top:0;width:280px;height:520px;border:0;background:#fff;transform-origin:0 0}"; document.head.appendChild(st); }
-  // el reproductor de Instagram se arma a 280 px de ancho y se achica o agranda para llenar la tarjeta
-  const igFit = () => $$(".c4-igw").forEach(w => { const f = w.querySelector("iframe"); if (f && w.clientWidth) f.style.transform = `scale(${w.clientWidth / 280})`; });
-  if (window.ResizeObserver) { const ro = new ResizeObserver(igFit); new MutationObserver(() => $$(".c4-igw:not([data-ro])").forEach(w => { w.dataset.ro = 1; ro.observe(w); igFit(); })).observe(document.documentElement, { childList: true, subtree: true }); }
-  addEventListener("resize", igFit);
+  { const st = document.createElement("style"); st.textContent = ".c4-igc{display:grid;place-content:center;justify-items:center;gap:10px;width:100%;aspect-ratio:9/16;border-radius:14px;color:#fff;text-decoration:none;background:linear-gradient(150deg,#feda75,#fa7e1e 25%,#d62976 55%,#962fbf 80%,#4f5bd5)}.c4-igc,.c4-igc b,.c4-igc span{color:#fff!important;text-decoration:none!important}.c4-igc b{font-size:.95rem}.c4-igp{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.22);font-size:1.6rem;padding-left:4px}"; document.head.appendChild(st); }
+  // los videos arrancan solos (sin sonido) cuando se ven en pantalla y se pausan al salir; con un toque se les sube el volumen
+  if (window.IntersectionObserver) {
+    const io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting && e.intersectionRatio >= .6) { if (v.paused && !v.dataset.parado) v.play().catch(() => { }); } else if (!v.paused) { v.dataset.auto = 1; v.pause(); } }), { threshold: [0, .6] });
+    new MutationObserver(() => $$("video.c4-auto:not([data-io])").forEach(v => { v.dataset.io = 1; v.addEventListener("pause", () => { if (!v.dataset.auto && !v.ended) v.dataset.parado = 1; delete v.dataset.auto; }); v.addEventListener("play", () => delete v.dataset.parado); io.observe(v); })).observe(document.documentElement, { childList: true, subtree: true });
+  }
 
   /* pone en la página el WhatsApp, correo, Instagram, título y bono guardados en el panel */
   const money = v => "$" + Math.round(+v || 0).toLocaleString("en-US");

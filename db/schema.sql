@@ -453,6 +453,8 @@ CREATE TABLE IF NOT EXISTS videos (
   lugar          TEXT,
   codigo         TEXT NOT NULL,
   archivo        TEXT,
+  mp4            TEXT,
+  poster         TEXT,
   publicado      INTEGER NOT NULL DEFAULT 1,
   orden          INTEGER NOT NULL DEFAULT 0,
   creado_en      TEXT NOT NULL DEFAULT (datetime('now')),

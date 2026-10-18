@@ -17,7 +17,7 @@ const TABLAS = {
   negocios:    { mod: 'negocios', own: 'asesor_id', cols: ['cliente_id','propiedad_id','etapa','monto','banco','usa_bono','asesor_id','motivo_perdida'] },
   citas:       { mod: 'citas', own: 'asesor_id', cols: ['cliente_id','propiedad_id','tipo','fecha_hora','estado','asesor_id','notas'] },
   medios:      { mod: 'medios', cols: ['propiedad_id','tipo','ruta','portada','es_principal','orden'] },
-  videos:      { mod: 'propiedades', cols: ['titulo','lugar','codigo','publicado','orden'] },
+  videos:      { mod: 'propiedades', cols: ['titulo','lugar','codigo','mp4','poster','publicado','orden'] },
 };
 
 const LISTAS = {
@@ -219,6 +219,7 @@ const API_URL = 'https://c4realty-api.c4realty0.workers.dev';
 const PARTE = 1_500_000;
 const MIME_FOTO = /^image\/(jpeg|png|webp)$/;
 const MIME_DOC = /^(image\/(jpeg|png|webp|heic|heif)|application\/pdf)$/;
+const MIME_VIDEO = /^video\/(mp4|webm)$/;
 // Gavetas: la 0 es la base principal; FOTOS1..FOTOS9 son bases extra solo para fotos y documentos.
 // Cada base gratis aguanta 500 MB; cuando una se llena, lo nuevo se guarda solo en la siguiente.
 const GAVETAS = 10;
@@ -236,7 +237,7 @@ async function borrarArchivo(env, a) {
   if (a.gaveta && gDB(env, a.gaveta)) await gDB(env, a.gaveta).prepare('DELETE FROM archivo_partes WHERE archivo_id=?').bind(a.id).run();
   await env.DB.prepare('DELETE FROM archivos WHERE id=?').bind(a.id).run();
 }
-const urlArchivo = (clave, mime) => `${API_URL}/public/archivo/${clave}.${/png/.test(mime) ? 'png' : /webp/.test(mime) ? 'webp' : /pdf/.test(mime) ? 'pdf' : 'jpg'}`;
+const urlArchivo = (clave, mime) => `${API_URL}/public/archivo/${clave}.${/png/.test(mime) ? 'png' : /webp/.test(mime) ? 'webp' : /pdf/.test(mime) ? 'pdf' : /mp4/.test(mime) ? 'mp4' : /webm/.test(mime) ? 'webm' : 'jpg'}`;
 async function guardarArchivo(env, req, { privado = 0, cliente_id = null, usuario_id = null, maxMB = 6, mimeOk = MIME_FOTO }) {
   const mime = (req.headers.get('X-Mime') || '').toLowerCase();
   if (!mimeOk.test(mime)) fail('Tipo de archivo no permitido (usa foto JPG/PNG o PDF)');
@@ -262,15 +263,24 @@ function deB64(b64) {
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
-async function servirArchivo(env, clave, publico) {
+async function servirArchivo(env, clave, publico, rango) {
   const a = await env.DB.prepare('SELECT * FROM archivos WHERE clave=?').bind(String(clave).replace(/\..*$/, '')).first();
   if (!a || (publico && a.privado)) fail('No existe', 404);
   const db = gDB(env, a.gaveta || 0); if (!db) fail('No existe', 404);
   const { results } = await db.prepare('SELECT datos FROM archivo_partes WHERE archivo_id=? ORDER BY n').bind(a.id).all();
   const bytes = deB64(results.map(x => x.datos).join(''));
-  const h = { ...CORS, 'Content-Type': a.tipo_mime, 'Content-Length': String(bytes.length) };
+  const h = { ...CORS, 'Content-Type': a.tipo_mime, 'Accept-Ranges': 'bytes', 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges' };
   h['Cache-Control'] = publico ? 'public, max-age=31536000, immutable' : 'private, no-store';
   if (!publico) h['Content-Disposition'] = `inline; filename="${encodeURIComponent(a.nombre || 'documento')}"`;
+  // los videos se piden por pedazos (Range): sobre todo en iPhone
+  const m = /^bytes=(\d*)-(\d*)$/.exec(rango || '');
+  if (m && (m[1] || m[2])) {
+    const n = bytes.length;
+    let ini = m[1] ? +m[1] : Math.max(0, n - +m[2]), fin = m[1] && m[2] ? Math.min(+m[2], n - 1) : n - 1;
+    if (ini >= n || ini > fin) return new Response(null, { status: 416, headers: { ...h, 'Content-Range': `bytes */${n}` } });
+    return new Response(bytes.slice(ini, fin + 1), { status: 206, headers: { ...h, 'Content-Range': `bytes ${ini}-${fin}/${n}`, 'Content-Length': String(fin - ini + 1) } });
+  }
+  h['Content-Length'] = String(bytes.length);
   return new Response(bytes, { headers: h });
 }
 async function borrarArchivoDeRuta(env, ruta) {
@@ -292,6 +302,22 @@ async function limpiarVendidas(env) {
   }
   if (results.length) await bitacora(env, null, 'borrar', 'medios', null, null, { motivo: `Fotos de casas vendidas hace ${DIAS_FOTOS_VENDIDA} días (se dejó la portada)`, fotos: results.length, propiedades: [...new Set(results.map(x => x.propiedad_id))] }, null);
   return results.length;
+}
+// Video de la sección Videos (el panel lo achica antes de subirlo)
+// Documentos que suben los clientes (cédula, talonarios…): se borran solos a los 60 días.
+// El cliente y sus datos se quedan; solo se van los archivos.
+const DIAS_DOCUMENTOS = 60;
+async function limpiarDocumentos(env) {
+  const { results } = await env.DB.prepare(`SELECT id, gaveta, cliente_id FROM archivos WHERE privado = 1 AND creado_en <= datetime('now', '-${DIAS_DOCUMENTOS} days') LIMIT 40`).all();
+  for (const a of results) { await env.DB.prepare('DELETE FROM doc_enlaces WHERE archivo_id=?').bind(a.id).run(); await borrarArchivo(env, a); }
+  if (results.length) await bitacora(env, null, 'borrar', 'archivos', null, null, { motivo: `Documentos de clientes con más de ${DIAS_DOCUMENTOS} días`, documentos: results.length, clientes: [...new Set(results.map(x => x.cliente_id).filter(Boolean))] }, null);
+  return results.length;
+}
+async function subirVideo(env, u, req) {
+  exigir(u, 'propiedades', 'crear');
+  const a = await guardarArchivo(env, req, { usuario_id: u.id, maxMB: 25, mimeOk: MIME_VIDEO });
+  await bitacora(env, u.id, 'crear', 'archivos', a.id, null, { tipo: 'video', tamano: a.tamano }, req);
+  return json(a, 201);
 }
 async function subirFoto(env, u, req, url) {
   exigir(u, 'medios', 'crear');
@@ -378,12 +404,18 @@ async function sinVaciosObligatorios(env, nombre, d) {
 }
 // Un video se guarda con el código de su enlace de Instagram (instagram.com/reel/CODIGO/)
 function videoValido(d, nuevo) {
-  if ('codigo' in d || nuevo) {
+  for (const k of ['mp4', 'poster']) if (k in d && d[k] != null && !String(d[k]).startsWith(API_URL + '/public/archivo/')) fail('Archivo de video no válido');
+  if ('codigo' in d) {
     const t = String(d.codigo || '').trim();
-    const m = /instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(?:reels?|p|tv)\/([A-Za-z0-9_-]{5,40})/i.exec(t) || /^([A-Za-z0-9_-]{8,40})$/.exec(t);
-    if (!m) fail('Pega el enlace de un video de Instagram (ej. https://www.instagram.com/reel/…)');
-    d.codigo = m[1];
+    if (!t) d.codigo = '';
+    else {
+      const m = /instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(?:reels?|p|tv)\/([A-Za-z0-9_-]{5,40})/i.exec(t) || /^([A-Za-z0-9_-]{8,40})$/.exec(t);
+      if (!m) fail('Ese enlace no es de un video de Instagram (ej. https://www.instagram.com/reel/…)');
+      d.codigo = m[1];
+    }
   }
+  if (nuevo && !d.codigo && !d.mp4) fail('Sube el video o pega el enlace de Instagram');
+  if (nuevo && !('codigo' in d)) d.codigo = '';
   if (('titulo' in d || nuevo) && !String(d.titulo || '').trim()) fail('Escribe un título para el video');
   d.actualizado_en = new Date().toISOString().slice(0, 19).replace('T', ' ');
   return d;
@@ -438,6 +470,7 @@ async function borrar(env, nombre, u, req, id) {
   const docs = nombre === 'clientes' ? (await env.DB.prepare('SELECT id,gaveta FROM archivos WHERE cliente_id=? AND gaveta>0').bind(id).all()).results : [];
   await env.DB.prepare(`DELETE FROM ${nombre} WHERE id=?`).bind(id).run();
   if (nombre === 'medios') await borrarArchivoDeRuta(env, antes.ruta);
+  if (nombre === 'videos') { await borrarArchivoDeRuta(env, antes.mp4); await borrarArchivoDeRuta(env, antes.poster); }
   for (const r of rutas) await borrarArchivoDeRuta(env, r);
   for (const a of docs) if (gDB(env, a.gaveta)) await gDB(env, a.gaveta).prepare('DELETE FROM archivo_partes WHERE archivo_id=?').bind(a.id).run();
   await bitacora(env, u.id, 'borrar', nombre, id, antes, null, req);
@@ -603,7 +636,7 @@ async function publico(req, env, partes, ctx) {
     const { results } = await env.DB.prepare('SELECT * FROM v_catalogo_publico ORDER BY destacada DESC, orden').all();
     return json(results);
   }
-  if (req.method === 'GET' && r === 'archivo' && partes[2]) return servirArchivo(env, partes[2], true);
+  if ((req.method === 'GET' || req.method === 'HEAD') && r === 'archivo' && partes[2]) return servirArchivo(env, partes[2], true, req.headers.get('Range'));
   if (req.method === 'POST' && r === 'documento') {
     const tok = String(req.headers.get('X-Subida') || '');
     const sb = tok && await env.DB.prepare(`SELECT * FROM subidas WHERE token=? AND expira > datetime('now')`).bind(await sha256(tok)).first();
@@ -626,7 +659,7 @@ async function publico(req, env, partes, ctx) {
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
     const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio')`).all()).results;
-    let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
+    let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo, mp4, poster FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
     return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])), videos });
   }
   if (req.method === 'POST' && r === 'contacto') {
@@ -817,7 +850,7 @@ async function rutas(req, env, ctx) {
   if (r === 'hubspot' && partes[2] === 'sincronizar' && m === 'POST') { exigir(u, 'configuracion', 'editar'); return json(await sincronizarHubSpot(env)); }
   if (r === 'clientes' && id && partes[3] === 'interacciones' && m === 'POST') return nuevaInteraccion(env, u, req, id);
   if (r === 'clientes' && id && partes[3] === 'documentos' && m === 'POST') return documentos(env, u, req, id);
-  if (r === 'archivos' && m === 'POST' && !partes[2]) return subirFoto(env, u, req, url);
+  if (r === 'archivos' && m === 'POST' && !partes[2]) return url.searchParams.get('tipo') === 'video' ? subirVideo(env, u, req) : subirFoto(env, u, req, url);
   if (r === 'archivos' && m === 'GET' && partes[2]) { exigir(u, 'clientes', 'ver'); return servirArchivo(env, partes[2], false); }
   if (r === 'archivos' && m === 'DELETE' && partes[2]) {
     exigir(u, 'clientes', 'editar');
@@ -851,7 +884,7 @@ export default {
   },
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sincronizarHubSpot(env));
-    // una vez por hora revisa si hay casas vendidas hace 30 días para borrarles las fotos
-    if (new Date(event.scheduledTime || Date.now()).getUTCMinutes() === 17) ctx.waitUntil(limpiarVendidas(env).catch(() => 0));
+    // una vez por hora: fotos de casas vendidas hace 30 días y documentos de clientes de más de 60 días
+    if (new Date(event.scheduledTime || Date.now()).getUTCMinutes() === 17) ctx.waitUntil(limpiarVendidas(env).catch(() => 0).then(() => limpiarDocumentos(env)).catch(() => 0));
   },
 };

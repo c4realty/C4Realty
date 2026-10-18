@@ -285,6 +285,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const money = n => n == null || n === "" ? "—" : "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 const fecha = s => { if (!s) return "—"; const d = new Date(s.replace(" ", "T") + (s.length <= 19 ? "Z" : "")); return isNaN(d) ? s : d.toLocaleString("es-PA", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
+const borraDoc = s => { const d = new Date(String(s || "").replace(" ", "T") + "Z"); return isNaN(d) ? "—" : new Date(+d + 60 * 864e5).toLocaleDateString("es-PA", { day: "numeric", month: "long" }); };
 const dia = s => s ? new Date(s.replace(" ", "T") + "Z").toLocaleDateString("es-PA", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const MEDIA = "../";
 const img = r => r ? (/^https?:/.test(r) ? r : /^(img\/p\/|docs\/planos\/|videos\/aguacatal-)/.test(r) ? MEDIA + r : "../" + r) : "";
@@ -656,7 +657,7 @@ async function fichaCliente(id) {
     ${id ? `
     <div class="card"><h2>Anotar contacto</h2>
       <form id="f-i" class="grid2"><div class="f"><label>Tipo</label><select name="tipo">${["whatsapp", "llamada", "correo", "visita", "nota"].map(k => `<option value="${k}">${INTER[k]}</option>`).join("")}</select></div><div class="f"><label>Qué pasó</label><input name="detalle" required></div><div><button class="btn pri">Anotar</button></div></form></div>
-    ${c.archivos?.length ? `<div class="card"><h2>Documentos que subió (${c.archivos.length})</h2><div class="arch" style="margin-top:8px">${c.archivos.map(a => `<div class="li"><span>${/pdf/.test(a.tipo_mime) ? "📄" : "🖼️"} ${esc(a.nombre || "documento")} <small class="muted">· ${a.tamano > 1048576 ? (a.tamano / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(a.tamano / 1024)) + " KB"} · ${fecha(a.creado_en)}</small></span><span class="tools"><button class="btn sm" data-ver="${a.clave}" data-nom="${esc(a.nombre || "documento")}">Ver</button>${can("clientes", "editar") ? `<button class="btn sm del" data-qd="${a.clave}">Borrar</button>` : ""}</span></div>`).join("")}</div><p class="faint" style="font-size:.8rem;margin-top:8px">Solo se ven aquí, con usuario y clave. No salen en la página.</p></div>` : ""}
+    ${c.archivos?.length ? `<div class="card"><h2>Documentos que subió (${c.archivos.length})</h2><div class="arch" style="margin-top:8px">${c.archivos.map(a => `<div class="li"><span>${/pdf/.test(a.tipo_mime) ? "📄" : "🖼️"} ${esc(a.nombre || "documento")} <small class="muted">· ${a.tamano > 1048576 ? (a.tamano / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(a.tamano / 1024)) + " KB"} · ${fecha(a.creado_en)} · <span style="color:var(--warn)">se borra el ${borraDoc(a.creado_en)}</span></small></span><span class="tools"><button class="btn sm" data-ver="${a.clave}" data-nom="${esc(a.nombre || "documento")}">Ver</button>${can("clientes", "editar") ? `<button class="btn sm del" data-qd="${a.clave}">Borrar</button>` : ""}</span></div>`).join("")}</div><p class="faint" style="font-size:.8rem;margin-top:8px">Solo se ven aquí, con usuario y clave. No salen en la página. <b>Se borran solos a los 60 días de subidos</b>, para no llenar el espacio: si los necesitas para el banco, ábrelos con <b>Ver</b> y guárdalos. El cliente y sus datos no se borran.</p></div>` : ""}
     <div class="card"><h2>Requisitos que ya tiene (${INGRESO[tipoDocs]})</h2><p class="faint" style="font-size:.84rem;margin:4px 0 10px">Los marca el cliente en Cotizar. Tú también puedes marcarlos cuando te los entregue.</p><div class="docs">${DOCS[tipoDocs].map(d => `<label><input type="checkbox" data-doc="${esc(d)}" ${tieneDoc.has(d) ? "checked" : ""} ${ed ? "" : "disabled"}><span>${esc(d)}</span></label>`).join("")}</div></div>
     <div class="card"><div class="top" style="margin:0 0 10px"><h2>Negocios</h2>${can("negocios", "crear") ? `<button class="btn sm" id="c-neg">+ Nuevo negocio</button>` : ""}</div>${c.negocios.length ? c.negocios.map(n => `<div class="li"><span>${esc(n.propiedad || "Sin propiedad elegida")}</span><span class="tools"><span class="pill">${ETAPAS[n.etapa]}</span><button class="btn sm" data-neg="${n.id}">Abrir</button></span></div>`).join("") : `<p class="empty">Sin negocios.</p>`}</div>
     <div class="card"><div class="top" style="margin:0 0 10px"><h2>Citas</h2>${can("citas", "crear") ? `<button class="btn sm" id="c-cita">+ Nueva cita</button>` : ""}</div>${c.citas.length ? c.citas.map(x => `<div class="li"><span>${CITA_T[x.tipo]} · ${fecha(x.fecha_hora)}</span><span class="pill">${CITA_E[x.estado]}</span></div>`).join("") : `<p class="empty">Sin citas.</p>`}</div>
@@ -1361,11 +1362,11 @@ RENDER.videos = async () => {
   const V = await api("/api/videos");
   const cr = can("propiedades", "crear"), ed = can("propiedades", "editar"), bo = can("propiedades", "borrar");
   $("#tools").innerHTML = cr ? `<button class="btn pri" id="vd-new">+ Agregar video</button>` : "";
-  const thumb = v => v.archivo ? `<img src="${esc(img(v.archivo + ".jpg"))}" alt="" loading="lazy">` : `<div class="vd-ig"><span>▶</span><small>Video de Instagram</small></div>`;
-  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los videos de la sección <b>Videos</b> de la página, en el mismo orden. Para agregar uno, en Instagram toca los tres puntos ⋯ del video → <b>Copiar enlace</b>, y pégalo con <b>+ Agregar video</b>. <b>Ocultar</b> lo quita de la página sin borrarlo; <b>Mostrar</b> lo vuelve a poner.</p>
+  const thumb = v => v.poster ? `<img src="${esc(v.poster)}" alt="" loading="lazy">` : v.archivo ? `<img src="${esc(img(v.archivo + ".jpg"))}" alt="" loading="lazy">` : `<div class="vd-ig"><span>▶</span><small>Solo enlace: se abre en Instagram</small></div>`;
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los videos de la sección <b>Videos</b> de la página, en el mismo orden. Para agregar uno toca <b>+ Agregar video</b> y <b>sube el archivo</b> desde tu celular o computadora (se ve igual que los demás y arranca solo). <b>Ocultar</b> lo quita de la página sin borrarlo; <b>Mostrar</b> lo vuelve a poner.</p>
    ${V.length ? `<div class="hl">${V.map((v, i) => `<div class="card hlc" data-vid="${v.id}" style="${v.publicado ? "" : "opacity:.6"}">
      <div class="hl-img vd-img">${thumb(v)}${v.publicado ? "" : `<span class="hl-b" style="background:#64748b">Oculto</span>`}</div>
-     <div class="hl-t"><small class="muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${esc(v.lugar || "")}</small><b>${esc(v.titulo)}</b><a class="muted" style="font-size:.85rem" href="https://www.instagram.com/reel/${esc(v.codigo)}/" target="_blank" rel="noopener">Ver en Instagram ↗</a></div>
+     <div class="hl-t"><small class="muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${esc(v.lugar || "")}</small><b>${esc(v.titulo)}</b>${v.codigo ? `<a class="muted" style="font-size:.85rem" href="https://www.instagram.com/reel/${esc(v.codigo)}/" target="_blank" rel="noopener">Ver en Instagram ↗</a>` : `<span class="faint" style="font-size:.85rem">Sin enlace de Instagram</span>`}</div>
      ${ed || bo ? `<div class="tools">${ed ? `<button class="btn sm" data-mv="-1" ${i === 0 ? "disabled" : ""} title="Mover antes" aria-label="Mover antes">◀</button><button class="btn sm" data-mv="1" ${i === V.length - 1 ? "disabled" : ""} title="Mover después" aria-label="Mover después">▶</button><button class="btn sm" data-ed>Editar</button><button class="btn sm" data-pub>${v.publicado ? "Ocultar" : "Mostrar"}</button>` : ""}${bo ? `<button class="btn sm del" data-rm>Borrar</button>` : ""}</div>` : ""}
    </div>`).join("")}</div>` : `<div class="card"><p>No hay videos todavía.${cr ? " Toca <b>+ Agregar video</b> para poner el primero." : ""}</p></div>`}`;
   const byId = id => V.find(x => String(x.id) === String(id));
@@ -1382,18 +1383,83 @@ RENDER.videos = async () => {
   if ($("#vd-new")) $("#vd-new").onclick = () => videoForm(null);
 };
 function videoForm(v) {
-  const propio = v && v.archivo;
+  const propio = v && (v.archivo || v.mp4);
+  const modo = !v ? "subir" : propio ? "propio" : "enlace";
   abrir(`<div class="hd"><h1>${v ? "Editar video" : "Agregar video"}</h1><button class="btn sm" data-close>Cerrar</button></div>
-   <form id="f-vd" class="card" style="display:grid;gap:12px">
-    ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar y el título.</p>` : `<div class="f"><label for="vd-l">Enlace del video en Instagram</label><input id="vd-l" required placeholder="https://www.instagram.com/reel/…" value="${v ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram toca los tres puntos ⋯ del video → Copiar enlace, y pégalo aquí.</small></div>`}
+   <form id="f-vd" class="card" style="display:grid;gap:14px">
+    ${!v ? `<div class="seg" role="tablist" style="display:flex;gap:8px"><button type="button" class="btn sm pri" data-m="subir">Subir el video (recomendado)</button><button type="button" class="btn sm" data-m="enlace">Solo enlace de Instagram</button></div>` : ""}
+    <div data-p="subir" ${modo === "subir" ? "" : "hidden"}>
+     <label class="drop" for="vd-f" style="display:grid;gap:6px;justify-items:center;text-align:center;cursor:pointer"><input type="file" id="vd-f" accept="video/mp4,video/quicktime,video/webm,video/*" class="hide"><b>+ Elegir el video</b><span class="muted" style="font-size:.85rem">El mismo que subiste a Instagram, desde tu celular o computadora. Hasta 3 minutos.</span></label>
+     <div id="vd-pre" class="hide" style="display:flex;gap:12px;align-items:center;margin-top:10px"><video id="vd-v" muted playsinline style="width:90px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;background:#000"></video><span id="vd-inf" class="muted" style="font-size:.88rem"></span></div>
+     <p class="muted" style="font-size:.82rem;margin-top:8px">Así se ve igual que los demás videos de la página y arranca solo. El panel lo achica antes de subirlo para que ocupe poco espacio.</p>
+    </div>
+    <div data-p="enlace" ${modo === "enlace" ? "" : "hidden"}>
+     <p class="muted" style="font-size:.85rem;margin-bottom:8px">Con solo el enlace, en la página sale una tarjeta que abre el video en Instagram: <b>no se reproduce dentro de la página</b> (Instagram no lo permite).</p>
+    </div>
+    ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar, el título y el enlace.</p>` : ""}
+    <div class="f"><label for="vd-l">Enlace del video en Instagram <span class="faint" id="vd-opc">${modo === "enlace" ? "" : "(opcional)"}</span></label><input id="vd-l" placeholder="https://www.instagram.com/reel/…" value="${v && v.codigo ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram: tres puntos ⋯ del video → Copiar enlace. Sirve para el botón "Ver en Instagram".</small></div>
     <div class="grid2"><div class="f"><label for="vd-z">Lugar</label><input id="vd-z" placeholder="ej. Boquete" value="${esc(v?.lugar || "")}"></div>
      <div class="f"><label for="vd-t">Título</label><input id="vd-t" required placeholder="ej. Casa de $70,000 en Boquete" value="${esc(v?.titulo || "")}"></div></div>
-    <div class="tools"><button class="btn pri">${v ? "Guardar" : "Agregar a la página"}</button></div></form>`, () => {
+    <div class="prog hide" id="vd-prog"><i></i></div><p class="muted hide" id="vd-msg" style="font-size:.88rem"></p>
+    <div class="tools"><button class="btn pri" id="vd-ok">${v ? "Guardar" : "Agregar a la página"}</button></div></form>`, () => {
+    let m = modo, file = null;
+    $$("[data-m]").forEach(b => b.onclick = () => { m = b.dataset.m; $$("[data-m]").forEach(x => x.classList.toggle("pri", x === b)); $$("[data-p]").forEach(p => p.hidden = p.dataset.p !== m); $("#vd-opc").textContent = m === "enlace" ? "" : "(opcional)"; });
+    $("#vd-f") && ($("#vd-f").onchange = e => {
+      file = e.target.files[0]; if (!file) return;
+      const u = URL.createObjectURL(file), vv = $("#vd-v"); vv.src = u; $("#vd-pre").classList.remove("hide");
+      vv.onloadedmetadata = () => { const d = vv.duration; $("#vd-inf").innerHTML = `<b>${esc(file.name)}</b><br>${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, "0")} min · ${(file.size / 1048576).toFixed(1)} MB${d > 180 ? `<br><span style="color:var(--crit)">Dura más de 3 minutos: usa uno más corto.</span>` : ""}`; vv.currentTime = Math.min(1, d / 2); };
+    });
+    const msg = t => { $("#vd-msg").textContent = t; $("#vd-msg").classList.toggle("hide", !t); };
+    const prog = p => { $("#vd-prog").classList.toggle("hide", p == null); if (p != null) $("#vd-prog i").style.width = Math.round(p * 100) + "%"; };
     $("#f-vd").onsubmit = async e => {
-      e.preventDefault(); const body = { lugar: $("#vd-z").value.trim() || null, titulo: $("#vd-t").value.trim() }; if ($("#vd-l")) body.codigo = $("#vd-l").value.trim();
-      try { await api("/api/videos" + (v ? "/" + v.id : ""), { method: v ? "PATCH" : "POST", body }); toast(v ? "Video guardado" : "Video agregado: ya sale en la página"); cerrar(); RENDER.videos(); } catch (x) { toast(x.message, 1); }
+      e.preventDefault(); const ok = $("#vd-ok");
+      const body = { lugar: $("#vd-z").value.trim() || null, titulo: $("#vd-t").value.trim(), codigo: $("#vd-l").value.trim() };
+      if (!v && m === "enlace" && !body.codigo) return toast("Pega el enlace del video de Instagram", 1);
+      ok.disabled = true;
+      try {
+        if (!v && m === "subir") {
+          if (!file) throw new Error("Elige el video primero");
+          const r = await achicarVideo(file, (p, t) => { prog(p); msg(t); });
+          msg("Subiendo la portada…"); const pf = await subirArchivo("/api/archivos?tipo=foto", r.poster, "portada.jpg");
+          msg("Subiendo el video… (no cierres esta pantalla)"); prog(.97); const vf = await subirArchivo("/api/archivos?tipo=video", r.blob, file.name);
+          body.mp4 = vf.url; body.poster = pf.url;
+        }
+        await api("/api/videos" + (v ? "/" + v.id : ""), { method: v ? "PATCH" : "POST", body });
+        toast(v ? "Video guardado" : "Video agregado: ya sale en la página"); cerrar(); RENDER.videos();
+      } catch (x) { toast(x.message, 1); msg(""); prog(null); ok.disabled = false; }
     };
   });
+}
+// Achica un video en el navegador: máx. 1280 px de alto, ~1.6 Mbps. Devuelve el video y una foto de portada.
+async function achicarVideo(file, aviso = () => { }, forzar = false) {
+  const url = URL.createObjectURL(file), v = document.createElement("video");
+  v.src = url; v.playsInline = true; v.preload = "auto"; v.crossOrigin = "anonymous";
+  await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("No se pudo abrir ese video. Prueba con otro (MP4 o MOV).")); });
+  if (v.duration > 181) throw new Error("El video dura más de 3 minutos. Usa uno más corto.");
+  const W0 = v.videoWidth, H0 = v.videoHeight; if (!W0 || !H0) throw new Error("No se pudo leer ese video. Prueba con otro.");
+  // portada
+  await new Promise(ok => { v.onseeked = ok; v.currentTime = Math.min(1, v.duration / 2); });
+  const kp = Math.min(1, 720 / Math.max(W0, H0)), cp = document.createElement("canvas"); cp.width = Math.round(W0 * kp); cp.height = Math.round(H0 * kp); cp.getContext("2d").drawImage(v, 0, 0, cp.width, cp.height);
+  const poster = await new Promise(r => cp.toBlob(r, "image/jpeg", .82));
+  const MAX = 25 * 1048576;
+  const yaSirve = /mp4/.test(file.type) && file.size <= 12 * 1048576 && Math.max(W0, H0) <= 1920;
+  if (yaSirve && !forzar) { aviso(.9, "El video ya es liviano, no hace falta achicarlo."); return { blob: file, poster }; }
+  const tipos = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  const mime = window.MediaRecorder && tipos.find(t => MediaRecorder.isTypeSupported(t));
+  if (!mime) { if (/mp4|webm/.test(file.type) && file.size <= MAX) return { blob: file, poster }; throw new Error("Este navegador no puede achicar el video y es muy pesado. Prueba desde Chrome o con un video más corto."); }
+  const k = Math.min(1, 1280 / Math.max(W0, H0)), cv = document.createElement("canvas"); cv.width = Math.round(W0 * k / 2) * 2; cv.height = Math.round(H0 * k / 2) * 2;
+  const cx = cv.getContext("2d"), st = cv.captureStream(30);
+  let ac = null; try { ac = new AudioContext(); const src = ac.createMediaElementSource(v), dst = ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t => st.addTrack(t)); } catch { }
+  const rec = new MediaRecorder(st, { mimeType: mime, videoBitsPerSecond: 1_600_000, audioBitsPerSecond: 96_000 }), partes = [];
+  rec.ondataavailable = e => e.data.size && partes.push(e.data);
+  const fin = new Promise(ok => rec.onstop = ok);
+  v.currentTime = 0; await new Promise(ok => { v.onseeked = ok; });
+  let vivo = true; const pinta = () => { if (!vivo) return; cx.drawImage(v, 0, 0, cv.width, cv.height); aviso(Math.min(.9, v.currentTime / v.duration * .9), `Preparando el video… ${Math.round(v.currentTime / v.duration * 100)} % (tarda lo mismo que dura el video; no cierres esta pantalla)`); v.requestVideoFrameCallback ? v.requestVideoFrameCallback(pinta) : requestAnimationFrame(pinta); };
+  rec.start(1000); await v.play(); pinta();
+  await new Promise(ok => v.onended = ok); vivo = false; cx.drawImage(v, 0, 0, cv.width, cv.height); rec.stop(); await fin; try { ac && ac.close(); } catch { } URL.revokeObjectURL(url);
+  const blob = new Blob(partes, { type: mime.split(";")[0] });
+  if (blob.size > MAX) throw new Error("Aun achicado, el video pesa más de 25 MB. Usa uno más corto.");
+  return { blob: blob.size < file.size || !/mp4|webm/.test(file.type) ? blob : file, poster };
 }
 
 RENDER.configuracion = async () => {

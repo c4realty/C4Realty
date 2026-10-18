@@ -899,7 +899,7 @@ renderDocs();setQ("");
 /* videos y entregas */
 $("#vnew").innerHTML=`<figure class="reel"><img src="${P.find(p=>p.id==="vila-aguacatal").img[0]}" alt="Modelo Vila en Aguacatal" style="width:100%;height:100%;object-fit:cover"></figure>`+VNEW.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${v}.jpg" src="${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("");
 $("#vnew-open").addEventListener("click",()=>{ORDER=P.map(p=>p.id);openSheet("vila-aguacatal");});
-const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${C4.esc(v.lugar||"")}</small>${C4.esc(v.titulo)}</div><a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a></div>`).join("");const h=$("#vids").previousElementSibling;if(h&&h.tagName==="H3")h.hidden=!L.length;};
+const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${C4.esc(v.lugar||"")}</small>${C4.esc(v.titulo)}</div>${v.codigo?`<a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a>`:""}</div>`).join("");const h=$("#vids").previousElementSibling;if(h&&h.tagName==="H3")h.hidden=!L.length;};
 pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
 document.addEventListener("play",e=>{if(e.target.muted&&e.target.loop)return;document.querySelectorAll("video").forEach(v=>{if(v!==e.target&&!(v.muted&&v.loop))v.pause();});},true);
 $("#entregas").style.display=DELIV.length?"":"none";$("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel="noopener"><img src="${IMG[f]}" alt="Entrega de casa" loading="lazy"></a>`).join("");
