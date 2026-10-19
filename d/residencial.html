@@ -386,7 +386,7 @@ addEventListener("scroll",()=>document.getElementById("top").classList.toggle("s
   const vila=P.find(p=>p.id==="vila-aguacatal");
   $("#vnew").innerHTML=(vila?`<figure class="reel"><img src="${esc(vila.img[0])}" alt="Modelo Vila en Aguacatal"></figure>`:"")+(vila&&vila.vids.length?vila.vids.map(v=>[v,(VNEW.find(x=>v.endsWith("/"+x[0]))||[,""])[1]]):VNEW.map(([v,t])=>["../videos/"+v,t])).map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${esc(v)}.jpg" src="${esc(v)}.mp4"></video>${t?`<figcaption>${esc(t)}</figcaption>`:""}</figure>`).join("");
   if(vila)$("#vnew-open").onclick=()=>C4.ficha(vila);else $("#vnew-open").hidden=true;
-  const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${esc(v.lugar||"")}</small>${esc(v.titulo)}</div>${v.codigo?`<a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a>`:""}</div>`).join("");};
+  const pintaVids=L=>{$("#vids").innerHTML=L.filter(v=>v.seccion!=="bono").map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${esc(v.lugar||"")}</small>${esc(v.titulo)}</div>${v.codigo?`<a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a>`:""}</div>`).join("");};
  pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
   /* cifras */
   const pr=P.filter(p=>p.precio).map(p=>p.precio),lt=P.map(p=>p.lote).filter(Boolean);
