@@ -1532,7 +1532,8 @@ const BONO_BASE = {
   aviso: "algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.",
 };
 RENDER.bono = async () => {
-  const g = (await api("/api/contenido/bono")) || BONO_BASE, ed = can("propiedades", "editar");
+  let g0 = null; try { g0 = await api("/api/contenido/bono"); } catch { }
+  const g = g0 || BONO_BASE, ed = can("propiedades", "editar");
   const lineas = a => esc((a || []).join("\n"));
   const banco = (b, i) => `<div class="card bn" style="display:grid;gap:10px;padding:14px"><div style="display:flex;gap:8px;align-items:end"><div class="f" style="flex:1"><label>Banco ${i + 1}</label><input class="bn-n" value="${esc(b.nombre || "")}" placeholder="ej. Banco Nacional"></div>${ed ? `<button type="button" class="btn sm del bn-x">Quitar</button>` : ""}</div><div class="f"><label>Puntos (uno por línea)</label><textarea class="bn-p" rows="4">${lineas(b.puntos)}</textarea></div></div>`;
   $("#tools").innerHTML = `<a class="btn" href="${esc(SITIO)}#bono" target="_blank" rel="noopener">Ver en la página ↗</a>`;
