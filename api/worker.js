@@ -17,7 +17,7 @@ const TABLAS = {
   negocios:    { mod: 'negocios', own: 'asesor_id', cols: ['cliente_id','propiedad_id','etapa','monto','banco','usa_bono','asesor_id','motivo_perdida'] },
   citas:       { mod: 'citas', own: 'asesor_id', cols: ['cliente_id','propiedad_id','tipo','fecha_hora','estado','asesor_id','notas'] },
   medios:      { mod: 'medios', cols: ['propiedad_id','tipo','ruta','portada','es_principal','orden'] },
-  videos:      { mod: 'propiedades', cols: ['titulo','lugar','codigo','mp4','poster','publicado','orden'] },
+  videos:      { mod: 'propiedades', cols: ['titulo','lugar','codigo','mp4','poster','seccion','publicado','orden'] },
 };
 
 const LISTAS = {
@@ -465,6 +465,7 @@ function videoValido(d, nuevo) {
       d.codigo = m[1];
     }
   }
+  if ('seccion' in d && !['videos', 'bono'].includes(d.seccion)) d.seccion = 'videos';
   if (nuevo && !d.codigo && !d.mp4) fail('Sube el video o pega el enlace de Instagram');
   if (nuevo && !('codigo' in d)) d.codigo = '';
   if (('titulo' in d || nuevo) && !String(d.titulo || '').trim()) fail('Escribe un título para el video');
@@ -710,7 +711,7 @@ async function publico(req, env, partes, ctx) {
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
     const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio')`).all()).results;
-    let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo, mp4, poster FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
+    let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo, mp4, poster, seccion FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
     return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])), videos });
   }
   if (req.method === 'POST' && r === 'contacto') {

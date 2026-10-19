@@ -1363,9 +1363,9 @@ RENDER.videos = async () => {
   const cr = can("propiedades", "crear"), ed = can("propiedades", "editar"), bo = can("propiedades", "borrar");
   $("#tools").innerHTML = cr ? `<button class="btn pri" id="vd-new">+ Agregar video</button>` : "";
   const thumb = v => v.poster ? `<img src="${esc(v.poster)}" alt="" loading="lazy">` : v.archivo ? `<img src="${esc(img(v.archivo + ".jpg"))}" alt="" loading="lazy">` : `<div class="vd-ig"><span>▶</span><small>Solo enlace: se abre en Instagram</small></div>`;
-  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los videos de la sección <b>Videos</b> de la página, en el mismo orden. Para agregar uno toca <b>+ Agregar video</b> y <b>sube el archivo</b> desde tu celular o computadora (se ve igual que los demás y arranca solo). <b>Ocultar</b> lo quita de la página sin borrarlo; <b>Mostrar</b> lo vuelve a poner.</p>
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los videos de la página, en el mismo orden: los de la sección <b>Videos</b> y el de la guía del <b>Bono Pa' Ti</b> (marcado en azul). Para agregar uno toca <b>+ Agregar video</b> y <b>sube el archivo</b> desde tu celular o computadora (se ve igual que los demás y arranca solo). <b>Ocultar</b> lo quita de la página sin borrarlo; <b>Mostrar</b> lo vuelve a poner.</p>
    ${V.length ? `<div class="hl">${V.map((v, i) => `<div class="card hlc" data-vid="${v.id}" style="${v.publicado ? "" : "opacity:.6"}">
-     <div class="hl-img vd-img">${thumb(v)}${v.publicado ? "" : `<span class="hl-b" style="background:#64748b">Oculto</span>`}</div>
+     <div class="hl-img vd-img">${thumb(v)}${v.publicado ? "" : `<span class="hl-b" style="background:#64748b">Oculto</span>`}${v.seccion === "bono" ? `<span class="hl-b" style="left:auto;right:8px;background:#0b6bcb">Bono Pa' Ti</span>` : ""}</div>
      <div class="hl-t"><small class="muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700">${esc(v.lugar || "")}</small><b>${esc(v.titulo)}</b>${v.codigo ? `<a class="muted" style="font-size:.85rem" href="https://www.instagram.com/reel/${esc(v.codigo)}/" target="_blank" rel="noopener">Ver en Instagram ↗</a>` : `<span class="faint" style="font-size:.85rem">Sin enlace de Instagram</span>`}</div>
      ${ed || bo ? `<div class="tools">${ed ? `<button class="btn sm" data-mv="-1" ${i === 0 ? "disabled" : ""} title="Mover antes" aria-label="Mover antes">◀</button><button class="btn sm" data-mv="1" ${i === V.length - 1 ? "disabled" : ""} title="Mover después" aria-label="Mover después">▶</button><button class="btn sm" data-ed>Editar</button><button class="btn sm" data-pub>${v.publicado ? "Ocultar" : "Mostrar"}</button>` : ""}${bo ? `<button class="btn sm del" data-rm>Borrar</button>` : ""}</div>` : ""}
    </div>`).join("")}</div>` : `<div class="card"><p>No hay videos todavía.${cr ? " Toca <b>+ Agregar video</b> para poner el primero." : ""}</p></div>`}`;
@@ -1403,6 +1403,7 @@ function videoForm(v) {
     </div>
     ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar, el título y el enlace.</p>` : ""}
     <div class="f"><label for="vd-l">Enlace del video en Instagram <span class="faint" id="vd-opc">${modo === "enlace" ? "" : "(opcional)"}</span></label><input id="vd-l" placeholder="https://www.instagram.com/reel/…" value="${v && v.codigo ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram: tres puntos ⋯ del video → Copiar enlace. Sirve para el botón "Ver en Instagram".</small></div>
+    <div class="f"><label for="vd-s">¿Dónde sale en la página?</label><select id="vd-s"><option value="videos" ${v?.seccion !== "bono" ? "selected" : ""}>En la sección Videos</option><option value="bono" ${v?.seccion === "bono" ? "selected" : ""}>En la guía del Bono Pa' Ti</option></select></div>
     <div class="grid2"><div class="f"><label for="vd-z">Lugar</label><input id="vd-z" placeholder="ej. Boquete" value="${esc(v?.lugar || "")}"></div>
      <div class="f"><label for="vd-t">Título</label><input id="vd-t" required placeholder="ej. Casa de $70,000 en Boquete" value="${esc(v?.titulo || "")}"></div></div>
     <div class="prog hide" id="vd-prog"><i></i></div><p class="muted hide" id="vd-msg" style="font-size:.88rem"></p>
@@ -1430,7 +1431,7 @@ function videoForm(v) {
     const prog = p => { $("#vd-prog").classList.toggle("hide", p == null); if (p != null) $("#vd-prog i").style.width = Math.round(p * 100) + "%"; };
     $("#f-vd").onsubmit = async e => {
       e.preventDefault(); const ok = $("#vd-ok");
-      const body = { lugar: $("#vd-z").value.trim() || null, titulo: $("#vd-t").value.trim(), codigo: $("#vd-l").value.trim() };
+      const body = { lugar: $("#vd-z").value.trim() || null, titulo: $("#vd-t").value.trim(), codigo: $("#vd-l").value.trim(), seccion: $("#vd-s").value };
       if (!v && m === "enlace" && !body.codigo) return toast("Pega el enlace del video de Instagram", 1);
       ok.disabled = true;
       try {

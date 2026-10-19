@@ -519,3 +519,4 @@ INSERT INTO videos (titulo,lugar,codigo,archivo,orden) SELECT * FROM (VALUES
   ('Modelo Star Plus','Vía Caldera','DdIN_4ZxRqz','videos/DdIN_4ZxRqz',6),
   ('Casa en lote de 614 m²','Las Trancas','DbKGygdRUF9','videos/DbKGygdRUF9',7)
 ) WHERE NOT EXISTS (SELECT 1 FROM videos);
+INSERT INTO videos (titulo,lugar,codigo,archivo,seccion,orden) SELECT 'Caja de Ahorros confirma su participación','Video','DeAvoR1RuE9','videos/DeAvoR1RuE9','bono',0 WHERE NOT EXISTS (SELECT 1 FROM videos WHERE codigo='DeAvoR1RuE9');

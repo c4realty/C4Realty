@@ -148,8 +148,9 @@ details.post{background:var(--bg-2);border:1px solid var(--line);border-radius:1
 details.post summary{cursor:pointer;font-weight:700;font-size:.88rem;color:var(--muted)}
 details.post p{white-space:pre-line;font-size:.9rem;margin-top:8px;line-height:1.5}
 ul.ticks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-ul.ticks li{display:flex;gap:10px;align-items:flex-start}
-ul.ticks li::before{content:"✓";color:var(--accent);font-weight:800}
+.bono.sin-video{grid-template-columns:1fr!important}
+ul.ticks li{position:relative;padding-left:24px}
+ul.ticks li::before{content:"✓";color:var(--accent);font-weight:800;position:absolute;left:0;top:0}
 .src{font-size:.78rem;color:var(--muted)}
 .src a{color:var(--sky)}
 
@@ -572,7 +573,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       <p class="muted">Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.</p>
     </div>
     <div class="bono">
-      <div style="display:grid;gap:14px"><div class="vcard"><video controls playsinline preload="none" poster="videos/DeAvoR1RuE9.jpg" src="videos/DeAvoR1RuE9.mp4"></video><div class="vt"><small>Video</small>Caja de Ahorros confirma su participación</div></div></div>
+      <div style="display:grid;gap:14px" id="bono-vids"><div class="vcard"><video controls playsinline preload="none" poster="videos/DeAvoR1RuE9.jpg" src="videos/DeAvoR1RuE9.mp4"></video><div class="vt"><small>Video</small>Caja de Ahorros confirma su participación</div></div></div>
       <div style="display:grid;gap:16px">
         <ul class="ticks">
           <li>Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de <span data-cf="bono_monto">$3,000</span> para el abono inicial de una casa nueva.</li>
@@ -899,7 +900,10 @@ renderDocs();setQ("");
 /* videos y entregas */
 $("#vnew").innerHTML=`<figure class="reel"><img src="${P.find(p=>p.id==="vila-aguacatal").img[0]}" alt="Modelo Vila en Aguacatal" style="width:100%;height:100%;object-fit:cover"></figure>`+VNEW.map(([v,t])=>`<figure class="reel"><video autoplay muted loop playsinline preload="metadata" poster="${v}.jpg" src="${v}.mp4"></video><figcaption>${t}</figcaption></figure>`).join("");
 $("#vnew-open").addEventListener("click",()=>{ORDER=P.map(p=>p.id);openSheet("vila-aguacatal");});
-const pintaVids=L=>{$("#vids").innerHTML=L.map(v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${C4.esc(v.lugar||"")}</small>${C4.esc(v.titulo)}</div>${v.codigo?`<a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a>`:""}</div>`).join("");const h=$("#vids").previousElementSibling;if(h&&h.tagName==="H3")h.hidden=!L.length;};
+const tarjetaVid=v=>`<div class="vcard">${C4.videoMedia(v)}<div class="vt"><small>${C4.esc(v.lugar||"")}</small>${C4.esc(v.titulo)}</div>${v.codigo?`<a href="${C4.videoLink(v)}" target="_blank" rel="noopener">Ver en Instagram</a>`:""}</div>`;
+const pintaVids=L=>{const R=L.filter(v=>v.seccion!=="bono"),B=L.filter(v=>v.seccion==="bono");$("#vids").innerHTML=R.map(tarjetaVid).join("");const h=$("#vids").previousElementSibling;if(h&&h.tagName==="H3")h.hidden=!R.length;
+ // videos del Bono Pa' Ti: los que Alicia marca en el panel (si ninguno, se esconde el espacio)
+ if(L.some(v=>"seccion" in v)){const bv=$("#bono-vids");bv.innerHTML=B.map(tarjetaVid).join("");bv.hidden=!B.length;bv.parentElement.classList.toggle("sin-video",!B.length);}};
 pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
 document.addEventListener("play",e=>{if(e.target.muted&&e.target.loop)return;document.querySelectorAll("video").forEach(v=>{if(v!==e.target&&!(v.muted&&v.loop))v.pause();});},true);
 $("#entregas").style.display=DELIV.length?"":"none";$("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel="noopener"><img src="${IMG[f]}" alt="Entrega de casa" loading="lazy"></a>`).join("");
