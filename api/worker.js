@@ -3,7 +3,8 @@
 // Secretos opcionales: HUBSPOT_TOKEN (Service Key de HubSpot).
 
 const ITER = 100000;               // PBKDF2 (máximo permitido en Workers)
-const SESION_DIAS = 7;
+// El panel se cierra solo tras 25 minutos sin uso (cada pedido renueva el plazo)
+const INACTIVIDAD_MIN = 25;
 const ETAPAS_HS = {                // etapas de Alicia → etapas por defecto de HubSpot
   cotizacion: 'appointmentscheduled', recorrido: 'qualifiedtobuy', apartado: 'presentationscheduled',
   documentacion: 'decisionmakerboughtin', aprobacion: 'decisionmakerboughtin', contrato: 'contractsent',
@@ -84,6 +85,8 @@ async function sesion(req, env) {
       FROM sesiones s JOIN usuarios u ON u.id=s.usuario_id JOIN roles r ON r.id=u.rol_id
       WHERE s.token_hash=? AND s.expira_en > datetime('now')`).bind(th).first();
   if (!u || u.estado !== 'activo') fail('Tu sesión venció. Vuelve a entrar.', 401);
+  // renueva el plazo de inactividad (solo escribe cuando hace falta)
+  await env.DB.prepare(`UPDATE sesiones SET expira_en=datetime('now','+${INACTIVIDAD_MIN} minutes') WHERE token_hash=? AND (expira_en < datetime('now','+${INACTIVIDAD_MIN - 5} minutes') OR expira_en > datetime('now','+${INACTIVIDAD_MIN + 1} minutes'))`).bind(th).run();
   const { results } = await env.DB.prepare('SELECT modulo,ver,crear,editar,borrar,alcance FROM permisos WHERE rol_id=?').bind(u.rol_id).all();
   u.permisos = Object.fromEntries(results.map(p => [p.modulo, p]));
   u.token_hash = th;
@@ -95,7 +98,7 @@ function propios(u, mod) { return u.permisos[mod]?.alcance === 'propios'; }
 
 async function crearSesion(env, req, uid) {
   const tok = randHex(32);
-  await env.DB.prepare(`INSERT INTO sesiones (token_hash,usuario_id,expira_en,ip,agente) VALUES (?,?,datetime('now','+${SESION_DIAS} days'),?,?)`)
+  await env.DB.prepare(`INSERT INTO sesiones (token_hash,usuario_id,expira_en,ip,agente) VALUES (?,?,datetime('now','+${INACTIVIDAD_MIN} minutes'),?,?)`)
     .bind(await sha256(tok), uid, ip(req), (req.headers.get('User-Agent') || '').slice(0, 200)).run();
   await env.DB.prepare(`UPDATE usuarios SET ultimo_ingreso=datetime('now') WHERE id=?`).bind(uid).run();
   await env.DB.prepare(`DELETE FROM sesiones WHERE expira_en < datetime('now')`).run();

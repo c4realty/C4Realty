@@ -368,6 +368,23 @@ async function salir(vencida) {
   if (vencida) lmsg("Tu sesión venció. Vuelve a entrar.");
 }
 $("#b-salir").onclick = () => salir();
+
+/* ---------- CIERRE POR INACTIVIDAD: 25 minutos sin usar el panel ---------- */
+const INACT = 25 * 60e3, AVISO = 60e3;
+let pingUlt = Date.now();
+const actividad = () => { if (!TOK) return; const t = Date.now(); store.set("c4_act", String(t)); if (t - pingUlt > 4 * 60e3) { pingUlt = t; api("/api/yo").catch(() => { }); } };
+["pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(ev => addEventListener(ev, actividad, { passive: true, capture: true }));
+{ let mv = 0; addEventListener("mousemove", () => { const t = Date.now(); if (t - mv > 15e3) { mv = t; actividad(); } }, { passive: true }); }
+setInterval(() => {
+  if (!TOK) { $("#inact")?.remove(); return; }
+  const ult = +store.get("c4_act") || Date.now(), quieto = Date.now() - ult;
+  if (quieto >= INACT) { $("#inact")?.remove(); salir().then(() => lmsg("Se cerró la sesión por 25 minutos sin uso. Vuelve a entrar.")); return; }
+  if (quieto >= INACT - AVISO) {
+    let a = $("#inact");
+    if (!a) { a = document.createElement("div"); a.id = "inact"; a.className = "toast"; a.style.cssText = "display:flex;gap:12px;align-items:center;bottom:20px"; a.innerHTML = `<span id="inact-t"></span><button class="btn sm pri" type="button">Seguir conectado</button>`; document.body.append(a); $("button", a).onclick = () => { pingUlt = 0; actividad(); a.remove(); }; }
+    $("#inact-t").textContent = `Por seguridad, el panel se cerrará en ${Math.max(0, Math.ceil((INACT - quieto) / 1000))} segundos por falta de uso.`;
+  } else $("#inact")?.remove();
+}, 1000);
 $("#b-clave").onclick = () => abrir(`
   <div class="hd"><h1>Cambiar mi clave</h1><button class="btn sm" data-close>Cerrar</button></div>
   <form id="f-cl" class="tl" style="gap:12px">
@@ -1555,6 +1572,7 @@ RENDER.bitacora = async () => {
 
 /* ---------- arranque ---------- */
 async function iniciar() {
+  store.set("c4_act", String(Date.now()));
   YO = await api("/api/yo");
   $("#me-n").textContent = YO.nombre; $("#me-r").textContent = YO.rol;
   $("#v-login").classList.add("hide"); $("#v-app").classList.remove("hide");
