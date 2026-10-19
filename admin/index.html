@@ -392,7 +392,8 @@ const VISTAS = [
   { id: "hotlist", t: "Hot list", ico: "✦", mod: "propiedades", sub: "Ofertas y casas destacadas, ordenadas por el mayor descuento" },
   { id: "difusion", t: "Difusión WhatsApp", ico: "✆", mod: "propiedades", sub: "Envía casas y volantes por WhatsApp, a uno o a varios clientes" },
   { id: "volantes", t: "Volantes", ico: "▣", mod: "propiedades", sub: "Haz volantes con el estilo de C4 Realty y descárgalos" },
-  { id: "videos", t: "Videos", ico: "▶", mod: "propiedades", sub: "Los videos que salen en la sección Videos de la página" },
+  { id: "videos", t: "Videos", ico: "▶", mod: "propiedades", sub: "Los videos que salen en la página" },
+  { id: "bono", t: "Bono Pa' Ti", ico: "★", mod: "propiedades", sub: "Los textos de la guía del Bono Pa' Ti en la página" },
   { id: "citas", t: "Citas", ico: "◷", mod: "citas", sub: "Recorridos, llamadas, firmas y entregas" },
   { id: "usuarios", t: "Usuarios y permisos", ico: "⚿", mod: "usuarios", sub: "Quién entra al panel y qué puede hacer" },
   { id: "diseno", t: "Diseño", ico: "◐", mod: "plantillas", sub: "Elige la plantilla de la página pública" },
@@ -1388,7 +1389,8 @@ function videoForm(v) {
   abrir(`<div class="hd"><h1>${v ? "Editar video" : "Agregar video"}</h1><button class="btn sm" data-close>Cerrar</button></div>
    <form id="f-vd" class="card" style="display:grid;gap:14px">
     ${!v ? `<div class="seg" role="tablist" style="display:flex;gap:8px"><button type="button" class="btn sm pri" data-m="subir">Subir el video (recomendado)</button><button type="button" class="btn sm" data-m="enlace">Solo enlace de Instagram</button></div>` : ""}
-    <div data-p="subir" ${modo === "subir" ? "" : "hidden"}>
+    ${propio ? `<p style="font-size:.9rem"><b>¿Cambiar el video?</b> <span class="muted">Elige otro archivo aquí abajo. Si no eliges nada, se queda el de ahora.</span></p>` : ""}
+    <div data-p="subir" ${modo === "subir" || propio ? "" : "hidden"}>
      <label class="drop" for="vd-f" style="display:grid;gap:6px;justify-items:center;text-align:center;cursor:pointer"><input type="file" id="vd-f" accept="video/mp4,video/quicktime,video/webm,video/*" class="hide"><b>+ Elegir el video</b><span class="muted" style="font-size:.85rem">El mismo que subiste a Instagram, desde tu celular o computadora (MP4, MOV de iPhone o WebM). Si es largo, aquí mismo lo puedes acortar.</span></label>
      <div id="vd-pre" class="hide" style="display:flex;gap:14px;align-items:flex-start;margin-top:12px;flex-wrap:wrap"><video id="vd-v" playsinline style="width:130px;aspect-ratio:9/16;object-fit:cover;border-radius:10px;background:#000"></video>
       <div style="flex:1;min-width:220px;display:grid;gap:10px"><span id="vd-inf" class="muted" style="font-size:.88rem"></span>
@@ -1401,7 +1403,7 @@ function videoForm(v) {
     <div data-p="enlace" ${modo === "enlace" ? "" : "hidden"}>
      <p class="muted" style="font-size:.85rem;margin-bottom:8px">Con solo el enlace, en la página sale una tarjeta que abre el video en Instagram: <b>no se reproduce dentro de la página</b>, porque Instagram no lo permite (sobre todo en reels con música). Para que se reproduzca, bájalo de Instagram (en tu reel: ⋯ → <b>Descargar</b>) y súbelo con <b>Subir el video</b>.</p>
     </div>
-    ${propio ? `<p class="muted" style="font-size:.9rem">Este video ya está guardado en la página. Aquí puedes cambiar el lugar, el título y el enlace.</p>` : ""}
+    
     <div class="f"><label for="vd-l">Enlace del video en Instagram <span class="faint" id="vd-opc">${modo === "enlace" ? "" : "(opcional)"}</span></label><input id="vd-l" placeholder="https://www.instagram.com/reel/…" value="${v && v.codigo ? esc("https://www.instagram.com/reel/" + v.codigo + "/") : ""}"><small class="muted" style="font-size:.82rem">En Instagram: tres puntos ⋯ del video → Copiar enlace. Sirve para el botón "Ver en Instagram".</small></div>
     <div class="f"><label for="vd-s">¿Dónde sale en la página?</label><select id="vd-s"><option value="videos" ${v?.seccion !== "bono" ? "selected" : ""}>En la sección Videos</option><option value="bono" ${v?.seccion === "bono" ? "selected" : ""}>En la guía del Bono Pa' Ti</option></select></div>
     <div class="grid2"><div class="f"><label for="vd-z">Lugar</label><input id="vd-z" placeholder="ej. Boquete" value="${esc(v?.lugar || "")}"></div>
@@ -1435,7 +1437,7 @@ function videoForm(v) {
       if (!v && m === "enlace" && !body.codigo) return toast("Pega el enlace del video de Instagram", 1);
       ok.disabled = true;
       try {
-        if (!v && m === "subir") {
+        if ((!v && m === "subir") || (propio && file)) {
           if (!file) throw new Error("Elige el video primero");
           if (hasta - desde > 181) throw new Error("El video queda de más de 3 minutos. Acórtalo con \"Termina en\".");
           if (hasta - desde < 3) throw new Error("El pedazo elegido es muy corto.");
@@ -1502,8 +1504,42 @@ async function achicarVideo(file, aviso = () => { }, { desde = 0, hasta = null, 
   return { blob: corto || blob.size < file.size || !/mp4|webm/.test(file.type) ? blob : file, poster };
 }
 
+/* ---------- TEXTOS DEL BONO PA' TI ---------- */
+const BONO_BASE = {
+  intro: "Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.",
+  puntos: ["Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de $3,000 para el abono inicial de una casa nueva.", "Solo para tu primera vivienda con interés preferencial.", "Aplica para viviendas con valor no mayor de $80,000."],
+  bancos: [{ nombre: "Banco Nacional", puntos: ["Abono mínimo 2 %", "Casas con permiso de ocupación", "El bono se aplica al precio de venta", "Se tramita en Panamá Conecta"] },
+    { nombre: "Caja de Ahorros", puntos: ["Sigues abonando el 3 % inicial", "Los $3,000 reducen el precio base", "Se solicita cuando la casa está para entrega inmediata"] },
+    { nombre: "Banco General", puntos: ["Se suma al beneficio", "La solicitud se hace con avance de obra"] }],
+  aviso_titulo: "Actualización 14 de octubre",
+  aviso: "algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.",
+};
+RENDER.bono = async () => {
+  const g = (await api("/api/contenido/bono")) || BONO_BASE, ed = can("propiedades", "editar");
+  const lineas = a => esc((a || []).join("\n"));
+  const banco = (b, i) => `<div class="card bn" style="display:grid;gap:10px;padding:14px"><div style="display:flex;gap:8px;align-items:end"><div class="f" style="flex:1"><label>Banco ${i + 1}</label><input class="bn-n" value="${esc(b.nombre || "")}" placeholder="ej. Banco Nacional"></div>${ed ? `<button type="button" class="btn sm del bn-x">Quitar</button>` : ""}</div><div class="f"><label>Puntos (uno por línea)</label><textarea class="bn-p" rows="4">${lineas(b.puntos)}</textarea></div></div>`;
+  $("#tools").innerHTML = `<a class="btn" href="${esc(SITIO)}#bono" target="_blank" rel="noopener">Ver en la página ↗</a>`;
+  $("#body").innerHTML = `<p class="muted" style="margin-bottom:12px">Estos son los textos de la guía del <b>Bono Pa' Ti</b> en la página. Cambia lo que quieras y toca <b>Guardar</b>. Cada línea es un punto con su ✓. El monto del título se cambia en <b>Configuración</b> (Monto del Bono); si lo cambias, cámbialo también aquí donde lo escribiste. El video de esta parte se cambia en <b>Videos</b>.</p>
+   <form id="f-bono" style="display:grid;gap:14px">
+    <div class="card" style="display:grid;gap:12px"><div class="f"><label for="bo-i">Texto debajo del título</label><input id="bo-i" value="${esc(g.intro || "")}"></div>
+     <div class="f"><label for="bo-p">Puntos principales (uno por línea)</label><textarea id="bo-p" rows="5">${lineas(g.puntos)}</textarea></div></div>
+    <div><h2 style="margin-bottom:8px">Bancos</h2><div id="bo-bancos" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${(g.bancos || []).map(banco).join("")}</div>${ed ? `<button type="button" class="btn sm" id="bo-add" style="margin-top:10px">+ Agregar banco</button>` : ""}</div>
+    <div class="card" style="display:grid;gap:12px"><h2>Aviso (el recuadro rojo)</h2><p class="muted" style="font-size:.85rem">Si lo dejas vacío, no sale en la página.</p><div class="f"><label for="bo-at">Título del aviso</label><input id="bo-at" value="${esc(g.aviso_titulo || "")}" placeholder="ej. Actualización 14 de octubre"></div><div class="f"><label for="bo-a">Texto del aviso</label><textarea id="bo-a" rows="3">${esc(g.aviso || "")}</textarea></div></div>
+    ${ed ? `<div class="tools"><button class="btn pri">Guardar</button></div>` : ""}</form>`;
+  if (!ed) { $$("#f-bono input,#f-bono textarea").forEach(x => x.disabled = true); return; }
+  const quitar = () => $$(".bn-x").forEach(b => b.onclick = () => { b.closest(".bn").remove(); $$("#bo-bancos .bn").forEach((x, i) => { $("label", x).textContent = "Banco " + (i + 1); }); });
+  quitar();
+  $("#bo-add").onclick = () => { $("#bo-bancos").insertAdjacentHTML("beforeend", banco({ nombre: "", puntos: [] }, $$("#bo-bancos .bn").length)); quitar(); };
+  const L = t => t.split("\n").map(x => x.trim()).filter(Boolean);
+  $("#f-bono").onsubmit = async e => {
+    e.preventDefault();
+    const body = { intro: $("#bo-i").value.trim(), puntos: L($("#bo-p").value), bancos: $$("#bo-bancos .bn").map(b => ({ nombre: $(".bn-n", b).value.trim(), puntos: L($(".bn-p", b).value) })), aviso_titulo: $("#bo-at").value.trim(), aviso: $("#bo-a").value.trim() };
+    try { await api("/api/contenido/bono", { method: "PUT", body }); toast("Guardado: ya se ve en la página"); } catch (x) { toast(x.message, 1); }
+  };
+};
+
 RENDER.configuracion = async () => {
-  const L = (await api("/api/configuracion")).filter(c => !/^hubspot_/.test(c.clave)); const ed = can("configuracion", "editar");
+  const L = (await api("/api/configuracion")).filter(c => !/^hubspot_/.test(c.clave) && c.clave !== "bono_guia"); const ed = can("configuracion", "editar");
   $("#body").innerHTML = `<form id="f-cf" class="card"><div class="grid2">${L.map(c => { const largo = c.clave === "hero_texto" || String(c.valor ?? "").length > 90; return `<div class="f"${largo ? ' style="grid-column:1/-1"' : ""}><label for="cf-${esc(c.clave)}">${esc(c.descripcion || c.clave)}</label>${largo ? `<textarea id="cf-${esc(c.clave)}" name="${esc(c.clave)}" rows="3" ${ed ? "" : "disabled"}>${esc(c.valor ?? "")}</textarea>` : `<input id="cf-${esc(c.clave)}" name="${esc(c.clave)}" value="${esc(c.valor ?? "")}" ${ed ? "" : "disabled"}>`}<small class="faint">${esc(c.clave)}</small></div>`; }).join("")}</div>${ed ? `<div class="tools" style="margin-top:14px"><button class="btn pri">Guardar</button><button type="button" class="btn" id="hs-sync">Enviar a HubSpot ahora</button></div>` : ""}</form>`;
   if (!ed) return;
   $("#f-cf").onsubmit = async e => { e.preventDefault(); const b = Object.fromEntries(new FormData(e.target)); try { await api("/api/configuracion", { method: "PATCH", body: b }); toast("Guardado"); } catch (x) { toast(x.message, 1); } };

@@ -504,6 +504,7 @@ async function editar(env, nombre, u, req, id) {
       if (cols.includes('estado')) await env.DB.prepare(`UPDATE propiedad_estados SET usuario_id=?, nota=? WHERE id=(SELECT MAX(id) FROM propiedad_estados WHERE propiedad_id=?)`).bind(u.id, body.nota || null, id).run();
       if (cols.includes('precio')) await env.DB.prepare(`UPDATE propiedad_precios SET usuario_id=?, motivo=? WHERE id=(SELECT MAX(id) FROM propiedad_precios WHERE propiedad_id=?)`).bind(u.id, body.motivo || null, id).run();
     }
+    if (nombre === 'videos') { if (cols.includes('mp4') && antes.mp4) await borrarArchivoDeRuta(env, antes.mp4); if (cols.includes('poster') && antes.poster) await borrarArchivoDeRuta(env, antes.poster); }
     if (nombre === 'negocios' && cols.includes('etapa')) await env.DB.prepare(`UPDATE interacciones SET usuario_id=? WHERE id=(SELECT MAX(id) FROM interacciones WHERE negocio_id=? AND tipo='cambio_etapa')`).bind(u.id, id).run();
     await bitacora(env, u.id, 'editar', nombre, id, Object.fromEntries(cols.map(c => [c, antes[c]])), Object.fromEntries(cols.map(c => [c, d[c]])), req);
   }
@@ -658,16 +659,36 @@ async function plantillas(env, u, req, partes) {
   fail('Ruta no encontrada', 404);
 }
 
+// Textos de la guía del Bono Pa' Ti (los edita Alicia en el panel, pantalla "Bono Pa' Ti")
+async function guiaBono(env, u, req) {
+  if (req.method === 'GET') { exigir(u, 'propiedades', 'ver'); const r = await env.DB.prepare(`SELECT valor FROM configuracion WHERE clave='bono_guia'`).first(); return json(r?.valor ? JSON.parse(r.valor) : null); }
+  if (req.method === 'PUT') {
+    exigir(u, 'propiedades', 'editar');
+    const b = await cuerpo(req), t = (x, n) => String(x ?? '').trim().slice(0, n);
+    const lista = (x, n) => (Array.isArray(x) ? x : []).map(y => t(y, 300)).filter(Boolean).slice(0, n);
+    const g = {
+      intro: t(b.intro, 400),
+      puntos: lista(b.puntos, 12),
+      bancos: (Array.isArray(b.bancos) ? b.bancos : []).map(k => ({ nombre: t(k?.nombre, 60), puntos: lista(k?.puntos, 10) })).filter(k => k.nombre || k.puntos.length).slice(0, 6),
+      aviso_titulo: t(b.aviso_titulo, 120), aviso: t(b.aviso, 600),
+    };
+    const v = JSON.stringify(g);
+    await env.DB.prepare(`INSERT INTO configuracion (clave,valor,descripcion,actualizado_en) VALUES ('bono_guia',?,'Textos de la guía del Bono Pa'' Ti',datetime('now')) ON CONFLICT(clave) DO UPDATE SET valor=excluded.valor, actualizado_en=datetime('now')`).bind(v).run();
+    await bitacora(env, u.id, 'editar', 'configuracion', 'bono_guia', null, g, req);
+    return json(g);
+  }
+  fail('Ruta no encontrada', 404);
+}
 async function configuracion(env, u, req) {
   if (req.method === 'GET') {
     exigir(u, 'configuracion', 'ver');
-    return json((await env.DB.prepare(`SELECT * FROM configuracion WHERE clave NOT LIKE 'activacion:%' ORDER BY clave`).all()).results);
+    return json((await env.DB.prepare(`SELECT * FROM configuracion WHERE clave NOT LIKE 'activacion:%' AND clave <> 'bono_guia' ORDER BY clave`).all()).results);
   }
   if (req.method === 'PATCH') {
     exigir(u, 'configuracion', 'editar');
     const b = await cuerpo(req);
     for (const [k, v] of Object.entries(b)) {
-      if (k.startsWith('activacion:')) continue;
+      if (k.startsWith('activacion:') || k === 'bono_guia') continue;
       await env.DB.prepare(`UPDATE configuracion SET valor=?, actualizado_en=datetime('now') WHERE clave=?`).bind(v == null ? null : String(v), k).run();
     }
     await bitacora(env, u.id, 'editar', 'configuracion', null, null, b, req);
@@ -710,7 +731,7 @@ async function publico(req, env, partes, ctx) {
   }
   if (req.method === 'GET' && r === 'sitio') {
     const pl = await env.DB.prepare('SELECT id,nombre,tokens FROM plantillas WHERE activa=1').first();
-    const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio')`).all()).results;
+    const cf = (await env.DB.prepare(`SELECT clave,valor FROM configuracion WHERE clave IN ('nombre_sitio','whatsapp','whatsapp_visible','correo','instagram','hero_titulo','hero_etiqueta','hero_texto','bono_monto','bono_tope_precio','bono_guia')`).all()).results;
     let videos = null; try { videos = (await env.DB.prepare('SELECT codigo, lugar, titulo, archivo, mp4, poster, seccion FROM videos WHERE publicado = 1 ORDER BY orden, id').all()).results; } catch (e) { /* sin tabla de videos: la página usa los suyos */ }
     return json({ plantilla: pl ? { ...pl, tokens: JSON.parse(pl.tokens) } : null, config: Object.fromEntries(cf.map(x => [x.clave, x.valor])), videos });
   }
@@ -897,6 +918,7 @@ async function rutas(req, env, ctx) {
   if (r === 'usuarios') return usuarios(env, u, req, url, partes);
   if (r === 'roles') return roles(env, u, req);
   if (r === 'plantillas') return plantillas(env, u, req, partes);
+  if (r === 'contenido' && partes[2] === 'bono') return guiaBono(env, u, req);
   if (r === 'configuracion') return configuracion(env, u, req);
   if (r === 'bitacora') return verBitacora(env, u);
   if (r === 'hubspot' && partes[2] === 'sincronizar' && m === 'POST') { exigir(u, 'configuracion', 'editar'); return json(await sincronizarHubSpot(env)); }

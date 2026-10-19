@@ -570,22 +570,22 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
   <div class="wrap">
     <div class="sec-head">
       <div><div class="eyebrow">Guía</div><h2>Bono Pa' Ti: <span data-cf="bono_monto">$3,000</span> para tu casa nueva</h2></div>
-      <p class="muted">Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.</p>
+      <p class="muted" id="bono-intro">Lo que hemos informado en nuestras publicaciones de septiembre y octubre de 2026.</p>
     </div>
     <div class="bono">
       <div style="display:grid;gap:14px" id="bono-vids"><div class="vcard"><video controls playsinline preload="none" poster="videos/DeAvoR1RuE9.jpg" src="videos/DeAvoR1RuE9.mp4"></video><div class="vt"><small>Video</small>Caja de Ahorros confirma su participación</div></div></div>
       <div style="display:grid;gap:16px">
-        <ul class="ticks">
+        <ul class="ticks" id="bono-puntos">
           <li>Decreto Ejecutivo N° 35: subsidio estatal no reembolsable de <span data-cf="bono_monto">$3,000</span> para el abono inicial de una casa nueva.</li>
           <li>Solo para tu primera vivienda con interés preferencial.</li>
           <li>Aplica para viviendas con valor no mayor de $80,000.</li>
         </ul>
-        <div class="banks">
+        <div class="banks" id="bono-bancos">
           <div class="bank"><h3>Banco Nacional</h3><ul class="ticks"><li>Abono mínimo 2 %</li><li>Casas con permiso de ocupación</li><li>El bono se aplica al precio de venta</li><li>Se tramita en Panamá Conecta</li></ul></div>
           <div class="bank"><h3>Caja de Ahorros</h3><ul class="ticks"><li>Sigues abonando el 3 % inicial</li><li>Los <span data-cf="bono_monto">$3,000</span> reducen el precio base</li><li>Se solicita cuando la casa está para entrega inmediata</li></ul></div>
           <div class="bank"><h3>Banco General</h3><ul class="ticks"><li>Se suma al beneficio</li><li>La solicitud se hace con avance de obra</li></ul></div>
         </div>
-        <div class="warn"><b>Actualización 14 de octubre:</b> algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.</div>
+        <div class="warn" id="bono-aviso"><b>Actualización 14 de octubre:</b> algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.</div>
       </div>
     </div>
   </div>
@@ -905,6 +905,13 @@ const pintaVids=L=>{const R=L.filter(v=>v.seccion!=="bono"),B=L.filter(v=>v.secc
  // videos del Bono Pa' Ti: los que Alicia marca en el panel (si ninguno, se esconde el espacio)
  if(L.some(v=>"seccion" in v)){const bv=$("#bono-vids");bv.innerHTML=B.map(tarjetaVid).join("");bv.hidden=!B.length;bv.parentElement.classList.toggle("sin-video",!B.length);}};
 pintaVids(C4.videosDe(VIDS));C4.videos(pintaVids);
+// textos de la guía del Bono Pa' Ti: los que Alicia guarda en el panel (si no hay, quedan los de la página)
+const pintaBono=()=>{let g=null;try{g=JSON.parse(C4.cfg().bono_guia||"null")}catch(e){}if(!g)return;const e=C4.esc,li=a=>a.map(x=>`<li>${e(x)}</li>`).join("");
+ $("#bono-intro").textContent=g.intro||"";$("#bono-intro").hidden=!g.intro;
+ $("#bono-puntos").innerHTML=li(g.puntos||[]);$("#bono-puntos").hidden=!(g.puntos||[]).length;
+ $("#bono-bancos").innerHTML=(g.bancos||[]).map(b=>`<div class="bank"><h3>${e(b.nombre)}</h3><ul class="ticks">${li(b.puntos||[])}</ul></div>`).join("");$("#bono-bancos").hidden=!(g.bancos||[]).length;
+ $("#bono-aviso").innerHTML=(g.aviso_titulo?`<b>${e(g.aviso_titulo)}:</b> `:"")+e(g.aviso||"");$("#bono-aviso").hidden=!(g.aviso||g.aviso_titulo);};
+pintaBono();C4.sitio.then(pintaBono);
 document.addEventListener("play",e=>{if(e.target.muted&&e.target.loop)return;document.querySelectorAll("video").forEach(v=>{if(v!==e.target&&!(v.muted&&v.loop))v.pause();});},true);
 $("#entregas").style.display=DELIV.length?"":"none";$("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel="noopener"><img src="${IMG[f]}" alt="Entrega de casa" loading="lazy"></a>`).join("");
 
