@@ -449,6 +449,7 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
       <li><a href="#catalogo">Catálogo</a></li>
       <li><a href="#cotizar">Cotizar</a></li>
       <li><a href="#bono">Bono Pa' Ti</a></li>
+      <li><a href="#preferencial">Interés preferencial</a></li>
       <li><a href="#videos">Videos</a></li>
       <li><a href="#contacto">Contacto</a></li>
     </ul>
@@ -589,6 +590,18 @@ html[data-claro] header img[src*="logo.png"],html[data-claro] footer img[src*="l
         <div class="warn" id="bono-aviso"><b>Actualización 14 de octubre:</b> algunas promotoras de la provincia indican que no quieren trabajar con Abono Pa' Ti por la forma de pago. Escríbenos y te decimos qué proyectos sí lo aceptan.</div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="sec" id="preferencial" data-page="preferencial">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><div class="eyebrow">Casas de más de <span data-cf="bono_tope_precio">$80,000</span></div><h2>Tasa de interés preferencial</h2></div>
+      <p class="muted" id="pref-intro" hidden></p>
+    </div>
+    <ul class="ticks" id="pref-puntos" style="margin-bottom:22px"><li>Si ya tienes propiedad con mejora, no aplicas a la ley de interés preferencial.</li></ul>
+    <div id="pref-casas-w"><h3 style="margin:0 0 14px">Casas de más de <span data-cf="bono_tope_precio">$80,000</span></h3><div class="grid" id="pref-casas"></div></div>
+    <div id="pref-ops-w"><h3 style="margin:30px 0 6px">Modelos con opciones de más de <span data-cf="bono_tope_precio">$80,000</span></h3><p class="muted" style="margin:0 0 14px">Estos modelos tienen una versión más grande que pasa de <span data-cf="bono_tope_precio">$80,000</span>.</p><div class="grid" id="pref-ops"></div></div>
   </div>
 </section>
 
@@ -913,6 +926,14 @@ const pintaBono=()=>{let g=null;try{g=JSON.parse(C4.cfg().bono_guia||"null")}cat
  $("#bono-bancos").innerHTML=(g.bancos||[]).map(b=>`<div class="bank"><h3>${e(b.nombre)}</h3><ul class="ticks">${li(b.puntos||[])}</ul></div>`).join("");$("#bono-bancos").hidden=!(g.bancos||[]).length;
  $("#bono-aviso").innerHTML=(g.aviso_titulo?`<b>${e(g.aviso_titulo)}:</b> `:"")+e(g.aviso||"");$("#bono-aviso").hidden=!(g.aviso||g.aviso_titulo);};
 pintaBono();C4.sitio.then(pintaBono);
+const pintaPref=()=>{const tope=window.C4?+C4.cfg().bono_tope_precio||80000:80000,casas=P.filter(p=>p.cat==="Casa");
+  const arriba=casas.filter(p=>p.precio&&p.precio>tope).sort((a,b)=>a.precio-b.precio);
+  const ops=casas.filter(p=>!(p.precio>tope)&&(p.vr||[]).some(v=>v[1]>tope)).map(p=>({p,o:p.vr.filter(v=>v[1]>tope)})).sort((a,b)=>a.o[0][1]-b.o[0][1]);
+  $("#pref-casas").innerHTML=arriba.map(cardHTML).join("");$("#pref-casas-w").hidden=!arriba.length;
+  $("#pref-ops").innerHTML=ops.map(({p,o})=>`<article class="card"><div class="photo" data-gal="${p.id}"><span class="ph-play">▶ Ver fotos</span><img class="ph-a" src="${IMG[p.img[0]]||p.img[0]}" alt="${p.n}" loading="lazy"><div class="tags"><span class="tag">Casa</span></div></div><div class="body"><div class="where">⌖ ${zonaTxt(p)}</div><h3>${p.n}</h3><div class="price"><small>Desde </small>${fmt(o[0][1])}</div><div class="specs" style="display:grid;gap:4px">${o.map(v=>`<span>${v[0]}: <b>${fmt(v[1])}</b></span>`).join("")}</div><div class="actions"><button class="btn btn-accent btn-sm" data-open="${p.id}">Ver ficha</button><button class="btn btn-ghost btn-sm" data-quote="${p.id}">Cotizar</button></div></div></article>`).join("");$("#pref-ops-w").hidden=!ops.length;
+  const h=$("#pref-ops-w h3");if(h)h.style.marginTop=arriba.length?"30px":"0";};
+pintaPref();
+C4.sitio.then(pintaPref);
 document.addEventListener("play",e=>{if(e.target.muted&&e.target.loop)return;document.querySelectorAll("video").forEach(v=>{if(v!==e.target&&!(v.muted&&v.loop))v.pause();});},true);
 $("#entregas").style.display=DELIV.length?"":"none";$("#deliv").innerHTML=DELIV.map(([c,f])=>`<a href="${ig(c)}" target="_blank" rel="noopener"><img src="${IMG[f]}" alt="Entrega de casa" loading="lazy"></a>`).join("");
 
@@ -982,7 +1003,7 @@ $("#m-img").addEventListener("click",()=>lbOpen(cur,curI,true));$("#m-ip").oncli
   st.addEventListener("click",e=>{if(e.target===st&&!st.classList.contains("z"))lbClose();});})();
 document.addEventListener("keydown",e=>{if(!$("#lb").classList.contains("open"))return;if(e.key==="Escape")lbClose();if(e.key==="ArrowRight")lbGo(LBi+1);if(e.key==="ArrowLeft")lbGo(LBi-1);});
 /* navegación por secciones */
-const PAGES=["inicio","catalogo","cotizar","bono","videos","contacto"];
+const PAGES=["inicio","catalogo","cotizar","bono","preferencial","videos","contacto"];
 function show(pg,noScroll){if(!PAGES.includes(pg))pg="inicio";$$("[data-page]").forEach(s=>s.hidden=s.dataset.page!==pg);
   $$(".nav ul a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+pg));$$("video").forEach(v=>{if(!(v.muted&&v.loop))v.pause();});
   if(!noScroll)window.scrollTo(0,0);try{history.replaceState(null,"","#"+pg);}catch(e){}}
@@ -1022,7 +1043,7 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
   $("#t-venta").textContent=P.filter(p=>p.cat!=="Alquiler").length;$("#t-alq").textContent=new Set(P.map(p=>p.z)).size;
   const pr=P.filter(p=>p.precio).map(p=>p.precio);if(pr.length)$("#t-desde").textContent="$"+Math.floor(Math.min(...pr)/1000)+"k";
   $("#grid-rec").innerHTML=P.filter(p=>p.cat!=="Alquiler").sort((a,b)=>b.f.localeCompare(a.f)).slice(0,6).map(cardHTML).join("");
-  render();pub();if(typeof c4Abrir==="function")c4Abrir();
+  render();pub();pintaPref();if(typeof c4Abrir==="function")c4Abrir();
 }catch(e){}})();
 (async()=>{if(C4_API.startsWith("__"))return;try{const r=await fetch(C4_API+"/public/sitio");if(!r.ok)return;const j=await r.json();if(j.plantilla){c4Tema(j.plantilla);try{localStorage.setItem("c4_tema",JSON.stringify(j.plantilla));}catch(e){}}}catch(e){}})();
 </script>
