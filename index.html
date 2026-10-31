@@ -436,6 +436,43 @@ html.fx .rv3d.in{transform:none}
   html.fx .card .photo img{transition:transform .8s var(--ease-out),opacity .45s ease}
   html.fx .card.tilt .photo img{transform:scale(1.04)}
 }
+
+/* ===== Menú: píldora que marca la sección y sigue al mouse ===== */
+.nav ul{position:relative;gap:4px}
+.nav ul a{position:relative;z-index:1;display:inline-block;padding:8px 13px;border-radius:999px;transition:color .2s ease}
+.nav ul a.on{box-shadow:none;padding-bottom:8px;color:var(--fg)}
+.nav-pill,.nav-hov{position:absolute;left:0;top:0;height:0;border-radius:999px;pointer-events:none;z-index:0}
+.nav-pill{background:rgba(242,184,75,.14);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 6px 18px -8px color-mix(in srgb,var(--accent) 60%,transparent)}
+.nav-pill::after{content:"";position:absolute;left:50%;bottom:-5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.nav-hov{background:color-mix(in srgb,var(--fg) 8%,transparent);opacity:0;transition:opacity .2s ease}
+.nav-hov.on{opacity:1}
+html.fx .nav-pill{transition:transform .45s var(--ease-out),width .45s var(--ease-out)}
+html.fx .nav-pill.salta{transition:none}
+html.fx .nav-hov{transition:opacity .2s ease,transform .3s var(--ease-out),width .3s var(--ease-out)}
+html.fx .nav ul li{opacity:0;transform:translate3d(0,-10px,0);animation:fxUp .6s var(--ease-out) forwards;animation-delay:calc(var(--i,0)*55ms + 60ms)}
+html.fx [data-page].pg-in{animation:fxPage .38s var(--ease-out) both}
+@keyframes fxPage{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+@media (max-width:980px){.nav ul{gap:2px}.nav ul a{padding:7px 11px}}
+
+/* ===== Cuadro "¿Qué estás buscando?": selección que se desliza y brillo que sigue al mouse ===== */
+.types,.ranges{position:relative}
+.types button,.ranges button,.chip{transition:transform 160ms var(--ease-out),color .2s ease,background-color .2s ease,border-color .2s ease}
+.types button:active,.ranges button:active,.chip:active{transform:scale(.96)}
+.sel-ind{position:absolute;left:0;top:0;pointer-events:none;z-index:2;opacity:0}
+.types .sel-ind{border:1px solid var(--accent);border-radius:12px;background:rgba(242,184,75,.1);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.ranges .sel-ind{border:1px solid var(--sky);border-radius:10px;background:rgba(108,182,255,.12);box-shadow:0 0 0 3px color-mix(in srgb,var(--sky) 18%,transparent)}
+.types.con-ind button.on,.ranges.con-ind button.on{border-color:var(--line);background:var(--bg-2)}
+html.fx .sel-ind{transition:transform .4s var(--ease-out),width .4s var(--ease-out),height .4s var(--ease-out),opacity .2s ease}
+html.fx .sel-ind.salta{transition:none}
+html.fx .types button.pop span{animation:fxPop .42s var(--ease-out)}
+@keyframes fxPop{40%{transform:scale(1.28) translateY(-2px)}100%{transform:none}}
+.quick{position:relative;isolation:isolate}
+.quick::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;opacity:0;transition:opacity .35s ease;
+  background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),var(--accent),transparent 70%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.quick::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity .35s ease;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),color-mix(in srgb,var(--accent) 7%,transparent),transparent 60%)}
+@media (hover:hover) and (pointer:fine){.quick.luz::before,.quick.luz::after{opacity:1}}
 </style>
 <script>
 /* Plantilla de diseño elegida en el panel (se guarda para aplicarla sin parpadeo) */
@@ -1080,6 +1117,53 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
     ev=e;if(act&&!raf)raf=requestAnimationFrame(pinta);},{passive:true});
   document.addEventListener("pointerleave",()=>{if(act){act.classList.remove("tilt");act.style.transform="";act=null;}});
  }
+}catch(e){}})();
+</script>
+<script>
+/* Menú con píldora animada y transición suave entre secciones */
+(()=>{try{
+ const ul=document.querySelector(".nav ul");if(!ul)return;const fx=document.documentElement.classList.contains("fx");
+ const pill=document.createElement("span");pill.className="nav-pill salta";const hov=document.createElement("span");hov.className="nav-hov";ul.prepend(hov,pill);
+ [...ul.querySelectorAll("li")].forEach((li,i)=>li.style.setProperty("--i",i));
+ const pos=a=>{const r=a.getBoundingClientRect(),u=ul.getBoundingClientRect();return {x:r.left-u.left+ul.scrollLeft,y:r.top-u.top,w:r.width,h:r.height};};
+ const pon=(el,a)=>{const p=pos(a);el.style.width=p.w+"px";el.style.height=p.h+"px";el.style.transform=`translate3d(${p.x}px,${p.y}px,0)`;};
+ let ult=null;const marca=()=>{const a=ul.querySelector("a.on");pill.style.opacity=a?1:0;if(!a)return;pon(pill,a);
+   if(a!==ult&&ul.scrollWidth>ul.clientWidth){const p=pos(a),x=p.x-(ul.clientWidth-p.w)/2;ul.scrollTo({left:x,behavior:fx?"smooth":"auto"});}ult=a;};
+ marca();requestAnimationFrame(()=>requestAnimationFrame(()=>pill.classList.remove("salta")));
+ new MutationObserver(marca).observe(ul,{attributes:true,subtree:true,attributeFilter:["class"]});
+ const reubica=()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));};
+ const ulti=ul.querySelector("li:last-child");if(ulti)ulti.addEventListener("animationend",reubica);
+ addEventListener("resize",()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));});
+ document.fonts&&document.fonts.ready.then(()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));});
+ if(matchMedia("(hover: hover) and (pointer: fine)").matches){
+  ul.addEventListener("pointerover",e=>{const a=e.target.closest("a");if(!a)return;if(!hov.classList.contains("on")){hov.style.transition="none";pon(hov,a);hov.offsetWidth;hov.style.transition="";}else pon(hov,a);hov.classList.add("on");});
+  ul.addEventListener("pointerleave",()=>hov.classList.remove("on"));
+ }
+ /* al cambiar de sección, la nueva entra suave */
+ if(fx){new MutationObserver(ms=>{const vis=new Set();ms.forEach(m=>{const t=m.target;if(t.dataset&&t.dataset.page&&!t.hidden)vis.add(t);});
+   vis.forEach(t=>{t.classList.remove("pg-in");t.offsetWidth;t.classList.add("pg-in");});})
+   .observe(document.body,{attributes:true,subtree:true,attributeFilter:["hidden"]});}
+}catch(e){}})();
+</script>
+<script>
+/* Cuadro de filtro: indicador que se desliza entre opciones y brillo que sigue al mouse */
+(()=>{try{
+ const fx=document.documentElement.classList.contains("fx");
+ const desliza=box=>{if(!box)return;const ind=document.createElement("span");ind.className="sel-ind salta";box.appendChild(ind);box.classList.add("con-ind");let prev=null;
+   const mueve=()=>{const a=[...box.querySelectorAll("button.on")].find(b=>!b.hidden&&b.offsetParent);if(!a){ind.style.opacity=0;return;}
+     const r=a.getBoundingClientRect(),u=box.getBoundingClientRect();ind.style.opacity=1;ind.style.width=r.width+"px";ind.style.height=r.height+"px";
+     ind.style.transform=`translate3d(${r.left-u.left}px,${r.top-u.top}px,0)`;
+     if(fx&&prev&&a!==prev&&box.classList.contains("types")){a.classList.remove("pop");a.offsetWidth;a.classList.add("pop");}prev=a;};
+   const salta=()=>{ind.classList.add("salta");mueve();requestAnimationFrame(()=>requestAnimationFrame(()=>ind.classList.remove("salta")));};
+   salta();new MutationObserver(mueve).observe(box,{attributes:true,subtree:true,attributeFilter:["class"]});
+   addEventListener("resize",salta);if(document.fonts)document.fonts.ready.then(salta);
+   const h=box.closest(".hero-in");if(h)h.addEventListener("animationend",salta);
+   new MutationObserver(salta).observe(document.body,{attributes:true,subtree:true,attributeFilter:["hidden"]});};
+ desliza(document.querySelector("#quick .types"));desliza(document.querySelector("#quick .ranges"));
+ const q=document.querySelector("#quick");
+ if(q&&fx&&matchMedia("(hover: hover) and (pointer: fine)").matches){let rf=0,ev=null;
+  q.addEventListener("pointermove",e=>{ev=e;q.classList.add("luz");if(!rf)rf=requestAnimationFrame(()=>{rf=0;const r=q.getBoundingClientRect();q.style.setProperty("--mx",(ev.clientX-r.left)+"px");q.style.setProperty("--my",(ev.clientY-r.top)+"px");});});
+  q.addEventListener("pointerleave",()=>q.classList.remove("luz"));}
 }catch(e){}})();
 </script>
 </body>
