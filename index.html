@@ -1124,14 +1124,20 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
  const ul=document.querySelector(".nav ul");if(!ul)return;const fx=document.documentElement.classList.contains("fx");
  const pill=document.createElement("span");pill.className="nav-pill salta";const hov=document.createElement("span");hov.className="nav-hov";ul.prepend(hov,pill);
  [...ul.querySelectorAll("li")].forEach((li,i)=>li.style.setProperty("--i",i));
- const pos=a=>{const r=a.getBoundingClientRect(),u=ul.getBoundingClientRect();return {x:r.left-u.left+ul.scrollLeft,y:r.top-u.top,w:r.width,h:r.height};};
+ /* posición sin contar animaciones (offset*), así no se mueve mal mientras el menú entra */
+ const pos=a=>{let x=0,y=0,e=a;while(e&&e!==ul){x+=e.offsetLeft;y+=e.offsetTop;e=e.offsetParent;}
+   if(e!==ul){const r=a.getBoundingClientRect(),u=ul.getBoundingClientRect();return {x:r.left-u.left+ul.scrollLeft,y:r.top-u.top,w:a.offsetWidth,h:a.offsetHeight};}
+   return {x,y,w:a.offsetWidth,h:a.offsetHeight};};
  const pon=(el,a)=>{const p=pos(a);el.style.width=p.w+"px";el.style.height=p.h+"px";el.style.transform=`translate3d(${p.x}px,${p.y}px,0)`;};
  let ult=null;const marca=()=>{const a=ul.querySelector("a.on");pill.style.opacity=a?1:0;if(!a)return;pon(pill,a);
    if(a!==ult&&ul.scrollWidth>ul.clientWidth){const p=pos(a),x=p.x-(ul.clientWidth-p.w)/2;ul.scrollTo({left:x,behavior:fx?"smooth":"auto"});}ult=a;};
  marca();requestAnimationFrame(()=>requestAnimationFrame(()=>pill.classList.remove("salta")));
  new MutationObserver(marca).observe(ul,{attributes:true,subtree:true,attributeFilter:["class"]});
  const reubica=()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));};
- const ulti=ul.querySelector("li:last-child");if(ulti)ulti.addEventListener("animationend",reubica);
+ /* se vuelve a medir cuando termina la entrada del menú, cuando carga la letra o cambia cualquier tamaño */
+ ul.addEventListener("animationend",reubica);addEventListener("load",reubica);
+ if(window.ResizeObserver){let rq=0;const ro=new ResizeObserver(()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;reubica();});});ro.observe(ul);ul.querySelectorAll("a").forEach(x=>ro.observe(x));}
+ if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener("loadingdone",reubica);
  addEventListener("resize",()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));});
  document.fonts&&document.fonts.ready.then(()=>{pill.classList.add("salta");marca();requestAnimationFrame(()=>pill.classList.remove("salta"));});
  if(matchMedia("(hover: hover) and (pointer: fine)").matches){
@@ -1157,6 +1163,8 @@ function c4Ruta(r){return !r?"":/^https?:/.test(r)?r:/^(img\/p\/|docs\/planos\/|
    salta();new MutationObserver(mueve).observe(box,{attributes:true,subtree:true,attributeFilter:["class"]});
    addEventListener("resize",salta);if(document.fonts)document.fonts.ready.then(salta);
    const h=box.closest(".hero-in");if(h)h.addEventListener("animationend",salta);
+   addEventListener("load",salta);if(window.ResizeObserver){let rq=0;const ro=new ResizeObserver(()=>{if(rq)return;rq=requestAnimationFrame(()=>{rq=0;salta();});});ro.observe(box);box.querySelectorAll("button").forEach(x=>ro.observe(x));}
+   if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener("loadingdone",salta);
    new MutationObserver(salta).observe(document.body,{attributes:true,subtree:true,attributeFilter:["hidden"]});};
  desliza(document.querySelector("#quick .types"));desliza(document.querySelector("#quick .ranges"));
  const q=document.querySelector("#quick");
