@@ -442,7 +442,7 @@ html.fx .rv3d.in{transform:none}
 .nav ul a{position:relative;z-index:1;display:inline-block;padding:8px 13px;border-radius:999px;transition:color .2s ease}
 .nav ul a.on{box-shadow:none;padding-bottom:8px;color:var(--fg)}
 .nav-pill,.nav-hov{position:absolute;left:0;top:0;height:0;border-radius:999px;pointer-events:none;z-index:0}
-.nav-pill{background:rgba(242,184,75,.14);background:color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 6px 18px -8px color-mix(in srgb,var(--accent) 60%,transparent)}
+.nav-pill{background:rgba(255,255,255,.1);background:color-mix(in srgb,var(--fg) 11%,transparent);border:1px solid color-mix(in srgb,var(--fg) 14%,transparent)}
 .nav-pill::after{content:"";position:absolute;left:50%;bottom:-5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
 .nav-hov{background:color-mix(in srgb,var(--fg) 8%,transparent);opacity:0;transition:opacity .2s ease}
 .nav-hov.on{opacity:1}
@@ -459,8 +459,8 @@ html.fx [data-page].pg-in{animation:fxPage .38s var(--ease-out) both}
 .types button,.ranges button,.chip{transition:transform 160ms var(--ease-out),color .2s ease,background-color .2s ease,border-color .2s ease}
 .types button:active,.ranges button:active,.chip:active{transform:scale(.96)}
 .sel-ind{position:absolute;left:0;top:0;pointer-events:none;z-index:2;opacity:0}
-.types .sel-ind{border:1px solid var(--accent);border-radius:12px;background:rgba(242,184,75,.1);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.ranges .sel-ind{border:1px solid var(--sky);border-radius:10px;background:rgba(108,182,255,.12);box-shadow:0 0 0 3px color-mix(in srgb,var(--sky) 18%,transparent)}
+.types .sel-ind{border:1px solid var(--accent);border-radius:12px;background:rgba(242,184,75,.1)}
+.ranges .sel-ind{border:1px solid var(--sky);border-radius:10px;background:rgba(108,182,255,.12)}
 .types.con-ind button.on,.ranges.con-ind button.on{border-color:var(--line);background:var(--bg-2)}
 html.fx .sel-ind{transition:transform .4s var(--ease-out),width .4s var(--ease-out),height .4s var(--ease-out),opacity .2s ease}
 html.fx .sel-ind.salta{transition:none}
